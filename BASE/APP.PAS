@@ -1,0 +1,21 @@
+uses
+  ASCII,
+  CONSTS,
+  DATETIME,
+  DEBUG,
+  INT10,
+  INT14,
+  INT16,
+  INT21,
+  INT33,
+  INT67,
+  LOCALE,
+  MATH,
+  PALETTE,
+  STRINGS,
+  TYPES,
+  UTILS,
+  XCRT;
+
+begin
+end.

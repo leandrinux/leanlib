@@ -1,0 +1,33 @@
+{
+  type: "panel",
+  frame: [0, 0, 200, 130]
+  content: [
+    {
+      type: "textfield",
+      id: "username",
+      frame: [10, 10, 100, 25]
+    },
+    {
+      type: "textfield",
+      id: "password",
+      frame: [10, 40, 100, 25]
+    },
+    {
+      type: "label",
+      id: "message",
+      frame: [10, 70, 180, 25]
+    },
+    {
+      type: "button",
+      id: "okbtn",
+      frame: [160, 100, 35, 25],
+      text: "OK"
+    },
+    {
+      type: "button",
+      id: "cancelbtn",
+      frame: [10, 100, 50, 25],
+      text: "Cancel"
+    }
+  ]
+}

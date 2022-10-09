@@ -1,0 +1,23 @@
+* Drawing functions could return the list of pixels that need to be painted.
+That way be could:
+  - use those points for something else than just painting the pixel
+  - reuse the list to make multiple shapes with the same precalculations
+  - use a precalculation cache
+
+* Complete migration of previous projects
+  > User interfaces
+    > Graphics based
+    > Text based
+  > "Multitasking"
+    > Multiple processes
+    > Interprocess messaging
+  > Soundblaster sound
+    > Digitized 8-bit sound
+    > Digitized sound using DMA
+    > FM sound
+
+* New stuff
+  > graphics pipeline for moving objects around, rotating, applying masks
+  > pseudoassembler compiler
+  > pseudoassembler interpreter based on processes
+  > BASIC interpreter for pseudoassembler

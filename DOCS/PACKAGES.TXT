@@ -1,0 +1,40 @@
+Package File Format
+
+FILE STRUCTURE EXAMPLE
+  file header
+  index page
+  index entry 0
+  index entry 1
+  index entry n
+  resource 0
+  resource 1
+  resource 2
+  resource 3
+  index page
+  index entry 0
+  index entry 1
+  index entry n
+  resource 4
+  resource 5
+  (eof)
+
+FILE STRUCTURES
+
+file header
+|
+|- signature     3 bytes   file signature                    'PKG' (required)
+|- file_version  1 uint16  package version                   1 (required)
+|- page_count    1 uint32  number of index pages             0 (default)
+|- page_size     1 byte    number of entries per index page  4 (default)
+|- first_index   1 uint32  position of the first index page
+|- reserved      2 uint32  reserved for future use           0 (default)
+
+index page
+|
+|- count            1 byte      number of resources in this page index
+|- next_page        1 uint32    position of the next index page (0 if final)
+|- reserved         1 uint32    reserved for future use
+|- resource info block - repeated as many times as page_size
+   |-resource_id    12 char     name of resource 0
+   |-resource_pos   1 uint32    position of resource 0 in box file
+   |-resource_size  1 uint32    size of resource 0 in bytes

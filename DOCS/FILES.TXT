@@ -1,0 +1,64 @@
+ASCII.PAS     ASCII codes, keyboard scan codes
+CHANGES.LOG   A log of all the changes added each time a backup is created
+CLASSIDS.PAS  The IDs for all the objects that extend TObject
+CONSTS.PAS    Useful constants
+DATETIME.PAS  Date and time handling routines
+DEMOS         Directory containing examples and tests for different units
+DOCS          Documentation about specific aspects of the library
+EN-US.STR     Strings localized to English (U.S.)
+ES-AR.STR     Strings localized to Spanish (Argentina)
+EXCEPT.PAS    Exception object used to report error and failed assertions
+FILES.TXT     This file
+INT10.PAS     Implementation for int 10h services (Video BIOS functions)
+INT16.PAS     Implementation for int 16h services (Keyboard)
+INT21.PAS     Implementation for int 21h services (DOS services)
+INT33.PAS     Implementation for int 33h services (Mouse)
+INT67.PAS     Implementation for int 67h services (Expanded memory)
+ISSUES.LOG    Problems that have been noticed and should be fixed
+LOCALE.PAS    Unit used to select the language used for library strings
+MATH.PAS      Simple math functions, including pointer math
+PALETTE.PAS   All about colors
+STRINGS.PAS   Pascal and null-terminated string manipulation routines
+TEMPLATE.PAS  A template used when creating a new unit for this library
+TOOLS         Tools that make development easier (including source code)
+TYPES.PAS     Common types used all across the library
+UAPP.PAS      Base class for apps
+UBITMAP.PAS   Abstract class representing a bitmap
+UBITMAP1.PAS  Implementation of an 1-bit (black and white) bitmap
+UBITMAP8.PAS  Implementation of an 8-bit (256 color) bitmap
+UBMPFILE.PAS  Support for BMP files (read-only)
+UCANVAS.PAS   Allows to draw lines, circles and other stuff into any bitmap
+UCSTREAM.PAS  Stream that uses XOR-encoding to encrypt data
+UDICT.PAS     Dictionary (also called map or hashmap) implementation
+UDISPLAY.PAS  Video display object that abstracts the video hardware
+UESTREAM.PAS  Stream that uses expanded memory to read and write data
+UFONT.PAS     Abstract class for fonts used to draw text to bitmaps
+UFSTREAM.PAS  Stream that uses files to read and write data
+UINIFILE.PAS  Class that retrieves information from configuration files
+UJSON.PAS     JSON file reader
+ULIST.PAS     Implements a dynamic list of TObjects
+UMBITMAP.PAS  A read-only bitmap that masks another bitmap using another
+UMSGBUS.PAS   Message bus used to broadcast messages to multiple TObjects
+UMSTREAM.PAS  Stream that uses conventional memory to read and write data
+UNUMBER.PAS   TObject encapsulation/wrapper of a 32-bit signed integer
+UOBJECT.PAS   The base object for all objects in this library
+UOBJMSGS.PAS  All the codes used for messages between objects
+UPACKAGE.PAS  Class that allows packing/unpacking of multiple files
+UPROCESS.PAS  Base class for processes
+USBITMAP.PAS  A bitmap that provides a view or window into another bitmap
+USPEAKER.PAS  Used to generate sounds using the PC speaker
+USSTREAM.PAS  Read-only stream giving access to a segment of another stream
+USTDOUT.PAS   A write-only stream used to dump text to the screen
+USTREAM.PAS   Base class for all streams in this library
+USTRING.PAS   TObject encapsulation of an immutable Pascal string
+USYSFONT.PAS  Default system font used to write text to bitmaps
+USYSTEM.PAS   Used to run apps and their processes
+UTFONT.PAS    Tiny fonts (use 32bit for each char) implementation
+UTILS.PAS     Type conversions and other stuff that doesn't fit anywhere else
+UTRENDER.PAS  Graphic text renderer class used to write text to bitmaps
+UTURTLE.PAS   Does turtle graphics (LOGO style) on any bitmap
+UVGADRV.PAS   VGA video driver used by the display class
+UVIDDRV.PAS   Abstract class used for video drivers 
+WISHLIST.TXT  A list of stuff that would be nice to have in this library
+XCRT.PAS      A small and hopefully bug free replacement for the crt unit
+2

@@ -1,0 +1,130 @@
+2022-09-26 #49
+  * LOGS
+    - New logs class allows to record 3 different kinds of messages
+      (standard, warning and error) and can be used as exception handler.
+  * REFACTORING
+    - Renamed unit classids to uclasses
+    - Renamed unit except to uexc
+    - Added clean batch file
+    - Added build batch file
+
+2022-09-26 #48
+  * STREAMS
+    - Added support for serial port write-only streams
+    - Added support for simple ANSI codes (clear, color, gotoxy, move)
+
+2022-07-28 #47
+  * LISTS
+    - Lists will now return nil if asked for an object in an invalid index.
+
+2022-07-28 #46
+  * LISTS
+    - Renamed methods to fit the style used in dictionaries (addObject rather
+      than just add)
+    - Added string and number methods for ease of use
+    - Added support for class type enforcing. Using the initWithClassId 
+      constructor you can specify an id which will be used to make sure that
+      all objects added to the list will be of the same class (id)
+    - Updated UDICT and other units to reflect the changes in ULIST
+
+2022-07-19 #45
+  * JSON
+    - JSON file reader
+
+2022-07-12 #44
+  * EXCEPTIONS
+    - Added custom exception manager support
+  * BITMAP
+    - Implemented bitmap stacks (up to 4 layers)
+    - Implemented bitmap layers (supports transparent color)
+    - Added test sprite file to resources directory
+
+2022-07-11 #43
+  * BITMAP
+    - Added support for bitmap masks. Added example to demo app
+    - Memory organization of TBitmap8 is now down to up, right to left
+    - Added .BMP file read support with color palette support
+    - Added color palette support to video drivers
+  * CANVAS
+    - fixed floodfill crash when the target pixel is the same color as the
+      one used to fill
+
+2022-07-10 #42
+  * CANVAS
+    - Integrated enhanced floodfill function into unit
+    - Added x and y offset for brush patterns
+  * BITMAP
+    - Added bitmap opaque and transparent merging 
+    - Fully implemented 8 bit color bitmaps
+    - Added subbitmaps: a kind of window into a segment of other bitmap
+    - VGA mode 13h video bitmap no longer extends TBitmap8
+  * OTHER
+    - Moved all .TXT files (including this one) to DOCS\
+    - Significantly reduced backup files by no longer including binaries
+
+2022-07-10 #41
+  * CANVAS
+    - Added optional auxiliar fill color, used when filling with a pattern.
+    - Added pattern scale to brushes
+
+2022-07-09 #40 
+  * CANVAS
+    - Fixed bug in line function causing lines incorrectly drawn
+  * TURTLE
+    - First implementation
+  * OTHER
+    - Added new version of floodfill function in demo app.. still testing
+
+2022-07-08 #39
+  * SYSTEM
+    - System can now run multiple processes
+    - Implemented simple syscalls to request shutdown and add new processes
+
+2022-07-07 #38
+  * SYSTEM
+    - First implementation. Also includes apps and processes. 
+    - It runs the main loop of the app root process.
+    - Supports basic app configuration.
+
+2022-07-07 #37
+  * OBJECT
+    - Added message bus, used to broadcast messages to multiple objects 
+  * SOUND
+    - Added experimental PC-speaker sound routines
+
+2022-07-07 #36 
+  * STREAM
+    - Added substream support
+  * PACKAGE 
+    - Added package resource extraction
+  * OTHER
+    - Added files.txt with short descriptions for each file in this library
+
+2022-07-06
+  * Added package creation (packing only).
+  * Added package listing
+  * Added opening previously created packages
+  * Added improved expanded memory error messages
+
+2022-07-04
+  * Fixed EMS stream bug causing wrong read counts being returned,
+    resulting in incorrect checksums among other issues
+
+2022-07-03
+  * Fixed crash. Expanded memory streams seems to work fine but checksums
+    don't match :( It may be an issue with the checksum function
+  * File streams have a new getFilePath function
+
+2022-07-02 18:40
+  * Objects have now delegates, this is used to get feedback during certain
+    operations
+  * Streams are now the first objects to use the messaging system with the 
+    delegates to notify about the progress of the copy of a file
+  * Added EMS (expanded memory) streams, based on previous implementation 
+    from Leanlib. It does hang the system though -- to be fixed soon.
+
+2022-07-02 14:38
+  * Added support for monochrome bitmaps
+  * Fixed floodfill issue causing stack overflow by using a monochrome bitmap
+  of the same size than the canvas where the floodfill is happening.
+
