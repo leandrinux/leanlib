@@ -1,22 +1,16 @@
 @echo off
 if "%1"=="" goto buildall
 
-md d:\%1 >nul
-deltree /y d:\%1\*.* >nul
-md d:\tpu >nul
-
-copy %1\*.pas d:\%1 >nul
-d:
-cd d:\%1
-tpc -b -ed:\tpu app.pas 
+cd %1
+tpc -b -ec:\bin %1.pas 
 if errorlevel 0 goto ok
+cd ..
 echo.
 echo Build error
 goto end
 
 :ok
-cd \
-c:
+cd ..
 echo Build complete
 goto end
 
