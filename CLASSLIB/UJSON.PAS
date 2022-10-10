@@ -152,11 +152,15 @@ implementation
       ch := #0;
       while not _stream^.isEOF and (ch in C_SKIPPABLE_CHARS) do
         _stream^.read(@ch, 1, result);
+      iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
+      _stream^.read(@ch, 1, result);
       while not _stream^.isEOF and (ch in ['A'..'Z','a'..'z','_']) do
       begin
         keyStr := keyStr + ch;
         _stream^.read(@ch, 1, result);
       end;
+      iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
+      _stream^.read(@ch, 1, result);
       iassert(length(keyStr) > 0, @self, _stream^.getPosition, exceptionStr);
       iassert(ch = ':', @self, _stream^.getPosition, exceptionStr);
       obj := parseObject;
