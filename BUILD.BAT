@@ -22,7 +22,5 @@ call build base
 call build classlib
 call build sys
 call build gui
-echo all libraries built successfully!
-echo.
 
 :end
