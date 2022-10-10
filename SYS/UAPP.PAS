@@ -9,7 +9,7 @@ unit
 interface
 
   uses
-    consts, utils, uexc, uclasses, types, locale, uobject, uprocess;
+    consts, utils, uexc, uclasses, usclass, types, locale, uobject, uprocess;
 
   type
     PAppInfo = ^TAppInfo;

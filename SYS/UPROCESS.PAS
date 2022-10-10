@@ -9,7 +9,7 @@ unit
 interface
 
   uses
-    consts, utils, uexc, uclasses, types, locale, uobject, umsgbus,
+    consts, utils, uexc, uclasses, usclass, types, locale, uobject, umsgbus,
     usysmsgs;
 
   type

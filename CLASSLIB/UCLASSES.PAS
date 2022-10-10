@@ -69,11 +69,6 @@ interface
     { file formats }
     C_CLASS_ID_BMPFILE        = 700;
 
-    { collab multitasking }
-    C_CLASS_ID_SYSTEM         = 1000;
-    C_CLASS_ID_APP            = 1001;
-    C_CLASS_ID_PROCESS        = 1002;
-
 implementation
 
 end.
