@@ -11,6 +11,7 @@ exit
 
 :ok
 cd ..
+echo.
 echo %1 built successfully
 echo.
 goto end
