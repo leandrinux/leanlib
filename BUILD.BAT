@@ -3,7 +3,7 @@ if "%1"=="" goto buildall
 
 :build
 cd %1
-tpc -q -b -ec:\bin %1.pas 
+tpc -q -b -ec:\bin build.pas 
 if errorlevel 0 goto ok
 echo.
 echo %1 failed to build
