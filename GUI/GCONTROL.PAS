@@ -33,6 +33,7 @@ interface
       function getFrame: PFrame;
       function getId: TControlId;
       function getType: TControlType; virtual;
+      procedure draw;
     private
       _frame: TFrame;
       _id: TControlID;
@@ -94,6 +95,11 @@ implementation
   function TControl.getType: TControlType; 
   begin
     getType := C_CONTROL_TYPE_CONTROL;
+  end;
+
+  procedure TControl.draw;
+  begin
+    { GUI.theme^.draw(@self); }
   end;
 
   { TControl private }

@@ -24,6 +24,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       function getType: TControlType; virtual;
+      procedure draw; virtual;
       { methods }
     private
     end;
@@ -60,6 +61,10 @@ implementation
   function TPanel.getType: TControlType; 
   begin
     getType := C_CONTROL_TYPE_PANEL;
+  end;
+
+  procedure TPanel.draw;
+  begin
   end;
 
   { TPanel private }
