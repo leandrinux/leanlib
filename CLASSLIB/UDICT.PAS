@@ -182,7 +182,7 @@ implementation
     obj: PObject;
     key, subpath: string;
   begin
-    p := pos(C_PATH_SEPARATOR, path);
+    p := pos(C_DICTIONARY_PATH_SEPARATOR, path);
     if p = 0 then
       getObjectWithPath := GetObject(path)
     else begin

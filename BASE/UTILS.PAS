@@ -114,7 +114,7 @@ implementation
     i := length(path);
     if not extension then dec(i, 4);
     s := '';
-    while path[i] <> C_PATH_SEPARATOR do
+    while path[i] <> C_FILE_PATH_SEPARATOR do
     begin
       s := path[i] + s;
       dec(i);
