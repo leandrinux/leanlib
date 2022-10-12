@@ -97,7 +97,7 @@ implementation
 
   procedure TAnsiWriter.read(buffer: pointer; count: word; var result: word);
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   procedure TAnsiWriter.write(buffer: pointer; count: word);
@@ -107,7 +107,7 @@ implementation
 
   procedure TAnsiWriter.seek(pos: longint);
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   procedure TAnsiWriter.clear;
@@ -153,17 +153,17 @@ implementation
 
   function TAnsiWriter.getPosition: longint;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TAnsiWriter.isEOF: boolean;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TAnsiWriter.getSize: longint;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TAnsiWriter.isReadOnly: boolean;

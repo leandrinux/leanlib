@@ -62,7 +62,7 @@ implementation
 
   procedure TSubstream.write(buffer: pointer; count: word);
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   procedure TSubstream.seek(pos: longint);

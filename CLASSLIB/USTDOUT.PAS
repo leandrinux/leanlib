@@ -49,7 +49,7 @@ implementation
 
   procedure TStdOutput.read(buffer: pointer; count: word; var result: word);
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   procedure TStdOutput.write(buffer: pointer; count: word);
@@ -67,22 +67,22 @@ implementation
 
   procedure TStdOutput.seek(pos: longint);
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TStdOutput.getPosition: longint;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TStdOutput.isEOF: boolean;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TStdOutput.getSize: longint;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TStdOutput.isReadOnly: boolean;

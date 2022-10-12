@@ -113,7 +113,7 @@ implementation
     case index of
       0: _bitmap := new(PVGAMode13Bitmap, init);
     else
-      iassert(false, @self, 0, S_ERR_COLOR_DEPTH_NOT_SUPPORTED);
+      iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
     end;
   end;
 

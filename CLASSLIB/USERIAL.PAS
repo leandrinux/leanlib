@@ -50,7 +50,7 @@ implementation
 
   procedure TSerial.read(buffer: pointer; count: word; var result: word);
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   procedure TSerial.write(buffer: pointer; count: word);
@@ -68,22 +68,22 @@ implementation
 
   procedure TSerial.seek(pos: longint);
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TSerial.getPosition: longint;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TSerial.isEOF: boolean;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TSerial.getSize: longint;
   begin
-    iassert(false, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
   function TSerial.isReadOnly: boolean;

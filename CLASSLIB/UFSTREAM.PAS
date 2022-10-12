@@ -76,7 +76,7 @@ implementation
   procedure TFileStream.write(buffer: pointer; count: word);
   begin
     iassert(_isOpen, @self, 0, S_ERR_FILE_NOT_OPEN);
-    iassert(not _isReadOnly, @self, 0, S_ERR_OPERATION_UNSUPPORTED);
+    iassert(not _isReadOnly, @self, 0, S_ERR_UNSUPPORTED_ACTION);
     blockWrite(_fileHandle, buffer^, count);
   end;
 
