@@ -5,28 +5,53 @@
     {
       "type": "textfield",
       "id": "username",
-      "frame": [10, 10, 100, 25]
+      "frame": {
+        "x": 10,
+        "y": 10,
+        "width": 100,
+        "height": 25
+      }
     },
     {
       "type": "textfield",
       "id": "password",
-      "frame": [10, 40, 100, 25]
+      "frame": {
+        "x": 10,
+        "y": 40,
+        "width": 100,
+        "height": 25
+      }
     },
     {
       "type": "label",
       "id": "message",
-      "frame": [10, 70, 180, 25]
+      "frame": {
+        "x": 10,
+        "y": 70,
+        "width": 180,
+        "height": 25
+      }
     },
     {
       "type": "button",
       "id": "okbtn",
-      "frame": [160, 100, 35, 25],
+      "frame": {
+        "x": 160,
+        "y": 100,
+        "width": 35,
+        "height": 25
+      },
       "text": "OK"
     },
     {
       "type": "button",
       "id": "cancelbtn",
-      "frame": [10, 100, 50, 25],
+      "frame":  {
+        "x": 10,
+        "y": 100,
+        "width": 50,
+        "height": 25
+      },
       "text": "Cancel"
     }
   ]

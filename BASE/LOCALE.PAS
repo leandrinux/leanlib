@@ -95,6 +95,7 @@ S_ERR_PACKAGE_CORRUPT = 'Package file is corrupt';
 S_ERR_OPERATION_UNSUPPORTED = 'Operation not supported by device';
 S_ERR_INVALID_JSON_FILE = 'Invalid JSON file';
 S_ERR_INCORRECT_MEMBER_CLASS = 'Incorrect member class';
+S_ERR_UNEXPECTED_TYPE = 'Unexpected type';
 
 { System and process related messages }
 S_ERR_APP_INFO_MISSING = 'App info is missing';
