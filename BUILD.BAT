@@ -1,4 +1,9 @@
 @echo off
+rem this file expects the following args
+rem   (nothing) to build all libraries
+rem   xyz      to build library xyz 
+rem this is not intended to compile and run a file
+
 if "%1"=="" goto buildall
 
 :build
