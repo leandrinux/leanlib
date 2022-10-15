@@ -12,6 +12,9 @@ interface
     uobject, uexc,
     gclasses, gtypes, gcontrol;
 
+  const
+    C_CONTROL_TYPE_PANEL = 'panel';
+
   type
     PPanel = ^TPanel;
     TPanel = object (TControl)
@@ -23,8 +26,6 @@ interface
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      function getType: TControlType; virtual;
-      procedure draw; virtual;
       { methods }
     private
     end;
@@ -56,15 +57,6 @@ implementation
   function TPanel.getClassId: word;
   begin
     getClassId := C_CLASS_ID_Panel;
-  end;
-
-  function TPanel.getType: TControlType; 
-  begin
-    getType := C_CONTROL_TYPE_PANEL;
-  end;
-
-  procedure TPanel.draw;
-  begin
   end;
 
   { TPanel private }

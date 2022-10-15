@@ -1,6 +1,5 @@
 uses
   GUI,
-  GTheme,
   GControl,
   GPanel;
 

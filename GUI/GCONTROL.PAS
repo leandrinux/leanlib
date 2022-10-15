@@ -14,10 +14,7 @@ interface
 
   type
     PControlId = ^TControlId;
-    TControlID = string[8];
-
-    PControlType = ^TControlType;
-    TControlType = string[8];
+    TControlId = string[8];
 
     PControl = ^TControl;
     TControl = object (TObject)
@@ -32,8 +29,6 @@ interface
       { methods }
       function getFrame: PFrame;
       function getId: TControlId;
-      function getType: TControlType; virtual;
-      procedure draw;
     private
       _frame: TFrame;
       _id: TControlID;
@@ -90,16 +85,6 @@ implementation
   function TControl.getId: TControlId;
   begin
     getId := _id;
-  end;
-
-  function TControl.getType: TControlType; 
-  begin
-    getType := C_CONTROL_TYPE_CONTROL;
-  end;
-
-  procedure TControl.draw;
-  begin
-    { GUI.theme^.draw(@self); }
   end;
 
   { TControl private }
