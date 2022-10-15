@@ -11,20 +11,23 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ucanvas,
-    gclasses, gtypes, gpanel;
+    gclasses, gtypes, gcontrol, gpanel;
 
   type
     PRenderer = ^TRenderer;
     TRenderer = object (TObject)
     public
       { constructors and destructors}
-      constructor initWithCanvas(canvas: PCanvas; colorScheme: PColorScheme);
+      constructor initWithCanvas(canvas: PCanvas);
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       { methods }
-      procedure doPanel(panel: PPanel);
+      function getRendererName: string16; virtual;
+      function getCanvas: PCanvas;
+      procedure render(control: PControl);
+      procedure renderPanel(panel: PPanel); virtual;
     private
       _canvas: PCanvas;
       _colorScheme: PColorScheme;
@@ -34,12 +37,11 @@ implementation
 
   { TRenderer public }
 
-  constructor TRenderer.initWithCanvas(canvas: PCanvas; colorScheme: PColorScheme);
+  constructor TRenderer.initWithCanvas(canvas: PCanvas);
   begin
     inherited init;
     _canvas := canvas;
     _canvas^.retain;
-    _colorScheme := colorScheme;
   end;
 
   destructor TRenderer.done;
@@ -58,16 +60,25 @@ implementation
     getClassId := C_CLASS_ID_Renderer;
   end;
 
-  procedure TRenderer.doPanel(panel: PPanel);
+  function TRenderer.getRendererName: string16;
   begin
-    with _canvas^, panel^.getFrame^ do
-    begin
-      getStrokeBrush^.color := _colorScheme^[ECKPanelBorderTopLeft];
+    getRendererName := getClassName;
+  end;
 
-    end;
+  function TRenderer.getCanvas: PCanvas;
+  begin
+    getCanvas := _canvas;
+  end;
+
+  procedure TRenderer.render(control: PControl);
+  begin
   end;
 
   { TRenderer private }
+
+  procedure TRenderer.renderPanel(panel: PPanel);
+  begin
+  end;
 
   { Other }
 

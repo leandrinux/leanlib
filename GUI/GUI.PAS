@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict,
-    gclasses, gtypes, grender, gfactory, gcontrol;
+    gclasses, gtypes, grender, gmeteor, gfactory, gcontrol;
 
   type
     PUserInterface = ^TUserInterface;
@@ -23,15 +23,15 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       { methods }
-      function buildFromData(data: PDictionary): PControl;
+      function createFromData(data: PDictionary): PControl;
       function getControls: PList;
       procedure addFromData(data: PDictionary);
+      procedure render;
     private
       _colorScheme: TColorScheme;
       _display: PDisplayAdapter;
       _renderer: PRenderer;
       _controls: PList;
-      procedure buildDefaultColorScheme;
     end;
 
 implementation
@@ -42,9 +42,8 @@ implementation
     inherited init;
     _display := display;
     _display^.retain;
-    buildDefaultColorScheme;
-    _renderer := new(PRenderer, initWithCanvas(_display^.getCanvas, @_colorScheme));
-    _controls := new(PList, initWithClassId(C_CLASS_ID_CONTROL));
+    _renderer := new(PMeteor, initWithCanvas(_display^.getCanvas));
+    _controls := new(PList, initWithClassFamily(C_CLASS_ID_CONTROL, C_CLASS_ID_CONTROL_FAMILY));
   end;
 
   destructor TUserInterface.done;
@@ -65,12 +64,12 @@ implementation
     getClassId := C_CLASS_ID_GUI;
   end;
 
-  function TUserInterface.buildFromData(data: PDictionary): PControl;
+  function TUserInterface.createFromData(data: PDictionary): PControl;
   var
     cf: PControlFactory;
   begin
     cf := new(PControlFactory, init);
-    buildFromData := cf^.build(data);
+    createFromData := cf^.create(data);
     cf^.release;    
   end;
 
@@ -80,19 +79,29 @@ implementation
   end;
 
   procedure TUserInterface.addFromData(data: PDictionary);
+  var
+    control: PControl;
   begin
-    _controls^.addObject(buildFromData(data));
+    control := createFromData(data);
+    _controls^.addObject(control);
+    control^.release;
+  end;
+
+  procedure TUserInterface.render;
+  var
+    control: PControl;
+  begin
+    _controls^.moveToStart;
+    control := PControl(_controls^.getObjectAtCursor);
+    while control <> nil do
+    begin
+      control := PControl(_controls^.getObjectAtCursor);
+      _renderer^.render(control);
+    end;
   end;
 
   { TUserInterface private }
 
-  procedure TUserInterface.buildDefaultColorScheme;
-  begin
-    pSetColorDepth(_display^.getCanvas^.getBitmap^.getBitsPerPixel);
-    _colorScheme[ECKPanelBorderTopLeft] := pColor(EWhite);
-    _colorScheme[ECKPanelBorderBottomRight] := pColor(EDarkgray);
-    _colorScheme[ECKPanelBackground] := pColor(ELightgray);
-  end;
 
   { Other }
 

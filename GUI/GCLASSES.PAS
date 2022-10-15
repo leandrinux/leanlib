@@ -9,15 +9,16 @@ unit
 interface
 
   const
-
-    { controls }
-    C_CLASS_ID_CONTROL = 2010;
-    C_CLASS_ID_PANEL   = 2011;
-
-    { other GUI-related classes } 
     C_CLASS_ID_GUI             = 2000;
     C_CLASS_ID_CONTROLFACTORY  = 2001;
     C_CLASS_ID_RENDERER        = 2002;
+    C_CLASS_ID_METEOR          = 2003;
+
+    { control family }
+    C_CLASS_ID_CONTROL        = 2010;
+    C_CLASS_ID_PANEL          = 2011;
+    C_CLASS_ID_CONTROL_FAMILY = 2020;
+
 
 implementation
 

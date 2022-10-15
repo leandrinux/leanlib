@@ -8,7 +8,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale, ustring, udict, 
+    consts, utils, uclasses, types, locale, ustring, ulist,
     uobject, uexc,
     gclasses, gtypes, gcontrol;
 
@@ -21,13 +21,14 @@ interface
     public
       { constructors and destructors}
       constructor initWithId(id: TControlId);
-      constructor initWithObjects(obj: PObject);
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       { methods }
+      function getControls: PList;
     private
+      _controls: PList;
     end;
 
 implementation
@@ -37,15 +38,12 @@ implementation
   constructor TPanel.initWithId(id: TControlId);
   begin
     inherited initWithId(id);
-  end;
-
-  constructor TPanel.initWithObjects(obj: PObject);
-  begin
-    inherited initWithObjects(obj);
+    _controls := new(PList, initWithClassFamily(C_CLASS_ID_CONTROL, C_CLASS_ID_CONTROL_FAMILY));
   end;
 
   destructor TPanel.done;
   begin
+    _controls^.release;
     inherited done;
   end;
 
@@ -59,6 +57,11 @@ implementation
     getClassId := C_CLASS_ID_Panel;
   end;
 
+  function TPanel.getControls: PList;
+  begin
+    getControls := _controls;
+  end;
+  
   { TPanel private }
 
   { Other }

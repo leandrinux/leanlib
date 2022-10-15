@@ -15,6 +15,9 @@ interface
     PColorScheme = ^TColorScheme;
     TColorScheme = array [EColorKey] of TColor;
     
+    PControlId = ^TControlId;
+    TControlId = string[8];
+
 implementation
 
 end.
