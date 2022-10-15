@@ -18,7 +18,7 @@ interface
     TList = object (TObject)
     public
       constructor init;
-      constructor initWithClassId(classId: word);
+      constructor initWithClassFamily(fromClassId, toClassId: word);
       destructor done; virtual;
       procedure addObject(obj: PObject);
       procedure addString(value: string);
@@ -51,7 +51,7 @@ interface
       _cursor: PListNode;
       _count: longint;
       _enforceClassId: boolean;
-      _memberClassId: word;
+      _fromClassId, _toClassId: word;
       procedure initializeList;
     end;
 
@@ -88,12 +88,13 @@ implementation
     _enforceClassId := false;
   end;
 
-  constructor TList.initWithClassId(classId: word);
+  constructor TList.initWithClassFamily(fromClassId, toClassId: word);
   begin
     inherited init;
     initializeList;
     _enforceClassId := true;
-    _memberClassId := classId;
+    _fromClassId := fromClassId;
+    _toClassId := toClassId;
   end;
 
   procedure TList.initializeList;
@@ -115,7 +116,11 @@ implementation
     node: PListNode;
     lastNode: PListNode;
   begin
-    if _enforceClassId then iassert(_memberClassId = obj^.getClassId, @self, 0, S_ERR_INCORRECT_MEMBER_CLASS);
+    if _enforceClassId then
+      iassert(
+        (obj^.getClassId >= _fromClassId) and (obj^.getClassId <= _toClassId),
+        @self, 0, S_ERR_INCORRECT_MEMBER_CLASS
+      );
     MakeNode(node, obj);
     if _count = 0 then
     begin
@@ -155,7 +160,11 @@ implementation
     node, current, previous: PListNode;
     i: longint;
   begin
-    if _enforceClassId then iassert(_memberClassId = obj^.getClassId, @self, 0, S_ERR_INCORRECT_MEMBER_CLASS);
+    if _enforceClassId then
+      iassert(
+        (obj^.getClassId >= _fromClassId) and (obj^.getClassId <= _toClassId),
+        @self, 0, S_ERR_INCORRECT_MEMBER_CLASS
+      );
     MakeNode(node, obj);
     if index = 0 then
     begin
@@ -188,7 +197,11 @@ implementation
   var
     curr, prev, node: PListNode;
   begin
-    if _enforceClassId then iassert(_memberClassId = obj^.getClassId, @self, 0, S_ERR_INCORRECT_MEMBER_CLASS);
+    if _enforceClassId then
+      iassert(
+        (obj^.getClassId >= _fromClassId) and (obj^.getClassId <= _toClassId),
+        @self, 0, S_ERR_INCORRECT_MEMBER_CLASS
+      );
     MakeNode(node, obj);
     prev := nil;
     curr := _head;
