@@ -10,7 +10,7 @@ interface
 
   uses
     uexc, uclasses, types, locale, uobject, uviddrv, int10,
-    ubitmap, ubitmap8, upalette, debug;
+    ubitmap, ubitmap8, upalette;
 
   type
     PVGADriver = ^TVGADriver;
@@ -178,7 +178,6 @@ implementation
 
   procedure TVGAMode13Bitmap.setPixel(x, y: word; color: TColor);
   begin
-    incCounter(0);
     if (x>319) or (y>199) then exit;
     mem[$A000 : y shl 8 + y shl 6 + x] := color;
   end;
@@ -216,6 +215,4 @@ implementation
 
   { Other }
 
-begin
-  initCounter(0, 'setpixel');
 end.
