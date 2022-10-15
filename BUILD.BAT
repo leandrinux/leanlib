@@ -2,23 +2,24 @@
 if "%1"=="" goto buildall
 
 :build
+echo.
+echo Building %1
 cd %1
-tpc -q -b -ec:\bin build.pas 
-if errorlevel 0 goto ok
-echo.
-echo %1 failed to build
-exit
-
-:ok
+tpc -q -b -ec:\bin build.pas
+if errorlevel 1 goto fail
+echo success
 cd ..
-echo.
-echo %1 built successfully
-echo.
 goto end
+
+:fail
+echo.
+echo fail
+exit
 
 :buildall
 echo.
 echo Building all libraries
+del /q c:\bin\*.* >nul
 call build base
 call build classlib
 call build sys
