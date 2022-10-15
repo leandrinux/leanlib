@@ -27,6 +27,7 @@ interface
       function isPaletteSupported: boolean;
       function getCurrentVideoMode: PVideoMode;
       function getCanvas: PCanvas;
+      function getDriver: PVideoDriver;
       function getVideoDriverName: string;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
@@ -116,6 +117,11 @@ implementation
   function TDisplayAdapter.getCanvas: PCanvas;
   begin
     getCanvas := _canvas;
+  end;
+
+  function TDisplayAdapter.getDriver: PVideoDriver;
+  begin
+    getDriver := _driver;
   end;
 
   function TDisplayAdapter.getVideoDriverName: string;
