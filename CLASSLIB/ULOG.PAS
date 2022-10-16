@@ -30,6 +30,7 @@ interface
       procedure warn(str: string);
       procedure fail(str: string);
       procedure setAnsiSupport(value: boolean);
+      procedure setAsDefault;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -38,6 +39,9 @@ interface
       _count: longint;
       procedure entry(level: ELevel; var str: string);
     end;
+
+  var
+    Log: PLog;
 
 implementation
 
@@ -112,6 +116,13 @@ implementation
     _ansi^.setEnabled(value);
   end;
 
+  procedure TLog.setAsDefault;
+  begin
+    if Log <> nil then Log^.release;
+    Log := @self;
+    retain;
+  end;
+
   function TLog.getClassName: string;
   begin
     getClassName := 'TLog';
@@ -138,4 +149,6 @@ implementation
 
   { Other }
 
+begin
+  Log := nil;
 end.
