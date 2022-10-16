@@ -34,6 +34,9 @@ interface
   { file path parsing }
   function getFilename(path: string; extension: boolean): string;
 
+  { converts record types to readable strings}
+  function frameToStr(frame: PFrame): string;
+
 implementation
 
   const
@@ -120,6 +123,16 @@ implementation
       dec(i);
     end;
     getFilename := s;
+  end;
+
+  function frameToStr(frame: PFrame): string;
+  begin
+    with frame^ do 
+      frameToStr := 
+        'X:' + inttostr(point.x) +
+        ', Y:' + inttostr(point.y) +
+        ', W:' + inttostr(size.width) +
+        ', H:' + inttostr(size.height);
   end;
 
 end.

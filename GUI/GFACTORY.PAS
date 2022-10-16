@@ -10,7 +10,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, udict, 
+    uobject, uexc, udict, ulog,
     gclasses, gtypes, gcontrol, gpanel;
 
   type
@@ -59,6 +59,7 @@ implementation
   var
     id: TControlId;
   begin
+    Log^.out('Factory create');
     id := data^.getString('type');
     if id = C_CONTROL_TYPE_PANEL then 
       create := createPanel(data)
@@ -71,6 +72,7 @@ implementation
   var
     panel: PPanel;
   begin
+    Log^.out('Factory create panel');
     panel := new(PPanel, initWithId(data^.getString('id')));
     initPanel(panel, data);
     createPanel := panel;
@@ -78,6 +80,7 @@ implementation
 
   procedure TControlFactory.initControl(control: PControl; data: PDictionary);
   begin
+    Log^.out('Factory initControl');
     with control^.getFrame^ do
     begin
       point.x := data^.getLongWithPath('frame.x');
@@ -89,27 +92,10 @@ implementation
 
   procedure TControlFactory.initPanel(panel: PPanel; data: PDictionary);
   begin
+    Log^.out('Factory initPanel');
     initControl(panel, data);
   end;
 
   { Other }
 
 end.
-
-  constructor TControl.initWithObjects(obj: PObject);
-  var 
-    d: PDictionary;
-    id: string;
-  begin
-    inherited init;
-    iassert(obj^.getClassId = C_CLASS_ID_DICTIONARY, @self, 0, S_ERR_UNEXPECTED_TYPE);
-    d := PDictionary(obj);
-    id := d^.getString('id');
-    with _frame do
-    begin
-      point.x := d^.getLongWithPath('frame.x');
-      point.y := d^.getLongWithPath('frame.y');
-      size.width := d^.getLongWithPath('frame.width');
-      size.height := d^.getLongWithPath('frame.height');
-    end;
-  end;

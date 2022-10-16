@@ -3,6 +3,7 @@
   Tools for measuring time, testing and improving code performance
   2022 LRT
 }
+{$IFDEF DEBUG}
 unit
   debug;
 
@@ -98,5 +99,10 @@ implementation
 begin
   cronometerOn;
   fillchar(counters, sizeof(counters), 0);
-  writeln('DEBUG mode'); delay(1000);
 end.
+{$ELSE}
+unit debug;
+interface
+implementation
+end.
+{$ENDIF}

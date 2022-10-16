@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, ucanvas,
+    uobject, uexc, ucanvas, ulog,
     gclasses, gtypes, grender, gpanel;
 
   type
@@ -62,6 +62,8 @@ implementation
 
   procedure TMeteor.renderPanel(panel: PPanel);
   begin
+    Log^.out('Meteor render panel');
+    Log^.out('Panel frame ' + frameToStr(panel^.getFrame));
     with getCanvas^, panel^.getFrame^ do
     begin
       getStrokeBrush^.color := _colorScheme[ECKPanelBorderTopLeft];
@@ -72,7 +74,7 @@ implementation
       vline(point.y, point.y + size.height - 1, point.x + size.width - 1);
       getStrokeBrush^.color := _colorScheme[ECKPanelBackground];
       getFillBrush^.color := getStrokeBrush^.color;
-      frect(point.x + 1, point.y + 1, point.x + size.width - 2, point.y + size.height - 2);
+      frect(point.x + 1, point.y + 1, size.width - 2, size.height - 2);
     end;
   end;
 

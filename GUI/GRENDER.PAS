@@ -72,6 +72,9 @@ implementation
 
   procedure TRenderer.render(control: PControl);
   begin
+    case control^.getClassId of
+      C_CLASS_ID_PANEL: renderPanel(PPanel(control));
+    end;
   end;
 
   { TRenderer private }
