@@ -88,31 +88,13 @@ implementation
 
   function hexToByte(s: string2): byte;
   begin
+    hexToByte := hexToLong(s) and $FF;
   end;
-{
-  var
-    c: char;
-    v: byte;
-  begin
-    c := upcase(s[length(s)]);
-    if (c >= '0') and (c <= '9') then 
-      v := ord(c) - ord('0')
-    else  if (c >= 'A') and (c <= 'F') then
-      v := 10 + ord(c) - ord('A');
-    if length(s) = 2 then
-    begin
-      c := upcase(s[1]);
-      if (c >= '0') and (c <= '9') then 
-        v := v or ((ord(c) - ord('0')) shl 4)
-      else  if (c >= 'A') and (c <= 'F') then
-        v := v or ((10 + ord(c) - ord('A')) shl 4);
-    end;
-    hexToByte := v;
-  end;
-}
+
   function hexToWord(s: string4): word;
   begin
-  end;
+    hexToWord := hexToLong(s) and $FFFF;
+  end; 
 
   function hexToLong(s: string8): longint;
   var
