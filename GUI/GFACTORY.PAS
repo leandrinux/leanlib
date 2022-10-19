@@ -96,10 +96,14 @@ implementation
   begin
     Log^.out('Factory initPanel');
     initControl(panel, data);
+ 
     str := data^.getString('border-style');
     if str = 'raised' then panel^.setBorderStyle(EBorderStyleRaised)
       else if str = 'lowered' then panel^.setBorderStyle(EBorderStyleLowered)
-      else panel^.setBorderStyle(EBorderStyleNone);  
+      else panel^.setBorderStyle(EBorderStyleNone);
+ 
+    str := data^.getString('background-color');
+    if str <> '' then panel^.setBackgroundColor(hextolong(str));
   end;
 
   { Other }
