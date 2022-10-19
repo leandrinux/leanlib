@@ -25,9 +25,13 @@ interface
       { methods }
       function getFrame: PFrame;
       function getId: TControlId;
+      function getParent: PControl;
+      procedure setParent(parent: PControl);
+      procedure getAbsolutePosition(var point: TPoint);
     private
       _frame: TFrame;
       _id: TControlID;
+      _parent: PControl;
     end;
 
 implementation
@@ -38,6 +42,7 @@ implementation
   begin
     inherited init;
     _id := id;
+    _parent := nil;
   end;
 
   destructor TControl.done;
@@ -63,6 +68,30 @@ implementation
   function TControl.getId: TControlId;
   begin
     getId := _id;
+  end;
+
+  function TControl.getParent: PControl;
+  begin
+    getParent := _parent;
+  end;
+
+  procedure TControl.setParent(parent: PControl);
+  begin
+    _parent := parent;
+  end;
+
+  procedure TControl.getAbsolutePosition(var point: TPoint);
+  begin
+    with point do
+      if _parent = nil then
+      begin
+        x := _frame.point.x;
+        y := _frame.point.y;
+      end else begin
+        _parent^.getAbsolutePosition(point);
+        x := x + _frame.point.x;
+        y := y + _frame.point.y;
+      end;
   end;
 
   { TControl private }
