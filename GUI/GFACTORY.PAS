@@ -10,7 +10,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, udict, ulog,
+    uobject, uexc, udict, ulist,
     gclasses, gtypes, gcontrol, gpanel;
 
   type
@@ -59,7 +59,6 @@ implementation
   var
     id: TControlId;
   begin
-    Log^.out('Factory create');
     id := data^.getString('type');
     if id = C_CONTROL_TYPE_PANEL then 
       create := createPanel(data)
@@ -72,7 +71,6 @@ implementation
   var
     panel: PPanel;
   begin
-    Log^.out('Factory create panel');
     panel := new(PPanel, initWithId(data^.getString('id')));
     initPanel(panel, data);
     createPanel := panel;
@@ -80,7 +78,6 @@ implementation
 
   procedure TControlFactory.initControl(control: PControl; data: PDictionary);
   begin
-    Log^.out('Factory initControl');
     with control^.getFrame^ do
     begin
       point.x := data^.getLongWithPath('frame.x');
@@ -93,8 +90,10 @@ implementation
   procedure TControlFactory.initPanel(panel: PPanel; data: PDictionary);
   var
     str: string;
+    list: PList;
+    obj: PObject;
+    control: PControl;
   begin
-    Log^.out('Factory initPanel');
     initControl(panel, data);
  
     str := data^.getString('border-style');
@@ -104,6 +103,25 @@ implementation
  
     str := data^.getString('background-color');
     if str <> '' then panel^.setBackgroundColor(hextolong(str));
+
+    list := PList(data^.getObject('controls'));
+    if list <> nil then
+    begin
+      list^.moveToStart;
+      obj := list^.getObjectAtCursor;
+      if obj <> nil then
+      begin
+        if obj^.getClassId = C_CLASS_ID_DICTIONARY then
+        begin
+          control := create(PDictionary(obj));
+          control^.setParent(panel);
+          panel^.getControls^.addObject(control);
+          control^.release;
+        end;
+        list^.moveForward;
+        obj := list^.getObjectAtCursor;
+      end;
+    end;
   end;
 
   { Other }

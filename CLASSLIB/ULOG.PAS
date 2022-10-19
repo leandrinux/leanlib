@@ -60,6 +60,7 @@ implementation
     _stream := stream;
     _stream^.retain;
     _ansi := new(PAnsiWriter, initWithStream(_stream));
+    _ansi^.writeln('');
     _count := 0;
   end;
 

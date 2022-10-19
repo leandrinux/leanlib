@@ -63,7 +63,6 @@ implementation
   var
     cf: PControlFactory;
   begin
-    Log^.out('Creating controls from data');
     cf := new(PControlFactory, init);
     createFromData := cf^.create(data);
     cf^.release;    
@@ -79,7 +78,6 @@ implementation
     control: PControl;
   begin
     control := createFromData(data);
-    Log^.out('Adding to controls: ' + control^.getClassName);
     _controls^.addObject(control);
     control^.release;
   end;
@@ -88,7 +86,6 @@ implementation
   var
     control: PControl;
   begin
-    Log^.out('Rendering started');
     _controls^.moveToStart;
     control := PControl(_controls^.getObjectAtCursor);
     while control <> nil do
@@ -97,7 +94,6 @@ implementation
       _controls^.moveForward;
       control := PControl(_controls^.getObjectAtCursor);
     end;
-    Log^.out('Rendering ended');
   end;
 
   { TUserInterface private }

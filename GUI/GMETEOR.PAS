@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, ucanvas, ulog,
-    gclasses, gtypes, grender, gcolors, gpanel;
+    gclasses, gtypes, grender, gcolors, gcontrol, gpanel;
 
   type
     PMeteor = ^TMeteor;
@@ -59,11 +59,12 @@ implementation
 
   procedure TMeteor.renderPanel(panel: PPanel);
   var
+    absolutePosition: TPoint;
     colorTL, colorBR: TColor;
+    control: PControl;
   begin
-    Log^.out('Meteor render panel');
-    Log^.out('Panel frame ' + frameToStr(panel^.getFrame));
-    with getCanvas^, panel^, getFrame^, DefaultColorScheme^ do
+    panel^.getAbsolutePosition(absolutePosition);
+    with getCanvas^, panel^, getFrame^.size, absolutePosition, DefaultColorScheme^  do
     begin
       case getBorderStyle of
         EBorderStyleNone:
@@ -85,16 +86,28 @@ implementation
         end;
       end;
       getStrokeBrush^.color := colorTL;
-      hline(point.x, point.x + size.width - 1, point.y);
-      vline(point.y + 1, point.y + size.height - 1, point.x);
+      hline(x, x + width - 1, y);
+      vline(y + 1, y + height - 1, x);
       getStrokeBrush^.color := colorBR;
-      hline(point.x, point.x + size.width - 1, point.y + size.height - 1);
-      vline(point.y + 1, point.y + size.height - 1, point.x + size.width - 1);
+      hline(x, x + width - 1, y + height - 1);
+      vline(y + 1, y + height - 1, x + width - 1);
       getStrokeBrush^.color := getBackgroundColor;
       getFillBrush^.color := getStrokeBrush^.color;
-      frect(point.x + 1, point.y + 1, size.width - 2, size.height - 2);
+      frect(x + 1, y + 1, width - 2, height - 2);
+      
+      with getControls^ do
+      begin
+        moveToStart;
+        control := PControl(getObjectAtCursor);
+        while control<>nil do
+        begin
+          render(control);
+          moveForward;
+          control := PControl(getObjectAtCursor);
+        end;
+      end;
+      
     end;
-    Log^.out('Meteor render complete');
   end;
 
   { TMeteor private }

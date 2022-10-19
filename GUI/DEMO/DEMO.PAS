@@ -4,7 +4,7 @@ uses
   gui;
 
 const
-  GUI_FILE = 'DEMO.1';
+  GUI_FILE = 'DEMO.2';
 
 procedure initLog;
 var
@@ -24,13 +24,10 @@ var
   json: PJsonReader;
   obj: PObject;
 begin
-  Log^.out('Opening ' + GUI_FILE);
   fs := new(PFileStream, initWithPath(GUI_FILE, true));
-  Log^.out('Reading JSON from file');
   json := new(PJsonReader, init);
   obj := json^.open(fs);
   xassert(obj^.getClassId = C_CLASS_ID_DICTIONARY, 0, 'Root object in GUI file not a dictionary!');
-  Log^.out('Got object of class ' + obj^.getClassName);
   ui^.addFromData(PDictionary(obj));
   json^.release;
   fs^.release;
