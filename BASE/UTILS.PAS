@@ -20,6 +20,9 @@ interface
   function byteToHex(i: byte): string2;
   function wordToHex(i: word): string4;
   function longToHex(i: longint): string8;
+  function hexToByte(s: string2): byte;
+  function hexToWord(s: string4): word;
+  function hexToLong(s: string8): longint;
 
   { pointer to string in segment:offset format }
   function ptrToStr(p: pointer): string9;
@@ -81,6 +84,53 @@ implementation
                  ByteToHex((i and $00FF0000) shr 16) +
                  ByteToHex((i and $0000FF00) shr 8) +
                  ByteToHex(i and $000000FF);
+  end;
+
+  function hexToByte(s: string2): byte;
+  begin
+  end;
+{
+  var
+    c: char;
+    v: byte;
+  begin
+    c := upcase(s[length(s)]);
+    if (c >= '0') and (c <= '9') then 
+      v := ord(c) - ord('0')
+    else  if (c >= 'A') and (c <= 'F') then
+      v := 10 + ord(c) - ord('A');
+    if length(s) = 2 then
+    begin
+      c := upcase(s[1]);
+      if (c >= '0') and (c <= '9') then 
+        v := v or ((ord(c) - ord('0')) shl 4)
+      else  if (c >= 'A') and (c <= 'F') then
+        v := v or ((10 + ord(c) - ord('A')) shl 4);
+    end;
+    hexToByte := v;
+  end;
+}
+  function hexToWord(s: string4): word;
+  begin
+  end;
+
+  function hexToLong(s: string8): longint;
+  var
+    i: byte;
+    c: char;
+    v: longint;
+  begin
+    v := 0;
+    for i := 1 to length(s) do
+    begin
+      v := v shl 4;
+      c := upcase(s[i]);
+      if (c >= '0') and (c <= '9') then 
+        v := v or (ord(c) - ord('0'))
+      else  if (c >= 'A') and (c <= 'F') then
+        v := v or (10 + ord(c) - ord('A'));
+    end;
+    hexToLong := v;
   end;
 
   function ptrToStr(p: pointer): string9;
