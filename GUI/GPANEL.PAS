@@ -10,10 +10,9 @@ interface
   uses
     consts, utils, uclasses, types, locale, ustring, ulist,
     uobject, uexc,
-    gclasses, gtypes, gcontrol, gcolors;
+    gclasses, gtypes, gcontrol, gattribs, gcolors;
 
   const
-    C_CONTROL_TYPE_PANEL = 'panel';
     C_DEFAULT_PANEL_BORDER_STYLE = EBorderStyleNone;
 
   type

@@ -11,7 +11,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, udict, ulist,
-    gclasses, gtypes, gcontrol, gpanel;
+    gclasses, gtypes, gattribs, gcontrol, gpanel;
 
   type
     PControlFactory = ^TControlFactory;
@@ -57,10 +57,10 @@ implementation
 
   function TControlFactory.create(data: PDictionary): PControl;
   var
-    id: TControlId;
+    controlType: string16;
   begin
-    id := data^.getString('type');
-    if id = C_CONTROL_TYPE_PANEL then 
+    controlType := data^.getString(C_ATTR_TYPE);
+    if controlType = C_CONTROL_TYPE_PANEL then 
       create := createPanel(data)
     else
       raise(@self, 0, S_ERR_UNEXPECTED_TYPE);
@@ -71,7 +71,7 @@ implementation
   var
     panel: PPanel;
   begin
-    panel := new(PPanel, initWithId(data^.getString('id')));
+    panel := new(PPanel, initWithId(data^.getString(C_ATTR_ID)));
     initPanel(panel, data);
     createPanel := panel;
   end;
@@ -80,10 +80,10 @@ implementation
   begin
     with control^.getFrame^ do
     begin
-      point.x := data^.getLongWithPath('frame.x');
-      point.y := data^.getLongWithPath('frame.y');
-      size.width := data^.getLongWithPath('frame.width');
-      size.height := data^.getLongWithPath('frame.height');
+      point.x := data^.getLongWithPath(C_ATTR_FRAME_X);
+      point.y := data^.getLongWithPath(C_ATTR_FRAME_Y);
+      size.width := data^.getLongWithPath(C_ATTR_FRAME_WIDTH);
+      size.height := data^.getLongWithPath(C_ATTR_FRAME_HEIGHT);
     end;  
   end;
 
@@ -96,15 +96,15 @@ implementation
   begin
     initControl(panel, data);
  
-    str := data^.getString('border-style');
-    if str = 'raised' then panel^.setBorderStyle(EBorderStyleRaised)
-      else if str = 'lowered' then panel^.setBorderStyle(EBorderStyleLowered)
+    str := data^.getString(C_ATTR_BORDER_STYLE);
+    if str = C_ATTR_BORDER_STYLE_RAISED then panel^.setBorderStyle(EBorderStyleRaised)
+      else if str = C_ATTR_BORDER_STYLE_LOWERED then panel^.setBorderStyle(EBorderStyleLowered)
       else panel^.setBorderStyle(EBorderStyleNone);
  
-    str := data^.getString('background-color');
+    str := data^.getString(C_ATTR_BACKGROUND_COLOR);
     if str <> '' then panel^.setBackgroundColor(hextolong(str));
 
-    list := PList(data^.getObject('controls'));
+    list := PList(data^.getObject(C_ATTR_CONTROLS));
     if list <> nil then
     begin
       list^.moveToStart;
