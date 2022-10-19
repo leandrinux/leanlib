@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, ucanvas, ulog,
-    gclasses, gtypes, grender, gcolors, gcontrol, gpanel;
+    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel;
 
   type
     PMeteor = ^TMeteor;
@@ -25,6 +25,7 @@ interface
       { methods }
       function getRendererName: string16; virtual;
       procedure renderPanel(panel: PPanel); virtual;
+      procedure renderLabel(lbl: PLabel); virtual;
     private
     end;
 
@@ -108,6 +109,11 @@ implementation
       end;
       
     end;
+  end;
+
+  procedure TMeteor.renderLabel(lbl: PLabel);
+  begin
+    
   end;
 
   { TMeteor private }

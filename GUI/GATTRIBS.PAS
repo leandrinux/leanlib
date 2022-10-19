@@ -19,8 +19,10 @@ interface
     C_ATTR_BORDER_STYLE_LOWERED = 'lowered'; 
     C_ATTR_BACKGROUND_COLOR     = 'background-color';
     C_ATTR_CONTROLS             = 'controls';
+    C_ATTR_TEXT                 = 'text';
 
     C_CONTROL_TYPE_PANEL = 'panel';
+    C_CONTROL_TYPE_LABEL = 'label';
 
 implementation
 

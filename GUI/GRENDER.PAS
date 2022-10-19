@@ -11,7 +11,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ucanvas,
-    gclasses, gtypes, gcontrol, gpanel;
+    gclasses, gtypes, gcontrol, gpanel, glabel;
 
   type
     PRenderer = ^TRenderer;
@@ -28,6 +28,7 @@ interface
       function getCanvas: PCanvas;
       procedure render(control: PControl);
       procedure renderPanel(panel: PPanel); virtual;
+      procedure renderLabel(lbl: PLabel); virtual;
     private
       _canvas: PCanvas;
     end;
@@ -73,12 +74,17 @@ implementation
   begin
     case control^.getClassId of
       C_CLASS_ID_PANEL: renderPanel(PPanel(control));
+      C_CLASS_ID_LABEL: renderLabel(PLabel(control));
     end;
   end;
 
   { TRenderer private }
 
   procedure TRenderer.renderPanel(panel: PPanel);
+  begin
+  end;
+
+  procedure TRenderer.renderLabel(lbl: PLabel);
   begin
   end;
 

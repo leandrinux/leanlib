@@ -11,7 +11,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, udict, ulist,
-    gclasses, gtypes, gattribs, gcontrol, gpanel;
+    gclasses, gtypes, gattribs, gcontrol, gpanel, glabel;
 
   type
     PControlFactory = ^TControlFactory;
@@ -27,8 +27,10 @@ interface
       function create(data: PDictionary): PControl;
     private
       function createPanel(data: PDictionary): PPanel;
+      function createLabel(data: PDictionary): PLabel;
       procedure initControl(control: PControl; data: PDictionary);
       procedure initPanel(panel: PPanel; data: PDictionary);
+      procedure initLabel(lbl: PLabel; data: PDictionary);
     end;
 
 implementation
@@ -62,6 +64,8 @@ implementation
     controlType := data^.getString(C_ATTR_TYPE);
     if controlType = C_CONTROL_TYPE_PANEL then 
       create := createPanel(data)
+    else if controlType = C_CONTROL_TYPE_LABEL then 
+      create := createLabel(data)
     else
       raise(@self, 0, S_ERR_UNEXPECTED_TYPE);
   end;
@@ -74,6 +78,15 @@ implementation
     panel := new(PPanel, initWithId(data^.getString(C_ATTR_ID)));
     initPanel(panel, data);
     createPanel := panel;
+  end;
+
+  function TControlFactory.createLabel(data: PDictionary): PLabel;
+  var
+    lbl: PLabel;
+  begin
+    lbl := new(PLabel, initWithId(data^.getString(C_ATTR_ID)));
+    initLabel(lbl, data);
+    createLabel := lbl;
   end;
 
   procedure TControlFactory.initControl(control: PControl; data: PDictionary);
@@ -122,6 +135,12 @@ implementation
         obj := list^.getObjectAtCursor;
       end;
     end;
+  end;
+
+  procedure TControlFactory.initLabel(lbl: PLabel; data: PDictionary);
+  begin
+    initControl(lbl, data);
+    lbl^.setText(data^.getString(C_ATTR_TEXT));
   end;
 
   { Other }
