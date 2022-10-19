@@ -35,6 +35,7 @@ implementation
   const
     C_BUFFER_SIZE = 1024;
     C_SKIPPABLE_CHARS = [#0, ' ', C_LF, C_CR];
+    C_DICTIONARY_KEY_CHARACTERS = ['A'..'Z','a'..'z','_','-'];
 
   { TJsonReader public }
 
@@ -154,7 +155,7 @@ implementation
         _stream^.read(@ch, 1, result);
       iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
       _stream^.read(@ch, 1, result);
-      while not _stream^.isEOF and (ch in ['A'..'Z','a'..'z','_']) do
+      while not _stream^.isEOF and (ch in C_DICTIONARY_KEY_CHARACTERS) do
       begin
         keyStr := keyStr + ch;
         _stream^.read(@ch, 1, result);
