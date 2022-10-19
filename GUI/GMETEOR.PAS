@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, ucanvas, ulog,
-    gclasses, gtypes, grender, gpanel;
+    gclasses, gtypes, grender, gcolors, gpanel;
 
   type
     PMeteor = ^TMeteor;
@@ -26,8 +26,6 @@ interface
       function getRendererName: string16; virtual;
       procedure renderPanel(panel: PPanel); virtual;
     private
-      _colorScheme: TColorScheme;
-      procedure buildDefaultColorScheme;
     end;
 
 implementation
@@ -37,7 +35,6 @@ implementation
   constructor TMeteor.initWithCanvas(canvas: PCanvas);
   begin
     inherited initWithCanvas(canvas);
-    buildDefaultColorScheme;
   end;
 
   destructor TMeteor.done;
@@ -61,32 +58,46 @@ implementation
   end;
 
   procedure TMeteor.renderPanel(panel: PPanel);
+  var
+    colorTL, colorBR: TColor;
   begin
     Log^.out('Meteor render panel');
     Log^.out('Panel frame ' + frameToStr(panel^.getFrame));
-    with getCanvas^, panel^.getFrame^ do
+    with getCanvas^, panel^, getFrame^, DefaultColorScheme^ do
     begin
-      getStrokeBrush^.color := _colorScheme[ECKPanelBorderTopLeft];
+      case getBorderStyle of
+        EBorderStyleNone:
+        begin
+          colorTL := getBackgroundColor;
+          colorBR := colorTL;
+        end;
+        
+        EBorderStyleRaised:
+        begin
+          colorTL := getColor(ECKPanelBorderTopLeft);
+          colorBR := getColor(ECKPanelBorderBottomRight);
+        end;
+
+        EBorderStyleLowered:
+        begin
+          colorTL := getColor(ECKPanelBorderBottomRight);
+          colorBR := getColor(ECKPanelBorderTopLeft);
+        end;
+      end;
+      getStrokeBrush^.color := colorTL;
       hline(point.x, point.x + size.width - 1, point.y);
-      vline(point.y, point.y + size.height - 1, point.x);
-      getStrokeBrush^.color := _colorScheme[ECKPanelBorderBottomRight];
+      vline(point.y + 1, point.y + size.height - 1, point.x);
+      getStrokeBrush^.color := colorBR;
       hline(point.x, point.x + size.width - 1, point.y + size.height - 1);
-      vline(point.y, point.y + size.height - 1, point.x + size.width - 1);
-      getStrokeBrush^.color := _colorScheme[ECKPanelBackground];
+      vline(point.y + 1, point.y + size.height - 1, point.x + size.width - 1);
+      getStrokeBrush^.color := getBackgroundColor;
       getFillBrush^.color := getStrokeBrush^.color;
       frect(point.x + 1, point.y + 1, size.width - 2, size.height - 2);
     end;
+    Log^.out('Meteor render complete');
   end;
 
   { TMeteor private }
-
-  procedure TMeteor.buildDefaultColorScheme;
-  begin
-    pSetColorDepth(getCanvas^.getBitmap^.getBitsPerPixel);
-    _colorScheme[ECKPanelBorderTopLeft] := pColor(EWhite);
-    _colorScheme[ECKPanelBorderBottomRight] := pColor(EDarkgray);
-    _colorScheme[ECKPanelBackground] := pColor(ELightgray);
-  end;
 
   { Other }
 

@@ -17,7 +17,7 @@ interface
     TUserInterface = object (TObject)
     public
       { constructors and destructors}
-      constructor initWithDisplayAdapter(display: PDisplayAdapter);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
@@ -28,8 +28,6 @@ interface
       procedure addFromData(data: PDictionary);
       procedure render;
     private
-      _colorScheme: TColorScheme;
-      _display: PDisplayAdapter;
       _renderer: PRenderer;
       _controls: PList;
     end;
@@ -37,18 +35,15 @@ interface
 implementation
 
   { TUserInterface public }
-  constructor TUserInterface.initWithDisplayAdapter(display: PDisplayAdapter);
+  constructor TUserInterface.init;
   begin
     inherited init;
-    _display := display;
-    _display^.retain;
-    _renderer := new(PMeteor, initWithCanvas(_display^.getCanvas));
+    _renderer := new(PMeteor, initWithCanvas(DisplayAdapter^.getCanvas));
     _controls := new(PList, initWithClassFamily(C_CLASS_ID_CONTROL, C_CLASS_ID_CONTROL_FAMILY));
   end;
 
   destructor TUserInterface.done;
   begin
-    _display^.release;
     _renderer^.release;
     _controls^.release;
     inherited done;

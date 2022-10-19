@@ -30,7 +30,6 @@ interface
       procedure renderPanel(panel: PPanel); virtual;
     private
       _canvas: PCanvas;
-      _colorScheme: PColorScheme;
     end;
 
 implementation

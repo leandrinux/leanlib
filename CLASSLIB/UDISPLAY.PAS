@@ -10,7 +10,7 @@ unit
 interface
 
   uses
-    uexc, uclasses, types, locale, uobject, uviddrv, uvgadrv,
+    uexc, uclasses, types, locale, uobject, uviddrv, uvgadrv, ulog,
     ucanvas, ubitmap, ubitmap8, upalette;
 
   type
@@ -35,6 +35,9 @@ interface
       _driver: PVideoDriver;
       _canvas: PCanvas;
     end;
+
+  var
+    DisplayAdapter: PDisplayAdapter;
 
 implementation
 
@@ -144,4 +147,6 @@ implementation
 
   { Other }
 
+begin
+  DisplayAdapter := nil;
 end.

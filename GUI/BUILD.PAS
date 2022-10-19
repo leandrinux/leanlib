@@ -1,7 +1,13 @@
 uses
-  GUI,
+  GClasses,
+  GColors,
   GControl,
-  GPanel;
+  GFactory,
+  GMeteor,
+  GPanel,
+  GRender,
+  GTypes,
+  GUI;
 
 begin
 end.

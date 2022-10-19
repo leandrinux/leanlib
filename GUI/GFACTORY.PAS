@@ -87,13 +87,19 @@ implementation
       point.y := data^.getLongWithPath('frame.y');
       size.width := data^.getLongWithPath('frame.width');
       size.height := data^.getLongWithPath('frame.height');
-    end;    
+    end;  
   end;
 
   procedure TControlFactory.initPanel(panel: PPanel; data: PDictionary);
+  var
+    str: string;
   begin
     Log^.out('Factory initPanel');
     initControl(panel, data);
+    str := data^.getString('border-style');
+    if str = 'raised' then panel^.setBorderStyle(EBorderStyleRaised)
+      else if str = 'lowered' then panel^.setBorderStyle(EBorderStyleLowered)
+      else panel^.setBorderStyle(EBorderStyleNone);  
   end;
 
   { Other }

@@ -17,6 +17,7 @@ interface
     { control family }
     C_CLASS_ID_CONTROL        = 2010;
     C_CLASS_ID_PANEL          = 2011;
+    C_CLASS_ID_COLORSCHEME    = 2012;
     C_CLASS_ID_CONTROL_FAMILY = 2020;
 
 

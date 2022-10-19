@@ -1,6 +1,6 @@
 uses
   xcrt, types,
-  uobject, udisplay, ufstream, ujson, udict, uclasses, uexc, userial, ulog,
+  uobject, ufstream, ujson, udict, uclasses, uexc, userial, ulog, udisplay,
   gui;
 
 const
@@ -37,22 +37,20 @@ begin
 end;
 
 var
-  display: PDisplayAdapter;
   ui: PUserInterface;
 
 begin
+  writeln('About to start');
   initLog;
-  display := new(PDisplayAdapter, init);
-  if not display^.detectAdapter then halt(1);
-  display^.setVideoMode(0);
+  DisplayAdapter := new(PDisplayAdapter, init);
+  DisplayAdapter^.detectAdapter;
+  DisplayAdapter^.setVideoMode(0);
 
-  ui := new(PUserInterface, initWithDisplayAdapter(display));
+  ui := new(PUserInterface, init);
   addControls(ui);
   ui^.render;
-  Log^.out('Waiting for key to close program');
   readkey;
-
+  
   ui^.release;
-  display^.setTextMode;
-  display^.release;  
+  DisplayAdapter^.setTextMode;
 end.

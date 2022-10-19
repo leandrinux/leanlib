@@ -10,10 +10,11 @@ interface
   uses
     consts, utils, uclasses, types, locale, ustring, ulist,
     uobject, uexc,
-    gclasses, gtypes, gcontrol;
+    gclasses, gtypes, gcontrol, gcolors;
 
   const
     C_CONTROL_TYPE_PANEL = 'panel';
+    C_DEFAULT_PANEL_BORDER_STYLE = EBorderStyleNone;
 
   type
     PPanel = ^TPanel;
@@ -27,8 +28,14 @@ interface
       function getClassId: word; virtual;
       { methods }
       function getControls: PList;
+      procedure setBorderStyle(borderStyle: EBorderStyle);
+      function getBorderStyle: EBorderStyle;
+      procedure setBackgroundColor(backgroundColor: TColor);
+      function getBackgroundColor: TColor;
     private
       _controls: PList;
+      _borderStyle: EBorderStyle;
+      _backgroundColor: TColor;
     end;
 
 implementation
@@ -39,6 +46,8 @@ implementation
   begin
     inherited initWithId(id);
     _controls := new(PList, initWithClassFamily(C_CLASS_ID_CONTROL, C_CLASS_ID_CONTROL_FAMILY));
+    _borderStyle := C_DEFAULT_PANEL_BORDER_STYLE;
+    _backgroundColor := DefaultColorScheme^.getColor(ECKPanelBackground);
   end;
 
   destructor TPanel.done;
@@ -61,7 +70,26 @@ implementation
   begin
     getControls := _controls;
   end;
-  
+
+  procedure TPanel.setBorderStyle(borderStyle: EBorderStyle);
+  begin
+    _borderStyle := borderStyle;
+  end;
+
+  function TPanel.getBorderStyle: EBorderStyle;
+  begin
+    getBorderStyle := _borderStyle;
+  end;
+
+  procedure TPanel.setBackgroundColor(backgroundColor: TColor);
+  begin
+    _backgroundColor := backgroundColor;
+  end;
+
+  function TPanel.getBackgroundColor: TColor;
+  begin
+    getBackgroundColor := _backgroundColor;
+  end;
   { TPanel private }
 
   { Other }
