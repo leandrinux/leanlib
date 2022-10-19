@@ -175,13 +175,13 @@ implementation
   procedure TCanvas.hline(x1, x2, y: word);
   var x: word;
   begin
-    for x := x2-1 downto x1 do setPixel(x, y, @_stroke);
+    for x := x2 downto x1 do setPixel(x, y, @_stroke);
   end;
 
   procedure TCanvas.vline(y1, y2, x: word);
   var y: word;
   begin
-    for y := y2-1 downto y1 do setPixel(x, y, @_stroke);
+    for y := y2 downto y1 do setPixel(x, y, @_stroke);
   end;
 
   procedure TCanvas.rect(x, y, width, height: word);
