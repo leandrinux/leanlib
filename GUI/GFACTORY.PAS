@@ -122,7 +122,7 @@ implementation
     begin
       list^.moveToStart;
       obj := list^.getObjectAtCursor;
-      if obj <> nil then
+      while obj <> nil do
       begin
         if obj^.getClassId = C_CLASS_ID_DICTIONARY then
         begin

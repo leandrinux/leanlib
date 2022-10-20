@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, ucanvas, ulog,
+    uobject, uexc, ucanvas, utrender,
     gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel;
 
   type
@@ -112,8 +112,17 @@ implementation
   end;
 
   procedure TMeteor.renderLabel(lbl: PLabel);
+  var
+    absolutePosition: TPoint;
+    tr: PTextRenderer;
   begin
-    
+    lbl^.getAbsolutePosition(absolutePosition);
+    getCanvas^.getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKLabelText);
+    tr := new(PTextRenderer, init);
+    tr^.setCanvas(getCanvas);
+    tr^.setCursor(absolutePosition.x, absolutePosition.y);
+    tr^.write(lbl^.getText);
+    tr^.release;
   end;
 
   { TMeteor private }

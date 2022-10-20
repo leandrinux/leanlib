@@ -9,7 +9,8 @@ interface
     EColorKey = (
       ECKPanelBorderTopLeft,
       ECKPanelBorderBottomRight,
-      ECKPanelBackground
+      ECKPanelBackground,
+      ECKLabelText
     );
     
     PControlId = ^TControlId;
