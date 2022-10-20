@@ -19,6 +19,7 @@ interface
       destructor done; virtual;
       procedure setValue(value: longint);
       function getValue: longint;
+      function getBoolValue: boolean;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -47,6 +48,11 @@ implementation
   function TNumber.getValue: longint;
   begin
     getValue := _value;
+  end;
+
+  function TNumber.getBoolValue: boolean;
+  begin
+    getBoolValue := _value <> 0;
   end;
 
   function TNumber.getClassName: string;

@@ -47,7 +47,7 @@ implementation
     _current := _root;
     assign(handle, filename);
     {$I-} reset(handle); {$I+}
-    iassert(IOResult = 0, @self, 0, S_ERR_FILE_NOT_FOUND);
+    iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_NOT_FOUND);
     while not seekeof(handle) do
     begin
       readln(handle, s);

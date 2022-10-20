@@ -47,10 +47,10 @@ implementation
     if readOnly then
     begin
       reset(_fileHandle, 1);
-      iassert(IOResult = 0, @self, 0, S_ERR_FILE_NOT_FOUND);
+      iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_NOT_FOUND);
     end else begin
       rewrite(_fileHandle, 1);
-      iassert(IOResult = 0, @self, 0, S_ERR_FILE_COULDNT_BE_CREATED);
+      iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_CREATION_FAILED);
     end;
     {$I+}
     _isOpen := IOResult = 0;
@@ -69,20 +69,20 @@ implementation
   procedure TFileStream.read(buffer: pointer; count: word; var result: word);
   begin
     result := 0;
-    iassert(_isOpen, @self, 0, S_ERR_FILE_NOT_OPEN);
+    iassert(_isOpen, @self, 0, S_ERR_RESOURCE_NOT_OPEN);
     blockRead(_fileHandle, buffer^, count, result);
   end;
 
   procedure TFileStream.write(buffer: pointer; count: word);
   begin
-    iassert(_isOpen, @self, 0, S_ERR_FILE_NOT_OPEN);
+    iassert(_isOpen, @self, 0, S_ERR_RESOURCE_NOT_OPEN);
     iassert(not _isReadOnly, @self, 0, S_ERR_UNSUPPORTED_ACTION);
     blockWrite(_fileHandle, buffer^, count);
   end;
 
   procedure TFileStream.seek(pos: longint);
   begin
-    iassert(_isOpen, @self, 0, S_ERR_FILE_NOT_OPEN);
+    iassert(_isOpen, @self, 0, S_ERR_RESOURCE_NOT_OPEN);
     System.seek(_fileHandle, pos);
   end;
 
@@ -93,7 +93,7 @@ implementation
 
   function TFileStream.isEOF: boolean;
   begin
-    iassert(_isOpen, @self, 0, S_ERR_FILE_NOT_OPEN);
+    iassert(_isOpen, @self, 0, S_ERR_RESOURCE_NOT_OPEN);
     isEOF := EOF(_fileHandle);
   end;
 
@@ -104,7 +104,7 @@ implementation
 
   function TFileStream.getSize: longint;
   begin
-    iassert(_isOpen, @self, 0, S_ERR_FILE_NOT_OPEN);
+    iassert(_isOpen, @self, 0, S_ERR_RESOURCE_NOT_OPEN);
     getSize := System.FileSize(_fileHandle);
   end;
 

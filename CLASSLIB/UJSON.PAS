@@ -22,11 +22,12 @@ interface
     private
       _stream: PStream;
       function readNext: char;
-      function parseObject: PObject;
-      function parseNumber: PNumber;
-      function parseString: PString;
-      function parseDict: PDictionary;
-      function parseList: PList;
+      function createObject: PObject;
+      function createNumber: PNumber;
+      function createBool: PNumber;
+      function createString: PString;
+      function createDict: PDictionary;
+      function createList: PList;
       function exceptionStr: string;
     end;
 
@@ -43,7 +44,7 @@ implementation
   begin
     open := nil;
     _stream := stream;
-    open := parseObject;
+    open := createObject;
     _stream := nil;
   end;
 
@@ -70,23 +71,24 @@ implementation
     if result = 1 then readNext := ch else readNext := #0;
   end;
 
-  function TJsonReader.parseObject: PObject;
+  function TJsonReader.createObject: PObject;
   var
     ch: char;
   begin
     ch := readNext;
     _stream^.seek(_stream^.getPosition-1);
     case ch of
-      '0'..'9', '-': parseObject := parseNumber;
-      '"': parseObject := parseString;
-      '{': parseObject := parseDict;
-      '[': parseObject := parseList;
+      '0'..'9', '-': createObject := createNumber;
+      '"': createObject := createString;
+      '{': createObject := createDict;
+      '[': createObject := createList;
+      'f', 't': createObject := createBool;
     else
       raise(@self, 0, exceptionStr);
     end;
   end;
 
-  function TJsonReader.parseNumber: PNumber;
+  function TJsonReader.createNumber: PNumber;
   var
     ch: char;
     str: string32;
@@ -113,10 +115,32 @@ implementation
     iassert(code=0, @self, _stream^.getPosition, exceptionStr);
     number := new(PNumber, init);
     number^.setValue(value);
-    parseNumber := number;
+    createNumber := number;
   end;
 
-  function TJsonReader.parseString: PString;
+  function TJsonReader.createBool: PNumber;
+  var
+    ch: char;
+    i: byte;
+    expected: string8;
+    value: PNumber;
+  begin
+    ch := readNext;
+    iassert(ch in ['t', 'f'], @self, _stream^.getPosition, exceptionStr);
+    if ch = 't' then expected := 'true' else expected := 'false';
+    i := 2;
+    while i <= length(expected) do
+    begin
+      ch := readNext;
+      iassert(ch = expected[i], @self, _stream^.getPosition, exceptionStr);
+      inc(i);
+    end;
+    value := new(PNumber, init);
+    if expected[1] = 't' then value^.setValue(1) else value^.setValue(0);
+    createBool := value;
+  end;
+
+  function TJsonReader.createString: PString;
   var
     ch: char;
     result: word;
@@ -135,10 +159,10 @@ implementation
     iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
     pStr := new(PString, init);
     pStr^.setValue(str);
-    parseString := pStr;
+    createString := pStr;
   end;
 
-  function TJsonReader.parseDict: PDictionary;
+  function TJsonReader.createDict: PDictionary;
   var
     ch: char;
     keyStr: TDictionaryKey;
@@ -164,16 +188,16 @@ implementation
       _stream^.read(@ch, 1, result);
       iassert(length(keyStr) > 0, @self, _stream^.getPosition, exceptionStr);
       iassert(ch = ':', @self, _stream^.getPosition, exceptionStr);
-      obj := parseObject;
+      obj := createObject;
       dict^.addObject(obj, keyStr);
       obj^.release;
       ch := readnext;
       iassert(ch in [',', '}'], @self, _stream^.getPosition, exceptionStr);
     until ch = '}';
-    parseDict := dict;
+    createDict := dict;
   end;
 
-  function TJsonReader.parseList: PList;
+  function TJsonReader.createList: PList;
   var
     ch: char;
     list: PList;
@@ -182,13 +206,13 @@ implementation
     iassert(readNext = '[', @self, _stream^.getPosition, exceptionStr);
     list := new(PList, init);
     repeat
-      obj := parseObject;
+      obj := createObject;
       list^.addObject(obj);
       obj^.release;
       ch := readnext;
       iassert(ch in [',', ']'], @self, _stream^.getPosition, exceptionStr);
     until ch = ']';
-    parseList := list;
+    createList := list;
   end;
 
   function TJsonReader.exceptionStr: string;

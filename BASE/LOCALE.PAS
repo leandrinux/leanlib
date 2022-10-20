@@ -77,9 +77,9 @@ interface
 
     { generic error messages }
     S_ERR_ABSTRACT_CLASS = 'Cannot init an abstract class';
-    S_ERR_FILE_NOT_FOUND = 'File not found';
-    S_ERR_FILE_NOT_OPEN = 'File not open';
-    S_ERR_FILE_COULDNT_BE_CREATED = 'File could not be created';
+    S_ERR_RESOURCE_NOT_FOUND = 'Resource not found';
+    S_ERR_RESOURCE_NOT_OPEN = 'Resource not open';
+    S_ERR_RESOURCE_CREATION_FAILED = 'Resource creation failed';
     S_ERR_INVALID_BOUNDS = 'Invalid bounds';
     S_ERR_NOT_ENOUGH_MEMORY = 'Not enough memory';
     S_ERR_TARGET_READ_ONLY = 'Target is read only';

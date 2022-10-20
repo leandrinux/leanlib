@@ -29,9 +29,11 @@ interface
       function keyExists(key: TDictionaryKey): boolean;
       function getObject(key: TDictionaryKey): PObject;
       function getLong(key: TDictionaryKey): longint;
+      function getBool(key: TDictionaryKey): boolean;
       function getString(key: TDictionaryKey): string;
       function getObjectWithPath(path: string):PObject;
       function getLongWithPath(path: string): longint;
+      function getBoolWithPath(path: string): boolean;
       function getStringWithPath(path: string): string;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
@@ -160,20 +162,24 @@ implementation
   var number: PNumber;
   begin
     number := PNumber(getObject(key));
-    if number <> nil then
-      getLong := number^.getValue
-    else
-      getLong := C_NOT_FOUND;
+    iassert(number <> nil, @self, 0, S_ERR_RESOURCE_NOT_FOUND);  
+    getLong := number^.getValue
+  end;
+
+  function TDictionary.getBool(key: TDictionaryKey): boolean;
+  var number: PNumber;
+  begin
+    number := PNumber(getObject(key));
+    iassert(number <> nil, @self, 0, S_ERR_RESOURCE_NOT_FOUND);  
+    getBool := number^.getBoolValue
   end;
 
   function TDictionary.getString(key: TDictionaryKey): string;
   var str: PString;
   begin
     str := PString(getObject(key));
-    if str <> nil then
-      getString := str^.getValue
-    else
-      getString := '';
+    iassert(str <> nil, @self, 0, S_ERR_RESOURCE_NOT_FOUND);  
+    getString := str^.getValue;
   end;
 
   function TDictionary.getObjectWithPath(path: string):PObject;
@@ -206,20 +212,24 @@ implementation
   var obj: PObject;
   begin
     obj := getObjectWithPath(path);
-    if (obj <> nil) and (obj^.getClassId = C_CLASS_ID_NUMBER) then
-      getLongWithPath := PNumber(obj)^.getValue
-    else
-      getLongWithPath := C_NOT_FOUND;
+    iassert((obj <> nil) and (obj^.getClassId = C_CLASS_ID_NUMBER), @self, 0, S_ERR_RESOURCE_NOT_FOUND);
+    getLongWithPath := PNumber(obj)^.getValue
+  end;
+
+  function TDictionary.getBoolWithPath(path: string): boolean;
+  var obj: PObject;
+  begin
+    obj := getObjectWithPath(path);
+    iassert((obj <> nil) and (obj^.getClassId = C_CLASS_ID_NUMBER), @self, 0, S_ERR_RESOURCE_NOT_FOUND);
+    getBoolWithPath := PNumber(obj)^.getBoolValue;
   end;
 
   function TDictionary.getStringWithPath(path: string): string;
   var obj: PObject;
   begin
     obj := getObjectWithPath(path);
-    if (obj <> nil) and (obj^.getClassId = C_CLASS_ID_STRING) then
-      getStringWithPath := PString(obj)^.getValue
-    else
-      getStringWithPath := '';
+    iassert((obj <> nil) and (obj^.getClassId = C_CLASS_ID_STRING), @self, 0, S_ERR_RESOURCE_NOT_FOUND);
+    getStringWithPath := PString(obj)^.getValue
   end;
 
   procedure TDictionary.getKeys(var list: PList);

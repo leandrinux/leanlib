@@ -1,0 +1,14 @@
+{
+    "name": "Voldemort",
+    "isAlive": false,
+    "isEvil": true,
+    "age": 71,
+    "victims": [
+        "Lily Potter",
+        "James Potter",
+        "Cedric Diggory",
+        "Alastor Moody",
+        "Peter Pettigrew",
+        "Severus Snape"
+    ]
+}
