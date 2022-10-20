@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc,
-    gclasses, gtypes, gcontrol;
+    gclasses, gtypes, gcontrol, gcolors;
 
   type
     PLabel = ^TLabel;
@@ -25,8 +25,11 @@ interface
       { methods }
       function getText: string;
       procedure setText(text: string);
+      function getTextColor: TColor;
+      procedure setTextColor(textColor: TColor);
     private
       _text: string;
+      _textColor: TColor;
     end;
 
 implementation
@@ -37,6 +40,7 @@ implementation
   begin
     inherited initWithId(id);
     _text := '';
+    _textColor := DefaultColorScheme^.getColor(ECKLabelText);
   end;
 
   destructor TLabel.done;
@@ -64,6 +68,16 @@ implementation
     _text := text;
   end;
 
+  function TLabel.getTextColor: TColor;
+  begin
+    getTextColor := _textColor;
+  end;
+
+  procedure TLabel.setTextColor(textColor: TColor);
+  begin
+    _textColor := textColor;
+  end;
+  
   { TLabel private }
 
   { Other }

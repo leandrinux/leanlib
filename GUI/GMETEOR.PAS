@@ -117,7 +117,7 @@ implementation
     tr: PTextRenderer;
   begin
     lbl^.getAbsolutePosition(absolutePosition);
-    getCanvas^.getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKLabelText);
+    getCanvas^.getStrokeBrush^.color := lbl^.getTextColor;
     tr := new(PTextRenderer, init);
     tr^.setCanvas(getCanvas);
     tr^.setCursor(absolutePosition.x, absolutePosition.y);

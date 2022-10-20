@@ -93,10 +93,10 @@ implementation
   begin
     with control^.getFrame^ do
     begin
-      point.x := data^.getLongWithPath(C_ATTR_FRAME_X);
-      point.y := data^.getLongWithPath(C_ATTR_FRAME_Y);
-      size.width := data^.getLongWithPath(C_ATTR_FRAME_WIDTH);
-      size.height := data^.getLongWithPath(C_ATTR_FRAME_HEIGHT);
+      point.x := data^.getLongWithPath(C_PATH_FRAME_X);
+      point.y := data^.getLongWithPath(C_PATH_FRAME_Y);
+      size.width := data^.getLongWithPath(C_PATH_FRAME_WIDTH);
+      size.height := data^.getLongWithPath(C_PATH_FRAME_HEIGHT);
     end;  
   end;
 
@@ -138,9 +138,14 @@ implementation
   end;
 
   procedure TControlFactory.initLabel(lbl: PLabel; data: PDictionary);
+  var
+    str: string;
   begin
     initControl(lbl, data);
     lbl^.setText(data^.getString(C_ATTR_TEXT));
+
+    str := data^.getString(C_ATTR_TEXT_COLOR);
+    if str <> '' then lbl^.setTextColor(hextolong(str));
   end;
 
   { Other }
