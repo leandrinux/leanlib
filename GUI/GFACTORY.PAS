@@ -90,6 +90,8 @@ implementation
   end;
 
   procedure TControlFactory.initControl(control: PControl; data: PDictionary);
+  var
+    str: string;
   begin
     with control^.getFrame^ do
     begin
@@ -98,6 +100,14 @@ implementation
       size.width := data^.getLongWithPath(C_PATH_FRAME_WIDTH);
       size.height := data^.getLongWithPath(C_PATH_FRAME_HEIGHT);
     end;  
+
+    str := data^.getString(C_ATTR_BACKGROUND_COLOR);
+    if str <> '' then control^.setBackgroundColor(hextolong(str));
+
+    control^.setBackgroundStyle(EBackgroundStyleSolid);
+    str := data^.getString(C_ATTR_BACKGROUND_STYLE);
+    if str = C_ATTR_BACKGROUND_STYLE_TRANSPARENT then
+      control^.setBackgroundStyle(EBackgroundStyleTransparent);
   end;
 
   procedure TControlFactory.initPanel(panel: PPanel; data: PDictionary);
@@ -113,9 +123,6 @@ implementation
     if str = C_ATTR_BORDER_STYLE_RAISED then panel^.setBorderStyle(EBorderStyleRaised)
       else if str = C_ATTR_BORDER_STYLE_LOWERED then panel^.setBorderStyle(EBorderStyleLowered)
       else panel^.setBorderStyle(EBorderStyleNone);
- 
-    str := data^.getString(C_ATTR_BACKGROUND_COLOR);
-    if str <> '' then panel^.setBackgroundColor(hextolong(str));
 
     list := PList(data^.getObject(C_ATTR_CONTROLS));
     if list <> nil then
@@ -146,6 +153,11 @@ implementation
 
     str := data^.getString(C_ATTR_TEXT_COLOR);
     if str <> '' then lbl^.setTextColor(hextolong(str));
+
+    lbl^.setBackgroundStyle(EBackgroundStyleTransparent);
+    str := data^.getString(C_ATTR_BACKGROUND_STYLE);
+    if str = C_ATTR_BACKGROUND_STYLE_SOLID then
+      lbl^.setBackgroundStyle(EBackgroundStyleSolid);
   end;
 
   { Other }

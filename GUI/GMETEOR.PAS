@@ -24,6 +24,7 @@ interface
       function getClassId: word; virtual;
       { methods }
       function getRendererName: string16; virtual;
+      procedure renderControl(control: PControl); virtual;
       procedure renderPanel(panel: PPanel); virtual;
       procedure renderLabel(lbl: PLabel); virtual;
     private
@@ -58,12 +59,29 @@ implementation
     getRendererName := 'Meteor';
   end;
 
+  procedure TMeteor.renderControl(control: PControl);
+  var
+    absolutePosition: TPoint;
+  begin
+    control^.getAbsolutePosition(absolutePosition);
+    with getCanvas^, control^, getFrame^.size, absolutePosition do
+    begin
+      if control^.getBackgroundStyle = EBackgroundStyleSolid then
+      begin
+        getStrokeBrush^.color := getBackgroundColor;
+        getFillBrush^.color := getStrokeBrush^.color;
+        frect(x, y, width, height);
+      end;
+    end;
+  end;
+
   procedure TMeteor.renderPanel(panel: PPanel);
   var
     absolutePosition: TPoint;
     colorTL, colorBR: TColor;
     control: PControl;
   begin
+    renderControl(panel);
     panel^.getAbsolutePosition(absolutePosition);
     with getCanvas^, panel^, getFrame^.size, absolutePosition, DefaultColorScheme^  do
     begin
@@ -92,9 +110,6 @@ implementation
       getStrokeBrush^.color := colorBR;
       hline(x, x + width - 1, y + height - 1);
       vline(y + 1, y + height - 1, x + width - 1);
-      getStrokeBrush^.color := getBackgroundColor;
-      getFillBrush^.color := getStrokeBrush^.color;
-      frect(x + 1, y + 1, width - 2, height - 2);
       
       with getControls^ do
       begin
@@ -116,6 +131,7 @@ implementation
     absolutePosition: TPoint;
     tr: PTextRenderer;
   begin
+    renderControl(lbl);
     lbl^.getAbsolutePosition(absolutePosition);
     getCanvas^.getStrokeBrush^.color := lbl^.getTextColor;
     tr := new(PTextRenderer, init);

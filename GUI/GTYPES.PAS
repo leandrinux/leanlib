@@ -22,6 +22,11 @@ interface
       EBorderStyleLowered
     );
 
+    EBackgroundStyle = (
+      EBackgroundStyleSolid,
+      EBackgroundStyleTransparent
+    );
+
 implementation
 
 end.

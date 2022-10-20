@@ -14,6 +14,9 @@ interface
     C_ATTR_BORDER_STYLE_RAISED  = 'raised';
     C_ATTR_BORDER_STYLE_LOWERED = 'lowered'; 
     C_ATTR_BACKGROUND_COLOR     = 'background-color';
+    C_ATTR_BACKGROUND_STYLE     = 'background-style';
+    C_ATTR_BACKGROUND_STYLE_SOLID = 'solid';
+    C_ATTR_BACKGROUND_STYLE_TRANSPARENT = 'transparent';
     C_ATTR_CONTROLS             = 'controls';
     C_ATTR_TEXT                 = 'text';
     C_ATTR_TEXT_COLOR           = 'text-color';

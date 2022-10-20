@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, 
-    gclasses, gtypes;
+    gclasses, gtypes, gcolors;
 
   type
     PControl = ^TControl;
@@ -28,10 +28,16 @@ interface
       function getParent: PControl;
       procedure setParent(parent: PControl);
       procedure getAbsolutePosition(var point: TPoint);
+      procedure setBackgroundColor(backgroundColor: TColor);
+      function getBackgroundColor: TColor;     
+      procedure setBackgroundStyle(backgroundStyle: EBackgroundStyle);
+      function getBackgroundStyle: EBackgroundStyle; 
     private
       _frame: TFrame;
       _id: TControlID;
       _parent: PControl;
+      _backgroundColor: TColor;
+      _backgroundStyle: EBackgroundStyle;
     end;
 
 implementation
@@ -43,6 +49,8 @@ implementation
     inherited init;
     _id := id;
     _parent := nil;
+    _backgroundColor := DefaultColorScheme^.getColor(ECKPanelBackground);
+    _backgroundStyle := EBackgroundStyleSolid;
   end;
 
   destructor TControl.done;
@@ -92,6 +100,26 @@ implementation
         x := x + _frame.point.x;
         y := y + _frame.point.y;
       end;
+  end;
+
+  procedure TControl.setBackgroundColor(backgroundColor: TColor);
+  begin
+    _backgroundColor := backgroundColor;
+  end;
+
+  function TControl.getBackgroundColor: TColor;
+  begin
+    getBackgroundColor := _backgroundColor;
+  end;
+  
+  procedure TControl.setBackgroundStyle(backgroundStyle: EBackgroundStyle);
+  begin
+    _backgroundStyle := backgroundStyle;
+  end;
+
+  function TControl.getBackgroundStyle: EBackgroundStyle;
+  begin
+    getBackgroundStyle := _backgroundStyle;
   end;
 
   { TControl private }

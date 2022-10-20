@@ -27,6 +27,7 @@ interface
       function getRendererName: string16; virtual;
       function getCanvas: PCanvas;
       procedure render(control: PControl);
+      procedure renderControl(control: PControl); virtual;
       procedure renderPanel(panel: PPanel); virtual;
       procedure renderLabel(lbl: PLabel); virtual;
     private
@@ -80,6 +81,10 @@ implementation
 
   { TRenderer private }
 
+  procedure TRenderer.renderControl(control: PControl);
+  begin
+  end;
+  
   procedure TRenderer.renderPanel(panel: PPanel);
   begin
   end;
