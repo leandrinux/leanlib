@@ -61,7 +61,7 @@ implementation
   var
     controlType: string16;
   begin
-    controlType := data^.getString(C_ATTR_TYPE);
+    controlType := data^.getString(C_ATTR_TYPE, '');
     if controlType = C_CONTROL_TYPE_PANEL then 
       create := createPanel(data)
     else if controlType = C_CONTROL_TYPE_LABEL then 
@@ -75,7 +75,7 @@ implementation
   var
     panel: PPanel;
   begin
-    panel := new(PPanel, initWithId(data^.getString(C_ATTR_ID)));
+    panel := new(PPanel, initWithId(data^.getString(C_ATTR_ID, '')));
     initPanel(panel, data);
     createPanel := panel;
   end;
@@ -84,7 +84,7 @@ implementation
   var
     lbl: PLabel;
   begin
-    lbl := new(PLabel, initWithId(data^.getString(C_ATTR_ID)));
+    lbl := new(PLabel, initWithId(data^.getString(C_ATTR_ID, '')));
     initLabel(lbl, data);
     createLabel := lbl;
   end;
@@ -95,17 +95,17 @@ implementation
   begin
     with control^.getFrame^ do
     begin
-      point.x := data^.getLongWithPath(C_PATH_FRAME_X);
-      point.y := data^.getLongWithPath(C_PATH_FRAME_Y);
-      size.width := data^.getLongWithPath(C_PATH_FRAME_WIDTH);
-      size.height := data^.getLongWithPath(C_PATH_FRAME_HEIGHT);
+      point.x := data^.getLongWithPath(C_PATH_FRAME_X, 0);
+      point.y := data^.getLongWithPath(C_PATH_FRAME_Y, 0);
+      size.width := data^.getLongWithPath(C_PATH_FRAME_WIDTH, 0);
+      size.height := data^.getLongWithPath(C_PATH_FRAME_HEIGHT, 0);
     end;  
 
-    str := data^.getString(C_ATTR_BACKGROUND_COLOR);
+    str := data^.getString(C_ATTR_BACKGROUND_COLOR, '');
     if str <> '' then control^.setBackgroundColor(hextolong(str));
 
     control^.setBackgroundStyle(EBackgroundStyleSolid);
-    str := data^.getString(C_ATTR_BACKGROUND_STYLE);
+    str := data^.getString(C_ATTR_BACKGROUND_STYLE, '');
     if str = C_ATTR_BACKGROUND_STYLE_TRANSPARENT then
       control^.setBackgroundStyle(EBackgroundStyleTransparent);
   end;
@@ -119,7 +119,7 @@ implementation
   begin
     initControl(panel, data);
  
-    str := data^.getString(C_ATTR_BORDER_STYLE);
+    str := data^.getString(C_ATTR_BORDER_STYLE, '');
     if str = C_ATTR_BORDER_STYLE_RAISED then panel^.setBorderStyle(EBorderStyleRaised)
       else if str = C_ATTR_BORDER_STYLE_LOWERED then panel^.setBorderStyle(EBorderStyleLowered)
       else panel^.setBorderStyle(EBorderStyleNone);
@@ -149,13 +149,13 @@ implementation
     str: string;
   begin
     initControl(lbl, data);
-    lbl^.setText(data^.getString(C_ATTR_TEXT));
+    lbl^.setText(data^.getString(C_ATTR_TEXT, ''));
 
-    str := data^.getString(C_ATTR_TEXT_COLOR);
+    str := data^.getString(C_ATTR_TEXT_COLOR, '');
     if str <> '' then lbl^.setTextColor(hextolong(str));
 
     lbl^.setBackgroundStyle(EBackgroundStyleTransparent);
-    str := data^.getString(C_ATTR_BACKGROUND_STYLE);
+    str := data^.getString(C_ATTR_BACKGROUND_STYLE, '');
     if str = C_ATTR_BACKGROUND_STYLE_SOLID then
       lbl^.setBackgroundStyle(EBackgroundStyleSolid);
   end;

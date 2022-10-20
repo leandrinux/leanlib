@@ -72,7 +72,7 @@ implementation
 
   function TINIFile.getValue(path: string): string;
   begin
-    getValue := _root^.getStringWithPath(path);
+    getValue := _root^.getStringWithPath(path, '');
   end;
 
   function TINIFile.getClassName: string;

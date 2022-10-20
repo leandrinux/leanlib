@@ -28,13 +28,13 @@ interface
       procedure getKeys(var list: PList);
       function keyExists(key: TDictionaryKey): boolean;
       function getObject(key: TDictionaryKey): PObject;
-      function getLong(key: TDictionaryKey): longint;
-      function getBool(key: TDictionaryKey): boolean;
-      function getString(key: TDictionaryKey): string;
+      function getLong(key: TDictionaryKey; alt: longint): longint;
+      function getBool(key: TDictionaryKey; alt: boolean): boolean;
+      function getString(key: TDictionaryKey; alt: string): string;
       function getObjectWithPath(path: string):PObject;
-      function getLongWithPath(path: string): longint;
-      function getBoolWithPath(path: string): boolean;
-      function getStringWithPath(path: string): string;
+      function getLongWithPath(path: string; alt: longint): longint;
+      function getBoolWithPath(path: string; alt: boolean): boolean;
+      function getStringWithPath(path: string; alt: string): string;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -158,28 +158,25 @@ implementation
       getObject := nil;
   end;
 
-  function TDictionary.getLong(key: TDictionaryKey): longint;
+  function TDictionary.getLong(key: TDictionaryKey; alt: longint): longint;
   var number: PNumber;
   begin
     number := PNumber(getObject(key));
-    iassert(number <> nil, @self, 0, S_ERR_RESOURCE_NOT_FOUND);  
-    getLong := number^.getValue
+    if number <> nil then getLong := number^.getValue else getLong := alt;
   end;
 
-  function TDictionary.getBool(key: TDictionaryKey): boolean;
+  function TDictionary.getBool(key: TDictionaryKey; alt: boolean): boolean;
   var number: PNumber;
   begin
     number := PNumber(getObject(key));
-    iassert(number <> nil, @self, 0, S_ERR_RESOURCE_NOT_FOUND);  
-    getBool := number^.getBoolValue
+    if number <> nil then getBool := number^.getBoolValue else getBool := alt;
   end;
 
-  function TDictionary.getString(key: TDictionaryKey): string;
+  function TDictionary.getString(key: TDictionaryKey; alt: string): string;
   var str: PString;
   begin
     str := PString(getObject(key));
-    iassert(str <> nil, @self, 0, S_ERR_RESOURCE_NOT_FOUND);  
-    getString := str^.getValue;
+    if str <> nil then getString := str^.getValue else getString := alt;
   end;
 
   function TDictionary.getObjectWithPath(path: string):PObject;
@@ -208,28 +205,34 @@ implementation
     end;
   end;
 
-  function TDictionary.getLongWithPath(path: string): longint;
+  function TDictionary.getLongWithPath(path: string; alt: longint): longint;
   var obj: PObject;
   begin
     obj := getObjectWithPath(path);
-    iassert((obj <> nil) and (obj^.getClassId = C_CLASS_ID_NUMBER), @self, 0, S_ERR_RESOURCE_NOT_FOUND);
-    getLongWithPath := PNumber(obj)^.getValue
+    if (obj <> nil) and (obj^.getClassId = C_CLASS_ID_NUMBER) then
+      getLongWithPath := PNumber(obj)^.getValue
+    else
+      getLongWithPath := alt;
   end;
 
-  function TDictionary.getBoolWithPath(path: string): boolean;
+  function TDictionary.getBoolWithPath(path: string; alt: boolean): boolean;
   var obj: PObject;
   begin
     obj := getObjectWithPath(path);
-    iassert((obj <> nil) and (obj^.getClassId = C_CLASS_ID_NUMBER), @self, 0, S_ERR_RESOURCE_NOT_FOUND);
-    getBoolWithPath := PNumber(obj)^.getBoolValue;
+    if (obj <> nil) and (obj^.getClassId = C_CLASS_ID_NUMBER) then
+      getBoolWithPath := PNumber(obj)^.getBoolValue
+    else
+      getBoolWithPath := alt;
   end;
 
-  function TDictionary.getStringWithPath(path: string): string;
+  function TDictionary.getStringWithPath(path: string; alt: string): string;
   var obj: PObject;
   begin
     obj := getObjectWithPath(path);
-    iassert((obj <> nil) and (obj^.getClassId = C_CLASS_ID_STRING), @self, 0, S_ERR_RESOURCE_NOT_FOUND);
-    getStringWithPath := PString(obj)^.getValue
+    if (obj <> nil) and (obj^.getClassId = C_CLASS_ID_STRING) then
+      getStringWithPath := PString(obj)^.getValue
+    else
+      getStringWithPath := alt;
   end;
 
   procedure TDictionary.getKeys(var list: PList);
