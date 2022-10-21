@@ -10,7 +10,7 @@ unit
 interface
 
   uses
-    consts, utils, uexc, uclasses, types, locale, ascii,
+    consts, utils, uexc, uclasses, types, locale, ascii, math,
     uobject, ubitmap, ufont, utfont, usysfont, ucanvas;
 
   type
@@ -32,6 +32,7 @@ interface
       procedure setBounds(x, y, w, h: word);
       procedure getBounds(var x, y, w, h: word);
       procedure resetBounds;
+      procedure getTextSize(str: string; size: PSize);
       function getCharSpacing: byte;
       function getLineSpacing: byte;
       function getFont: PFont;
@@ -186,6 +187,27 @@ implementation
     _bounds.point.y := 0;
     _bounds.size.width := _canvas^.getBitmap^.getWidth;
     _bounds.size.height := _canvas^.getBitmap^.getHeight;
+  end;
+
+  procedure TTextRenderer.getTextSize(str: string; size: PSize);
+  var
+    cw, ch, w, h: word;
+    i: byte;
+    c: char;
+  begin
+    { warning! does not support multiline texts }
+    w := 0;
+    h := 0;
+    for i := 1 to length(str) do
+    begin
+      c := str[i];
+      _font^.getCharSize(c, _scale, cw, ch);
+      h := maxword(h, ch);
+      inc(w, cw + _charSpacing);
+    end;
+    dec(w, _charSpacing);
+    size^.width := w;
+    size^.height := h;
   end;
 
   function TTextRenderer.getCharSpacing: byte;
