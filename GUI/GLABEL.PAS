@@ -27,9 +27,12 @@ interface
       procedure setText(text: string);
       function getTextColor: TColor;
       procedure setTextColor(textColor: TColor);
+      function getTextAlign: ETextAlign;
+      procedure setTextAlign(textAlign: ETextAlign);
     private
       _text: string;
       _textColor: TColor;
+      _textAlign: ETextAlign;
     end;
 
 implementation
@@ -41,6 +44,7 @@ implementation
     inherited initWithId(id);
     _text := '';
     _textColor := DefaultColorScheme^.getColor(ECKLabelText);
+    _textAlign := ETextAlignTopLeft;
   end;
 
   destructor TLabel.done;
@@ -77,7 +81,17 @@ implementation
   begin
     _textColor := textColor;
   end;
-  
+
+  function TLabel.getTextAlign: ETextAlign;
+  begin
+    getTextAlign := _textAlign;
+  end;
+
+  procedure TLabel.setTextAlign(textAlign: ETextAlign);
+  begin
+    _textAlign := textAlign;
+  end;
+
   { TLabel private }
 
   { Other }

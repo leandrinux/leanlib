@@ -27,6 +27,18 @@ interface
       EBackgroundStyleTransparent
     );
 
+    ETextAlign = (
+      ETextAlignTopLeft,
+      ETextAlignTop,
+      ETextAlignTopRight,
+      ETextAlignLeft,
+      ETextAlignCenter,
+      ETextAlignRight,
+      ETextAlignBottomLeft,
+      ETextAlignBottom,
+      ETextAlignBottomRight
+    );
+    
 implementation
 
 end.

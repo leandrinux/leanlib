@@ -158,6 +158,17 @@ implementation
     str := data^.getString(C_ATTR_BACKGROUND_STYLE, '');
     if str = C_ATTR_BACKGROUND_STYLE_SOLID then
       lbl^.setBackgroundStyle(EBackgroundStyleSolid);
+
+    str := data^.getString(C_ATTR_TEXT_ALIGN, '');
+    if str = C_ATTR_TEXT_ALIGN_TL then lbl^.setTextAlign(ETextAlignTopLeft)
+      else if str = C_ATTR_TEXT_ALIGN_TOP then lbl^.setTextAlign(ETextAlignTop)
+      else if str = C_ATTR_TEXT_ALIGN_TR then lbl^.setTextAlign(ETextAlignTopRight)
+      else if str = C_ATTR_TEXT_ALIGN_LEFT then lbl^.setTextAlign(ETextAlignLeft)
+      else if str = C_ATTR_TEXT_ALIGN_CENTER then lbl^.setTextAlign(ETextAlignCenter)
+      else if str = C_ATTR_TEXT_ALIGN_RIGHT then lbl^.setTextAlign(ETextAlignRight)
+      else if str = C_ATTR_TEXT_ALIGN_BL then lbl^.setTextAlign(ETextAlignBottomLeft)
+      else if str = C_ATTR_TEXT_ALIGN_BOTTOM then lbl^.setTextAlign(ETextAlignBottom)
+      else if str = C_ATTR_TEXT_ALIGN_BR then lbl^.setTextAlign(ETextAlignBottomRight);
   end;
 
   { Other }

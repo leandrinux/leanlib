@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, ucanvas, utrender,
+    uobject, uexc, ucanvas, utrender, ulog,
     gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel;
 
   type
@@ -130,13 +130,34 @@ implementation
   var
     absolutePosition: TPoint;
     tr: PTextRenderer;
+    x, y: word;
+    textSize: TSize;
   begin
     renderControl(lbl);
     lbl^.getAbsolutePosition(absolutePosition);
     getCanvas^.getStrokeBrush^.color := lbl^.getTextColor;
     tr := new(PTextRenderer, init);
     tr^.setCanvas(getCanvas);
-    tr^.setCursor(absolutePosition.x, absolutePosition.y);
+    tr^.getTextSize(lbl^.getText, @textSize);
+    Log^.out('Text: ' + lbl^.getText);
+    Log^.out('Text width: ' + inttostr(textSize.width));
+    Log^.out('Text height: ' + inttostr(textSize.height));
+    Log^.out('Text align ord: ' + inttostr(ord(lbl^.getTextAlign)));
+    x := absolutePosition.x;
+    y := absolutePosition.y;
+    case lbl^.getTextAlign of
+      ETextAlignTop, ETextAlignCenter, ETextAlignBottom:
+        inc(x, (lbl^.getFrame^.size.width div 2) - (textSize.width div 2));
+      ETextAlignTopRight, ETextAlignRight, ETextAlignBottomRight:
+        inc(x, lbl^.getFrame^.size.width - textSize.width);
+    end;
+    case lbl^.getTextAlign of
+      ETextAlignLeft, ETextAlignCenter, ETextAlignRight:
+        inc(y, (lbl^.getFrame^.size.height div 2) - (textSize.height div 2));
+      ETextAlignBottomLeft, ETextAlignBottom, ETextAlignBottomRight:
+        inc(y, lbl^.getFrame^.size.height - textSize.height);
+    end;
+    tr^.setCursor(x, y);
     tr^.write(lbl^.getText);
     tr^.release;
   end;
