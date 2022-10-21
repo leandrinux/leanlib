@@ -9,7 +9,7 @@ unit
 interface
 
   uses
-    uclasses, types, uobject, utils, strings, locale, umsgs, int10;
+    xcrt, uclasses, types, uobject, utils, strings, locale, umsgs, int10;
 
   type
     PException = ^TException;
@@ -139,6 +139,7 @@ implementation
   begin
     if getVideoMode > C_TEXT_MODE then setVideoMode(C_TEXT_MODE);
     writeln(getText);
+    readkey;
   end;
 
   { Other  }
