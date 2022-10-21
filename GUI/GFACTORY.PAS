@@ -11,7 +11,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, udict, ulist,
-    gclasses, gtypes, gattribs, gcontrol, gpanel, glabel;
+    gclasses, gtypes, gattribs, gcontrol, gpanel, glabel, gbutton;
 
   type
     PControlFactory = ^TControlFactory;
@@ -28,9 +28,11 @@ interface
     private
       function createPanel(data: PDictionary): PPanel;
       function createLabel(data: PDictionary): PLabel;
+      function createButton(data: PDictionary): PButton;
       procedure initControl(control: PControl; data: PDictionary);
       procedure initPanel(panel: PPanel; data: PDictionary);
       procedure initLabel(lbl: PLabel; data: PDictionary);
+      procedure initButton(button: PButton; data: PDictionary);
     end;
 
 implementation
@@ -66,6 +68,8 @@ implementation
       create := createPanel(data)
     else if controlType = C_CONTROL_TYPE_LABEL then 
       create := createLabel(data)
+    else if controlType = C_CONTROL_TYPE_BUTTON then 
+      create := createButton(data)
     else
       raise(@self, 0, S_ERR_UNEXPECTED_TYPE);
   end;
@@ -87,6 +91,15 @@ implementation
     lbl := new(PLabel, initWithId(data^.getString(C_ATTR_ID, '')));
     initLabel(lbl, data);
     createLabel := lbl;
+  end;
+
+  function TControlFactory.createButton(data: PDictionary): PButton;
+  var
+    button: PButton;
+  begin
+    button := new(PButton, initWithId(data^.getString(C_ATTR_ID, '')));
+    initButton(button, data);
+    createButton := button;
   end;
 
   procedure TControlFactory.initControl(control: PControl; data: PDictionary);
@@ -169,6 +182,12 @@ implementation
       else if str = C_ATTR_TEXT_ALIGN_BL then lbl^.setTextAlign(ETextAlignBottomLeft)
       else if str = C_ATTR_TEXT_ALIGN_BOTTOM then lbl^.setTextAlign(ETextAlignBottom)
       else if str = C_ATTR_TEXT_ALIGN_BR then lbl^.setTextAlign(ETextAlignBottomRight);
+  end;
+
+  procedure TControlFactory.initButton(button: PButton; data: PDictionary);
+  begin
+    initControl(button, data);
+    button^.setCaption(data^.getString(C_ATTR_CAPTION, ''));
   end;
 
   { Other }

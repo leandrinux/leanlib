@@ -9,8 +9,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, ucanvas, utrender, ulog,
-    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel;
+    uobject, uexc, ucanvas, utrender,
+    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel, gbutton;
 
   type
     PMeteor = ^TMeteor;
@@ -27,6 +27,7 @@ interface
       procedure renderControl(control: PControl); virtual;
       procedure renderPanel(panel: PPanel); virtual;
       procedure renderLabel(lbl: PLabel); virtual;
+      procedure renderButton(button: PButton); virtual;
     private
     end;
 
@@ -139,10 +140,6 @@ implementation
     tr := new(PTextRenderer, init);
     tr^.setCanvas(getCanvas);
     tr^.getTextSize(lbl^.getText, @textSize);
-    Log^.out('Text: ' + lbl^.getText);
-    Log^.out('Text width: ' + inttostr(textSize.width));
-    Log^.out('Text height: ' + inttostr(textSize.height));
-    Log^.out('Text align ord: ' + inttostr(ord(lbl^.getTextAlign)));
     x := absolutePosition.x;
     y := absolutePosition.y;
     case lbl^.getTextAlign of
@@ -160,6 +157,52 @@ implementation
     tr^.setCursor(x, y);
     tr^.write(lbl^.getText);
     tr^.release;
+  end;
+
+  procedure TMeteor.renderButton(button: PButton);
+  var
+    absolutePosition: TPoint;
+    colorTL, colorBR: TColor;
+    tr: PTextRenderer;
+    x, y: word;
+    textSize: TSize;
+  begin
+    renderControl(button);
+    button^.getAbsolutePosition(absolutePosition);
+    x := absolutePosition.x;
+    y := absolutePosition.y;
+    case button^.getState of
+      EButtonStateUp:
+      begin
+        colorTL := DefaultColorScheme^.getColor(ECKPanelBorderTopLeft);
+        colorBR := DefaultColorScheme^.getColor(ECKPanelBorderBottomRight);
+      end;
+
+      EButtonStateDown:
+      begin
+        colorTL := DefaultColorScheme^.getColor(ECKPanelBorderBottomRight);
+        colorBR := DefaultColorScheme^.getColor(ECKPanelBorderTopLeft);
+      end;
+    end;
+    with getCanvas^, button^.getFrame^, size do
+    begin
+      getStrokeBrush^.color := colorTL;
+      hline(x, x + width - 1, y);
+      vline(y + 1, y + height - 1, x);
+      getStrokeBrush^.color := colorBR;
+      hline(x, x + width - 1, y + height - 1);
+      vline(y + 1, y + height - 1, x + width - 1); 
+    end;   
+
+    tr := new(PTextRenderer, init);
+    tr^.setCanvas(getCanvas);
+    tr^.getTextSize(button^.getCaption, @textSize);
+    inc(x, (button^.getFrame^.size.width div 2) - (textSize.width div 2));
+    inc(y, (button^.getFrame^.size.height div 2) - (textSize.height div 2));
+    getCanvas^.getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKButtonText);
+    tr^.setCursor(x, y);
+    tr^.write(button^.getCaption);
+    tr^.release; 
   end;
 
   { TMeteor private }

@@ -19,6 +19,7 @@ interface
     C_CLASS_ID_CONTROL        = 2010;
     C_CLASS_ID_PANEL          = 2011;
     C_CLASS_ID_LABEL          = 2012;
+    C_CLASS_ID_BUTTON         = 2013;
     C_CLASS_ID_CONTROL_FAMILY = 2020;
 
 

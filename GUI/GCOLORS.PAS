@@ -48,6 +48,7 @@ implementation
     _ColorArray[ECKPanelBorderBottomRight] := pColor(EDarkgray);
     _ColorArray[ECKPanelBackground] := pColor(ELightgray);
     _ColorArray[ECKLabelText] := pColor(EBlack);
+    _ColorArray[ECKButtonText] := pColor(EBlack);
   end;
 
   destructor TColorScheme.done;

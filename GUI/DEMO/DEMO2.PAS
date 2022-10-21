@@ -1,5 +1,5 @@
 uses
-  xcrt, types,
+  xcrt, types, int33,
   uobject, ufstream, ujson, udict, uclasses, uexc, userial, ulog, udisplay,
   gui;
 
@@ -37,7 +37,6 @@ var
   ui: PUserInterface;
 
 begin
-  writeln('About to start');
   initLog;
   DisplayAdapter := new(PDisplayAdapter, init);
   DisplayAdapter^.detectAdapter;
@@ -46,7 +45,11 @@ begin
   ui := new(PUserInterface, init);
   addControls(ui);
   ui^.render;
-  readkey;
+  showMouseCursor;
+  while not keypressed do
+  begin
+  end;
+  hideMouseCursor;
   
   ui^.release;
   DisplayAdapter^.setTextMode;

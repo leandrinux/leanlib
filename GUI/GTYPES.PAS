@@ -10,7 +10,8 @@ interface
       ECKPanelBorderTopLeft,
       ECKPanelBorderBottomRight,
       ECKPanelBackground,
-      ECKLabelText
+      ECKLabelText,
+      ECKButtonText
     );
     
     PControlId = ^TControlId;

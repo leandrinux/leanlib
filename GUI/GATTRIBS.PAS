@@ -38,13 +38,16 @@ interface
     C_ATTR_TEXT                 = 'text';
     C_ATTR_TEXT_COLOR           = 'text-color';
 
+    C_ATTR_CAPTION              = 'caption';
+
     C_PATH_FRAME_X              = 'frame.x';
     C_PATH_FRAME_Y              = 'frame.y';
     C_PATH_FRAME_WIDTH          = 'frame.width';
     C_PATH_FRAME_HEIGHT         = 'frame.height';
 
-    C_CONTROL_TYPE_PANEL = 'panel';
-    C_CONTROL_TYPE_LABEL = 'label';
+    C_CONTROL_TYPE_PANEL  = 'panel';
+    C_CONTROL_TYPE_LABEL  = 'label';
+    C_CONTROL_TYPE_BUTTON = 'button';
 
 implementation
 
