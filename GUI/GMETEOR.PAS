@@ -68,11 +68,7 @@ implementation
     with getCanvas^, control^, getFrame^.size, absolutePosition do
     begin
       if control^.getBackgroundStyle = EBackgroundStyleSolid then
-      begin
-        getStrokeBrush^.color := getBackgroundColor;
-        getFillBrush^.color := getStrokeBrush^.color;
-        frect(x, y, width, height);
-      end;
+        getBitmap^.setPixelBlock(x, y, x+width-1, y+height-1, getBackgroundColor);
     end;
   end;
 
