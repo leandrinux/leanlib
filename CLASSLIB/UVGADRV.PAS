@@ -41,6 +41,7 @@ interface
       constructor init;
       destructor done; virtual;
       procedure setPixel(x, y: word; color: TColor); virtual;
+      procedure setPixelBlock(x1, y1, x2, y2: word; color: TColor); virtual;
       function getPixel(x, y: word): TColor; virtual;
       procedure clear(color: TColor); virtual;
       function getColorCount: longint; virtual;
@@ -180,6 +181,20 @@ implementation
   begin
     if (x>319) or (y>199) then exit;
     mem[$A000 : y shl 8 + y shl 6 + x] := color;
+  end;
+
+  procedure TVGAMode13Bitmap.setPixelBlock(x1, y1, x2, y2: word; color: TColor);
+  var
+    p: pByte;
+    w, y: word;
+  begin
+    w := x2-x1+1;
+    p := ptr($A000, y2 shl 8 + y2 shl 6 + x1);
+    for y:= y2-y1 downto 0 do
+    begin
+      fillchar(p^, w, color);
+      dec(p, 320);
+    end;
   end;
 
   procedure TVGAMode13Bitmap.clear(color: TColor);

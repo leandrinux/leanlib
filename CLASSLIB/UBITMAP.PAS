@@ -18,6 +18,7 @@ interface
       constructor initWithSize(width, height: word);
       destructor done; virtual;
       procedure setPixel(x, y: word; color: TColor); virtual;
+      procedure setPixelBlock(x1, y1, x2, y2: word; color: TColor); virtual;
       procedure clear(color: TColor); virtual;
       procedure merge(src: PBitmap; x, y: word);
       procedure mergeT(src: PBitmap; x, y: word; transparent:TColor);
@@ -56,6 +57,14 @@ implementation
   end;
 
   procedure TBitmap.setPixel(x, y: word; color: TColor); begin end;
+
+  procedure TBitmap.setPixelBlock(x1, y1, x2, y2: word; color: TColor);
+  var x, y: word;
+  begin
+    for y := y2 downto y1 do
+      for x := x2 downto x1 do
+        setPixel(x, y, color);
+  end;
 
   procedure TBitmap.clear(color: TColor); begin end;
 
