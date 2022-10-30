@@ -1,23 +1,23 @@
 {
-  uprocess Unit
-
+  sprocess Unit
   2022 LRT
 }
 unit
-  uprocess;
+  sprocess;
 
 interface
 
   uses
-    consts, utils, uexc, uclasses, usclass, types, locale, uobject, umsgbus,
-    usysmsgs;
+    consts, utils, types, locale, 
+    uexc, uclasses, uobject, umsgbus,
+    sclasses, smsgs;
 
   type
     EProcessState = (
-      ENew,
-      EReady,
-      ESuspended,
-      EKilled
+      EProcessStateNew,
+      EProcessStateReady,
+      EProcessStateSuspended,
+      EProcessStateKilled
     );
 
     PProcess = ^TProcess;
@@ -25,13 +25,12 @@ interface
     public
       constructor init;
       destructor done; virtual;
-      procedure prepare; virtual; { when it's new and must become ready }
-      procedure work; virtual;    { when it's ready in main loop }
-      procedure kill; virtual;    { when it must be terminated }
-      procedure suspend; virtual; { when it must wait for something }
-      procedure wake; virtual;    { when it must become ready again }
+      procedure setup; virtual; 
+      procedure loop; virtual;
+      procedure kill; virtual;
       procedure syscall(opcode: word; args: pointer);
       procedure setSystemBus(bus: PMessageBus);
+      procedure setState(state: EProcessState);
       function getState: EProcessState;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
@@ -47,7 +46,7 @@ implementation
   constructor TProcess.init;
   begin
     inherited init;
-    _state := ENew;
+    _state := EProcessStateNew;
     _bus := nil;
   end;
 
@@ -56,30 +55,18 @@ implementation
     inherited done;
   end;
 
-  procedure TProcess.prepare;
+  procedure TProcess.setup;
   begin
-    _state := EReady;
   end;
 
-  procedure TProcess.work;
+  procedure TProcess.loop;
   begin
   end;
 
   procedure TProcess.kill;
   begin
-    _state := EKilled;
   end;
-
-  procedure TProcess.suspend;
-  begin
-    _state := ESuspended;
-  end;
-
-  procedure TProcess.wake;
-  begin
-    _state := EReady;
-  end;
-
+  
   procedure TProcess.syscall(opcode: word; args: pointer);
   var
     msg: TObjectMessage;
@@ -96,6 +83,11 @@ implementation
   procedure TProcess.setSystemBus(bus: PMessageBus);
   begin
     _bus := bus;
+  end;
+
+  procedure TProcess.setState(state: EProcessState);
+  begin
+    _state := state;
   end;
 
   function TProcess.getState: EProcessState;

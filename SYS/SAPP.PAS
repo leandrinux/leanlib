@@ -1,15 +1,17 @@
 {
-  uapp Unit
+  sapp Unit
   Base class for applications
   2022 LRT
 }
 unit
-  uapp;
+  sapp;
 
 interface
 
   uses
-    consts, utils, uexc, uclasses, usclass, types, locale, uobject, uprocess;
+    consts, utils, types, locale, 
+    uexc, uclasses,  uobject, 
+    sclasses, sprocess;
 
   type
     PAppInfo = ^TAppInfo;

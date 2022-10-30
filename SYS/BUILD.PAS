@@ -1,8 +1,9 @@
 uses
-  usysmsgs,
-  usystem,
-  uprocess,
-  uapp;
+  sapp,
+  sclasses,
+  smsgs,
+  sprocess,
+  ssystem;
 
 begin
 end.

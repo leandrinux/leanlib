@@ -1,10 +1,10 @@
 {
-  usysmsgs Unit
+  smsgs Unit
   Codes for messages sent between system objects
   2022 LRT
 }
 unit
-  usysmsgs;
+  smsgs;
 
 interface
 
