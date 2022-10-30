@@ -25,7 +25,8 @@ interface
         procedure retain;
         procedure release;
         procedure receiveMessage(msg: PObjectMessage); virtual;
-        procedure sendMessageToDelegate(msg: PObjectMessage);
+        procedure sendMessage(opcode: word; target: PObject);
+        procedure sendMessageWithData(opcode: word; target: PObject; payload: pointer; size: word);
         procedure setDelegate(obj: PObject);
         function getDelegate: PObject;
         function compare(value: PObject): ECompareResult; virtual;
@@ -76,11 +77,26 @@ implementation
 
   procedure TObject.receiveMessage(msg: PObjectMessage); begin end;
 
-  procedure TObject.sendMessageToDelegate(msg: PObjectMessage);
+  procedure TObject.sendMessage(opcode: word; target: PObject);
+  var 
+    msg: TObjectMessage;
   begin
-    if msg = nil then exit;
-    if _delegate = nil then exit;
-    _delegate^.receiveMessage(msg);
+    msg.opcode := opcode;
+    msg.target := target;
+    msg.sender := @self;
+    target^.receiveMessage(@msg);
+  end;
+
+  procedure TObject.sendMessageWithData(opcode: word; target: PObject; payload: pointer; size: word);
+  var 
+    msg: TObjectMessage;
+  begin
+    msg.opcode := opcode;
+    msg.target := target;
+    msg.sender := @self;
+    msg.payload := payload;
+    msg.size := size;
+    target^.receiveMessage(@msg);
   end;
 
   procedure TObject.setDelegate(obj: PObject);
