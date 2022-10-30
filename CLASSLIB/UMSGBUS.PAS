@@ -34,6 +34,7 @@ implementation
   begin
     inherited init;
     _list := new(PList, init);
+    _list^.setWeak(true);
   end;
 
   destructor TMessageBus.done;
