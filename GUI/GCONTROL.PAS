@@ -9,8 +9,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, 
-    gclasses, gtypes, gcolors;
+    uobject, uexc,
+    gclasses, gtypes, gcolors, gmsgs;
 
   type
     PControl = ^TControl;
@@ -22,6 +22,7 @@ interface
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       function getFrame: PFrame;
       function getId: TControlId;
@@ -31,7 +32,7 @@ interface
       procedure setBackgroundColor(backgroundColor: TColor);
       function getBackgroundColor: TColor;     
       procedure setBackgroundStyle(backgroundStyle: EBackgroundStyle);
-      function getBackgroundStyle: EBackgroundStyle; 
+      function getBackgroundStyle: EBackgroundStyle;
     private
       _frame: TFrame;
       _id: TControlID;
@@ -66,6 +67,18 @@ implementation
   function TControl.getClassId: word;
   begin
     getClassId := C_CLASS_ID_Control;
+  end;
+
+  procedure TControl.receiveMessage(msg: PObjectMessage);
+  var
+    obj: PObject;
+  begin
+    if (msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW) then
+    begin
+      if _parent <> nil then obj := _parent else obj := getDelegate;
+      if obj = nil then exit;
+      obj^.receiveMessage(msg)
+    end;
   end;
 
   function TControl.getFrame: PFrame;

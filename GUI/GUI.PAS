@@ -9,8 +9,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict, ulog,
-    gclasses, gtypes, grender, gmeteor, gfactory, gcontrol;
+    uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict,
+    gclasses, gtypes, grender, gmeteor, gfactory, gcontrol, gmsgs;
 
   type
     PUserInterface = ^TUserInterface;
@@ -22,6 +22,7 @@ interface
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       function createFromData(data: PDictionary): PControl;
       function getControls: PList;
@@ -30,6 +31,7 @@ interface
     private
       _renderer: PRenderer;
       _controls: PList;
+      procedure sendMouseActivity(mouseActivity: PMouseActivity);
     end;
 
 implementation
@@ -59,6 +61,16 @@ implementation
     getClassId := C_CLASS_ID_GUI;
   end;
 
+  procedure TUserInterface.receiveMessage(msg: PObjectMessage);
+  begin
+    if msg^.opcode = C_MSG_MOUSE_ACTIVITY then
+      sendMouseActivity(PMouseActivity(msg^.payload))
+    else if msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW then
+    begin
+      _renderer^.render(PControl(msg^.sender));
+    end;
+  end;
+
   function TUserInterface.createFromData(data: PDictionary): PControl;
   var
     cf: PControlFactory;
@@ -78,6 +90,7 @@ implementation
     control: PControl;
   begin
     control := createFromData(data);
+    control^.setDelegate(@self);
     _controls^.addObject(control);
     control^.release;
   end;
@@ -98,6 +111,31 @@ implementation
 
   { TUserInterface private }
 
+  procedure TUserInterface.sendMouseActivity(mouseActivity: PMouseActivity);
+  var
+    control: PControl;
+    frame: PFrame;
+    msg: TObjectMessage;
+  begin
+    _controls^.moveToStart;
+    control := PControl(_controls^.getObjectAtCursor);
+    while (control <> nil) and not isPointInFrame(@mouseActivity^.position, control^.getFrame) do
+    begin
+      _controls^.moveForward;
+      control := PControl(_controls^.getObjectAtCursor);
+    end;
+    if control <> nil then
+    begin
+      with control^.getFrame^.point do
+      begin
+        dec(mouseActivity^.position.x, x);
+        dec(mouseActivity^.position.y, y);
+        msg.opcode := C_MSG_MOUSE_ACTIVITY;
+        msg.payload := mouseActivity;
+        control^.receiveMessage(@msg);
+      end;
+    end;
+  end;
 
   { Other }
 

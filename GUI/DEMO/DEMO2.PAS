@@ -1,10 +1,16 @@
 uses
-  xcrt, types, int33,
+  ascii, xcrt, types, int33, utils,
   uobject, ufstream, ujson, udict, uclasses, uexc, userial, ulog, udisplay,
-  gui;
+  gui, gtypes, gmsgs;
 
 const
   GUI_FILE = 'DEMO.2';
+
+type
+  TMouseStatus = packed record
+    statusCode: word;
+    position: TPoint;
+  end;
 
 procedure initLog;
 var
@@ -33,8 +39,31 @@ begin
   fs^.release;
 end;
 
+procedure sendMouseActivity(var previous, current: TMouseStatus; ui: PUserInterface);
+var
+  activity: TMouseActivity;
+  msg: TObjectMessage;
+begin 
+  activity.event := EMouseEventNone;
+  if ((previous.statusCode and C_MOUSE_LEFT) = 0) and ((current.statusCode and C_MOUSE_LEFT) <> 0) then
+    activity.event := EMouseEventLeftDown
+  else if ((previous.statusCode and C_MOUSE_LEFT) <> 0) and ((current.statusCode and C_MOUSE_LEFT) = 0) then
+    activity.event := EMouseEventLeftUp
+  else exit;
+  activity.position.x := current.position.x shr 1;
+  activity.position.y := current.position.y;
+  fillchar(msg, sizeof(msg), 0);
+  msg.opcode := C_MSG_MOUSE_ACTIVITY;
+  msg.payload := @activity;
+  hideMouseCursor;
+  ui^.receiveMessage(@msg);
+  showMouseCursor;
+end;
+
 var
   ui: PUserInterface;
+  previous, current: TMouseStatus;
+  ch: char;
 
 begin
   initLog;
@@ -46,11 +75,17 @@ begin
   addControls(ui);
   ui^.render;
   showMouseCursor;
-  while not keypressed do
+  fillchar(current, sizeof(TMouseStatus), 0);
+  ch := #0;
+  while ch <> C_ESC do 
   begin
+    previous := current;
+    with current do getMouseStatus(position.x, position.y, statusCode); 
+    sendMouseActivity(previous, current, ui);
+    if keypressed then ch := readkey;
   end;
   hideMouseCursor;
-  
+
   ui^.release;
   DisplayAdapter^.setTextMode;
 end.

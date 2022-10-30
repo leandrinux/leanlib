@@ -1,11 +1,13 @@
 uses
   GAttribs,
+  GButton,
   GClasses,
   GColors,
   GControl,
   GFactory,
   GLabel,
   GMeteor,
+  GMsgs,
   GPanel,
   GRender,
   GTypes,

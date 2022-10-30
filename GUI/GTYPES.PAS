@@ -15,7 +15,7 @@ interface
     );
     
     PControlId = ^TControlId;
-    TControlId = string[8];
+    TControlId = string16;
 
     EBorderStyle = (
       EBorderStyleNone,
@@ -39,6 +39,20 @@ interface
       ETextAlignBottom,
       ETextAlignBottomRight
     );
+
+    EMouseEvent = (
+      EMouseEventNone,
+      EMouseEventLeftDown,
+      EMouseEventLeftUp,
+      EMouseEventRightDown,
+      EMouseEventRightUp
+    );
+
+    PMouseActivity = ^TMouseActivity;
+    TMouseActivity = packed record
+      event: EMouseEvent;
+      position: TPoint;
+    end;
     
 implementation
 

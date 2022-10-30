@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc,
-    gclasses, gtypes, gcontrol;
+    gclasses, gtypes, gcontrol, gmsgs;
 
   type
     EButtonState = (
@@ -29,6 +29,7 @@ interface
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       function getState: EButtonState;
       procedure setState(state: EButtonState);
@@ -63,6 +64,25 @@ implementation
   function TButton.getClassId: word;
   begin
     getClassId := C_CLASS_ID_Button;
+  end;
+
+  procedure TButton.receiveMessage(msg: PObjectMessage);
+  var
+    mouseActivity: PMouseActivity;
+  begin
+    if msg^.opcode = C_MSG_MOUSE_ACTIVITY then
+    begin
+      mouseActivity := PMouseActivity(msg^.payload);
+      if (mouseActivity^.event = EMouseEventLeftDown) and (_state = EButtonStateUp) then
+      begin 
+        _state := EButtonStateDown;
+        sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getParent);
+      end else if (mouseActivity^.event = EMouseEventLeftUp) and (_state = EButtonStateDown) then
+      begin
+        _state := EButtonStateUp;
+        sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getParent);
+      end;
+    end;
   end;
 
   function TButton.getState: EButtonState;

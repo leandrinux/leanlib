@@ -68,7 +68,9 @@ implementation
     with getCanvas^, control^, getFrame^.size, absolutePosition do
     begin
       if control^.getBackgroundStyle = EBackgroundStyleSolid then
+      begin
         getBitmap^.setPixelBlock(x, y, x+width-1, y+height-1, getBackgroundColor);
+      end;
     end;
   end;
 
