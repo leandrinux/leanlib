@@ -45,6 +45,7 @@ interface
       function find(value: pointer; func: TCompareFunc): PObject;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure setWeak(value: boolean);
     private
       _head: PListNode;
       _tail: PListNode;
@@ -52,7 +53,10 @@ interface
       _count: longint;
       _enforceClassId: boolean;
       _fromClassId, _toClassId: word;
+      _isWeak: boolean;
       procedure initializeList;
+      procedure makeNode(var node: PListNode; obj: PObject);
+      procedure killNode(var node: PListNode);
     end;
 
     TListNode = record
@@ -62,23 +66,6 @@ interface
 
 implementation
 
-  { quick functions }
-
-  procedure MakeNode(var node: PListNode; obj: PObject);
-  begin
-    GetMem(node, SizeOf(TListNode));
-    node^.obj := obj;
-    node^.next := nil;
-    obj^.retain;
-  end;
-
-  procedure KillNode(var node: PListNode);
-  begin
-    node^.obj^.release;
-    FreeMem(node, SizeOf(TListNode));
-    node := nil;
-  end;
-
   { TList public }
 
   constructor TList.init;
@@ -86,6 +73,7 @@ implementation
     inherited init;
     initializeList;
     _enforceClassId := false;
+    _isWeak := false;
   end;
 
   constructor TList.initWithClassFamily(fromClassId, toClassId: word);
@@ -95,14 +83,6 @@ implementation
     _enforceClassId := true;
     _fromClassId := fromClassId;
     _toClassId := toClassId;
-  end;
-
-  procedure TList.initializeList;
-  begin
-    _head := nil;
-    _tail := nil;
-    _cursor := nil;
-    _count := 0;
   end;
 
   destructor TList.done;
@@ -121,7 +101,7 @@ implementation
         (obj^.getClassId >= _fromClassId) and (obj^.getClassId <= _toClassId),
         @self, 0, S_ERR_INCORRECT_MEMBER_CLASS
       );
-    MakeNode(node, obj);
+    makeNode(node, obj);
     if _count = 0 then
     begin
       _head := node;
@@ -165,7 +145,7 @@ implementation
         (obj^.getClassId >= _fromClassId) and (obj^.getClassId <= _toClassId),
         @self, 0, S_ERR_INCORRECT_MEMBER_CLASS
       );
-    MakeNode(node, obj);
+    makeNode(node, obj);
     if index = 0 then
     begin
       node^.next := _head;
@@ -202,7 +182,7 @@ implementation
         (obj^.getClassId >= _fromClassId) and (obj^.getClassId <= _toClassId),
         @self, 0, S_ERR_INCORRECT_MEMBER_CLASS
       );
-    MakeNode(node, obj);
+    makeNode(node, obj);
     prev := nil;
     curr := _head;
     while (curr <> nil) and (node^.obj^.compare(curr^.obj) = ECompareGreater) do
@@ -241,7 +221,7 @@ implementation
       previous^.next := current^.next;
     end;
       if _cursor = current then _cursor := current^.next;
-      KillNode(current);
+      killNode(current);
       dec(_count);
   end;
 
@@ -264,7 +244,7 @@ implementation
         prev^.next := curr^.next;
       if _tail = curr then _tail := prev;
       if _cursor = curr then _cursor := curr^.next;
-      KillNode(curr);
+      killNode(curr);
       dec(_count);
     end;
   end;
@@ -403,7 +383,37 @@ implementation
     getClassId := C_CLASS_ID_List;
   end;
 
+  procedure TList.setWeak(value: boolean);
+  begin
+    if _isWeak = value then exit;
+    clear;
+    _isWeak := value;
+  end;
+
   { TList private }
+
+  procedure TList.initializeList;
+  begin
+    _head := nil;
+    _tail := nil;
+    _cursor := nil;
+    _count := 0;
+  end;
+
+  procedure TList.makeNode(var node: PListNode; obj: PObject);
+  begin
+    GetMem(node, SizeOf(TListNode));
+    node^.obj := obj;
+    node^.next := nil;
+    if not _isWeak then obj^.retain;
+  end;
+
+  procedure TList.killNode(var node: PListNode);
+  begin
+    if not _isWeak then node^.obj^.release;
+    FreeMem(node, SizeOf(TListNode));
+    node := nil;
+  end;
 
   { Other }
 
