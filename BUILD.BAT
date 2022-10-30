@@ -10,6 +10,7 @@ if "%1"=="" goto buildall
 echo.
 echo Building %1
 cd %1
+config -set "cpu cycles=max"
 tpc -q -b -ec:\bin -dDEBUG build.pas
 if errorlevel 1 goto fail
 echo success
