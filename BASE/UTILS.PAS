@@ -38,7 +38,10 @@ interface
   function getFilename(path: string; extension: boolean): string;
 
   { converts record types to readable strings}
+  function sizeToStr(size: PSize): string;
+  function pointToStr(point: PPoint): string;
   function frameToStr(frame: PFrame): string;
+  function isPointInFrame(p: PPoint; f: PFrame): boolean;
 
 implementation
 
@@ -157,14 +160,28 @@ implementation
     getFilename := s;
   end;
 
+  function sizeToStr(size: PSize): string;
+  begin
+    with size^ do 
+      sizeToStr := 'W:' + inttostr(width) + ', H:' + inttostr(height);
+  end;
+
+  function pointToStr(point: PPoint): string;
+  begin
+    with point^ do 
+      pointToStr := 'X:' + inttostr(x) + ', Y:' + inttostr(y);
+  end;
+
   function frameToStr(frame: PFrame): string;
   begin
-    with frame^ do 
-      frameToStr := 
-        'X:' + inttostr(point.x) +
-        ', Y:' + inttostr(point.y) +
-        ', W:' + inttostr(size.width) +
-        ', H:' + inttostr(size.height);
+    with frame^ do
+      frameToStr := pointToStr(@point) + ', ' + sizeToStr(@size);
+  end;
+
+  function isPointInFrame(p: PPoint; f: PFrame): boolean;
+  begin
+    with f^, point, size do
+      isPointInFrame := (p^.x >= x) and (p^.x <= (x+width)) and (p^.y >= y) and (p^.y <= (y+height));
   end;
 
 end.
