@@ -30,5 +30,6 @@ call build base
 call build classlib
 call build sys
 call build gui
+call build vm
 
 :end
