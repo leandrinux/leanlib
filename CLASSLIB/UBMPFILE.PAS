@@ -9,8 +9,8 @@ unit
 interface
 
   uses
-    consts, utils, uexc, uclasses, types, locale, uobject, ustream, 
-    ubitmap, ubitmap8, upalette;
+    consts, utils, uexc, uclasses, types, locale, math,
+    uobject, ustream, ubitmap, ubitmap8, upalette;
 
   type
 
@@ -71,6 +71,7 @@ implementation
     _stream^.retain;
     _bitmap := nil;
     loadMetadata;
+    loadBitmap;
   end;
 
   destructor TBMPFile.done;
@@ -89,7 +90,6 @@ implementation
 
   function TBMPFile.getBitmap: PBitmap;
   begin
-    if _bitmap = nil then loadBitmap;
     getBitmap := _bitmap;
   end;
 
@@ -122,11 +122,11 @@ implementation
   procedure TBMPFile.loadBitmap;
   var
     res: word;
+
   begin
-    if _bitmap <> nil then _bitmap^.release;
     _bitmap := new(PBitmap8, initWithSize(_infoHeader.width, _infoHeader.height));
     _stream^.seek(_initialPos + _fileHeader.pixelDataOffset);
-    _stream^.read(_bitmap^.getPixels, _infoHeader.imageSize, res);
+    _stream^.read(_bitmap^.getRawPixels, _infoHeader.imageSize, res);
     loadPalette;
   end;
 
