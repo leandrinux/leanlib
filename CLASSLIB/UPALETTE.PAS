@@ -15,17 +15,15 @@ interface
     PColorPalette = ^TColorPalette;
     TColorPalette = object (TObject)
     public
-      constructor initWithSize(count: byte; fromIndex: byte);
-      constructor initWithColors(colors: PRGBColor; count: word; fromIndex: byte);
+      constructor initWithCount(count: word);
       destructor done; virtual;
-      procedure getColors(var colors: PRGBColor; var count: word; var fromIndex: byte);
+      procedure getColors(var colors: PRGBColor; var count: word);
       procedure setColor(color: PRGBColor; index: byte);
       function getColor(index: byte): PRGBColor;
       function getColorCount: word;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
-      _fromIndex: byte;
       _count: word;
       _size: word;
       _colors: PRGBColor;
@@ -35,24 +33,13 @@ implementation
 
   { TColorPalette public }
 
-  constructor TColorPalette.initWithSize(count: byte; fromIndex: byte);
+  constructor TColorPalette.initWithCount(count: word);
   begin
     inherited init;
-    _fromIndex := fromIndex;
     _count := count;
-    _size := _count shl 2;
+    _size := _count * sizeof(TRGBColor);
     getMem(_colors, _size);
     fillChar(_colors^, _size, 0);
-  end;
-
-  constructor TColorPalette.initWithColors(colors: PRGBColor; count: word; fromIndex: byte);
-  begin
-    inherited init;
-    _fromIndex := fromIndex;
-    _count := count;
-    _size := _count * sizeOf(TRGBColor);
-    getMem(_colors, _size);
-    move(colors^, _colors^, _size);
   end;
 
   destructor TColorPalette.done;
@@ -61,18 +48,17 @@ implementation
     inherited done;
   end;
 
-  procedure TColorPalette.getColors(var colors: PRGBColor; var count: word; var fromIndex: byte);
+  procedure TColorPalette.getColors(var colors: PRGBColor; var count: word);
   begin
     colors := _colors;
     count := _count;
-    fromIndex := _fromIndex;
   end;
 
   procedure TColorPalette.setColor(color: PRGBColor; index: byte);
   var p: PRGBColor;
   begin
     p := _colors;
-    inc(p, _fromIndex + index);
+    inc(p, index);
     p^ := color^;
   end;
 
@@ -80,7 +66,7 @@ implementation
   var p: PRGBColor;
   begin
     p := _colors;
-    inc(p, _fromIndex + index);
+    inc(p, index);
     getColor := p;
   end;
 
