@@ -129,9 +129,8 @@ implementation
     count, c, size: word;
     shiftedColors: PRGBColor;
     oldColor, newColor: PRGBColor;
-    fromIndex: byte;
   begin
-    palette^.getColors(rgbColors, count, fromIndex);
+    palette^.getColors(rgbColors, count);
     size := count * sizeof(TRGBColor);
     getMem(shiftedColors, size);
     c := count;
@@ -146,7 +145,7 @@ implementation
       inc(newColor);
       dec(c);
     end;
-    setDACColorRegistersBlock(shiftedColors, count, fromIndex);
+    setDACColorRegistersBlock(shiftedColors, count, 0);
     freeMem(shiftedColors, size);
   end;
 
