@@ -9,7 +9,7 @@ unit
 interface
 
   uses
-    consts, utils, uexc, uclasses, types, locale, uobject, ustream,
+    consts, utils, uexc, uclasses, types, locale, uobject, ustream, 
     ubitmap, ubitmap8, upalette;
 
   type
@@ -54,10 +54,11 @@ interface
       _bitmap: PBitmap8;
       procedure loadMetadata;
       procedure loadBitmap;
+      procedure loadPalette;
     end;
 
-    PBMPColor = ^TBMPColor;
-    TBMPColor = packed record b, g, r, x: byte; end;
+    PBMPColorEntry = ^TBMPColorEntry;
+    TBMPColorEntry = packed record b, g, r, x: byte; end;
 
 implementation
 
@@ -119,50 +120,43 @@ implementation
   end;
 
   procedure TBMPFile.loadBitmap;
-  const
-    C_COLOR_COUNT = 256;
   var
-    bmpColors: array[0..255] of TBMPColor;
-    bmpColor: PBMPColor;
-    rgbColors: PRGBColor;
-    rgbColor: PRGBColor;
-    palette: PColorPalette;
-    paletteSize: word;
     res: word;
   begin
     if _bitmap <> nil then _bitmap^.release;
-
     _bitmap := new(PBitmap8, initWithSize(_infoHeader.width, _infoHeader.height));
-
-    { read pixel data and set it to bitmap}
     _stream^.seek(_initialPos + _fileHeader.pixelDataOffset);
     _stream^.read(_bitmap^.getPixels, _infoHeader.imageSize, res);
+    loadPalette;
+  end;
 
-    {
-      read palette and set it to bitmap
-      BMP files contain 4 bytes per pixel (b,g,r and reserved) while
-      our palette control expects only r, g, b values
-    }
-    _stream^.seek(_initialPos + sizeOf(TBMPFileHeader) + sizeOf(TBMPInfoHeader));
-    _stream^.read(@bmpColors, sizeof(bmpColors), res);
-    paletteSize := sizeof(TRGBColor) * C_COLOR_COUNT;
-    getMem(rgbColors, paletteSize);
-    bmpColor := @bmpColors;
-    rgbColor := rgbColors;
-    res := C_COLOR_COUNT;
-    while res>0 do
+  procedure TBMPFile.loadPalette;
+  var
+    tablePosition: longint;
+    colorTable, p: PBMPColorEntry;
+    colorTableSize: longint;
+    i: word;
+    palette: PColorPalette;
+    rgbColor: TRGBColor;
+  begin
+    tablePosition := _initialPos + sizeOf(TBMPFileHeader) + _infoHeader.size;
+    colorTableSize := _infoHeader.colorsUsed * sizeof(TBMPColorEntry);
+    getMem(colorTable, colorTableSize);
+    _stream^.seek(tablePosition);
+    _stream^.read(colorTable, colorTableSize, i);
+    palette := new(PColorPalette, initWithCount(_infoHeader.colorsUsed));
+    p := colorTable;
+    for i := 0 to _infoHeader.colorsUsed-1 do
     begin
-      rgbColor^.r := bmpColor^.r;
-      rgbColor^.g := bmpColor^.g;
-      rgbColor^.b := bmpColor^.b;
-      dec(res);
-      inc(bmpColor);
-      inc(rgbColor);
+      rgbColor.r := p^.r; 
+      rgbColor.g := p^.g;
+      rgbColor.b := p^.b;
+      palette^.setColor(@rgbColor, i);
+      inc(p);
     end;
-    palette := new(PColorPalette, initWithColors(rgbColors, 256, 0));
-    freeMem(rgbColors, paletteSize);
     _bitmap^.setPalette(palette);
     palette^.release;
+    freeMem(colorTable, colorTableSize);
   end;
 
   { Other }
