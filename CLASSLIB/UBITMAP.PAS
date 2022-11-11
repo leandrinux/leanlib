@@ -20,7 +20,7 @@ interface
       procedure setPixel(x, y: word; color: TColor); virtual;
       procedure setPixelBlock(x1, y1, x2, y2: word; color: TColor); virtual;
       procedure clear(color: TColor); virtual;
-      procedure merge(src: PBitmap; x, y: word);
+      procedure merge(src: PBitmap; x, y: word); virtual;
       procedure mergeT(src: PBitmap; x, y: word; transparent:TColor);
       procedure setPalette(pal: PColorPalette);
       function getPixel(x, y: word): TColor; virtual;
@@ -30,6 +30,7 @@ interface
       function getColorCount: longint; virtual;
       function getBitsPerPixel: byte; virtual;
       function getPalette: PColorPalette;
+      function getRawPixels: pointer; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -74,10 +75,8 @@ implementation
     px, py: word;
   begin
     if (x >= _width) or (y >= _height) then exit;
-    w := src^.getWidth;
-    h := src^.getHeight;
-    w := minword(_width-x, w) - 1;
-    h := minword(_height-y, h) - 1;
+    w := minword(_width - x, src^.getWidth) - 1;
+    h := minword(_height - y, src^.getHeight) - 1;
     for py := h downto 0 do
       for px := w downto 0 do
         setPixel(x+px, y+py, src^.getPixel(px, py));
@@ -142,6 +141,11 @@ implementation
   function TBitmap.getPalette: PColorPalette;
   begin
     getPalette := _palette;
+  end;
+
+  function TBitmap.getRawPixels: pointer;
+  begin
+    getRawPixels := nil;
   end;
 
   function TBitmap.getClassName: string;
