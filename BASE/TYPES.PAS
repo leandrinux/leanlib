@@ -81,7 +81,7 @@ interface
     TRGBColor = packed record r, g, b: byte; end;
 
     PPoint = ^TPoint;
-    TPoint = packed record x, y: word; end;
+    TPoint = packed record x, y: integer; end;
 
     PSize = ^TSize;
     TSize = packed record width, height: word; end;

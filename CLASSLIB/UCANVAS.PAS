@@ -15,7 +15,7 @@ unit
 interface
 
   uses
-    uexc, uclasses, types, locale, uobject, ubitmap, ubitmap1;
+    uexc, uclasses, types, locale, uobject, ubitmap, ubitmap1, upath;
 
   const
     C_DEFAULT_STROKE_COLOR = EWhite;
@@ -50,12 +50,16 @@ interface
       procedure setPixel(x, y: word; brush: PBrush);
       procedure hline(x1, x2, y: word);
       procedure vline(y1, y2, x: word);
+      function createLinePath(x1, y1, x2, y2: integer): PPath;
       procedure line(x1, y1, x2, y2: integer);
       procedure rect(x, y, width, height: word);
       procedure frect(x, y, width, height: word);
+      function createCirclePath(x, y, radius: word): PPath;
       procedure circle(x, y, radius: word);
       procedure grid(x, y, columns, rows, colWidth, rowHeight: word);
       procedure ffill(x, y: word);
+      procedure plot(path: PPath; brush: PBrush; dx, dy: integer);
+      procedure plotAlongPath(pathA, pathB: PPath; brush: PBrush);
       procedure clear;
       procedure setPattern(pattern: EStandardDrawPattern; brush: PBrush);
       procedure setPatternAuxFillColor(enabled: boolean; color: TColor);
@@ -82,6 +86,8 @@ implementation
       ($F0, $F0, $F0, $F0, $0F, $0F, $0F, $0F), (* Checkers *)
       ($18, $24, $42, $81, $18, $24, $42, $81)  (* Zig *)
     );
+
+    C_DEFAULT_PATH_SIZE = 1024;
 
   { TCanvas }
 
@@ -127,8 +133,7 @@ implementation
             _bitmap^.setPixel(x, y, _auxFillColor);
   end;
 
-  procedure TCanvas.line(x1, y1, x2, y2: integer);
-
+  function TCanvas.createLinePath(x1, y1, x2, y2: integer): PPath;
     function sign(a:integer): integer;
     begin
       if a>0 then sign:=+1 else if a<0 then sign:=-1 else sign:=0;
@@ -137,8 +142,10 @@ implementation
   var
     d1x, d1y, d2x, d2y:integer;
     u, v, m, n, s, i: integer;
+    path: PPath;
 
   begin
+     path := new(PPath, initWithSize(C_DEFAULT_PATH_SIZE));
      u:= x2 - x1;
      v:= y2 - y1;
      d1x:= sign(u);
@@ -157,7 +164,7 @@ implementation
      s := m shr 1;
      for i := 0 to m do
      begin
-       setPixel(x1, y1, @_stroke);
+       path^.addPoint(x1, y1);
        s := s + n;
        if not (s<m) then
        begin
@@ -170,6 +177,16 @@ implementation
          y1 := y1 + round(d2y);
        end;
      end;
+     createLinePath := path;
+  end;
+
+  procedure TCanvas.line(x1, y1, x2, y2: integer);
+  var
+    p: PPath;
+  begin
+    p := createLinePath(x1, y1, x2, y2);
+    plot(p, @_stroke, 0, 0);
+    p^.release;
   end;
 
   procedure TCanvas.hline(x1, x2, y: word);
@@ -210,18 +227,29 @@ implementation
 
   procedure TCanvas.circle(x, y, radius: word);
   var
+    p: PPath;
+  begin
+    p := createCirclePath(x, y, radius);
+    plot(p, @_stroke, 0, 0);
+    p^.release;
+  end;
+
+  function TCanvas.createCirclePath(x, y, radius: word): PPath;
+  var
     px, py, d: integer;
     dE, dSE: integer;
+    path: PPath;
   begin
+    path := new(PPath, initWithSize(C_DEFAULT_PATH_SIZE));
     px := 0;
     py := radius;
     d := 1 - radius;
     dE := 3;
     dSE := -(radius shl 1) + 5;
-    setPixel(x, y-py, @_stroke);
-    setPixel(x, y+py, @_stroke);
-    setPixel(x+py, y-px, @_stroke);
-    setPixel(x-py, y+px, @_stroke);
+    path^.addPoint(x, y-py);
+    path^.addPoint(x, y+py);
+    path^.addPoint(x+py, y-px);
+    path^.addPoint(x-py, y+px);
     while py>px do
     begin
       if d<0 then
@@ -238,15 +266,16 @@ implementation
         px := px + 1;
         py := py - 1;
       end;
-      setPixel(x+px, y-py, @_stroke);
-      setPixel(x-px, y+py, @_stroke);
-      setPixel(x-px, y-py, @_stroke);
-      setPixel(x+px, y+py, @_stroke);
-      setPixel(x+py, y-px, @_stroke);
-      setPixel(x-py, y+px, @_stroke);
-      setPixel(x-py, y-px, @_stroke);
-      setPixel(x+py, y+px, @_stroke);
+      path^.addPoint(x+px, y-py);
+      path^.addPoint(x-px, y+py);
+      path^.addPoint(x-px, y-py);
+      path^.addPoint(x+px, y+py);
+      path^.addPoint(x+py, y-px);
+      path^.addPoint(x-py, y+px);
+      path^.addPoint(x-py, y-px);
+      path^.addPoint(x+py, y+px);
     end;
+    createCirclePath := path;
   end;
 
   procedure TCanvas.grid(x, y, columns, rows, colWidth, rowHeight: word);
@@ -320,6 +349,34 @@ implementation
     mask^.release;
   end;
 
+  procedure TCanvas.plot(path: PPath; brush: PBrush; dx, dy: integer);
+  var
+    p: PPoint;
+    length: word;
+  begin
+    path^.getPoints(p, length);
+    while length>0 do
+    begin
+      setPixel(dx + p^.x, dy + p^.y, brush);
+      dec(length);
+      inc(p);
+    end;
+  end;
+
+  procedure TCanvas.plotAlongPath(pathA, pathB: PPath; brush: PBrush);
+  var
+    p: PPoint;
+    length: word;
+  begin
+    pathB^.getPoints(p, length);
+    while length>0 do
+    begin
+      plot(pathA, brush, p^.x, p^.y);
+      dec(length);
+      inc(p);
+    end;
+  end;
+
   procedure TCanvas.clear;
   begin
     _bitmap^.clear(_fill.color);
@@ -377,6 +434,6 @@ implementation
     getClassId := C_CLASS_ID_Canvas;
   end;
 
-  { Other }
+  { TCanvas private }
 
 end.
