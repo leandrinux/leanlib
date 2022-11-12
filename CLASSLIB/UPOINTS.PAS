@@ -1,10 +1,9 @@
 {
-  UPath Unit
-
+  UPoints Unit
   2022 LRT
 }
 unit
-  UPath;
+  UPoints;
 
 interface
 
@@ -13,15 +12,15 @@ interface
     uobject, uexc, math;
 
   type
-    PPath = ^TPath;
-    TPath = object (TObject)
+    PPoints = ^TPoints;
+    TPoints = object (TObject)
     public
       constructor initWithSize(size: word);
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      procedure addPoint(x, y: integer);
-      procedure getPoints(var first: PPoint; var length: word);
+      procedure add(x, y: integer);
+      procedure get(var first: PPoint; var length: word);
     private
       _size: word;
       _length: word;
@@ -30,9 +29,9 @@ interface
 
 implementation
 
-  { TPath public }
+  { TPoints public }
 
-  constructor TPath.initWithSize(size: word);
+  constructor TPoints.initWithSize(size: word);
   begin
     inherited init;
     _size := size;
@@ -40,13 +39,13 @@ implementation
     getMem(_points, sizeof(TPoint) * _size);
   end;
 
-  destructor TPath.done;
+  destructor TPoints.done;
   begin
     freeMem(_points, sizeof(TPoint) * _size);
     inherited done;
   end;
 
-  procedure TPath.addPoint(x, y: integer);
+  procedure TPoints.add(x, y: integer);
   var
     p: PPoint;
   begin
@@ -58,23 +57,23 @@ implementation
     inc(_length);
   end;
 
-  procedure TPath.getPoints(var first: PPoint; var length: word);
+  procedure TPoints.get(var first: PPoint; var length: word);
   begin
     first := _points;
     length := _length;
   end;
 
-  function TPath.getClassName: string;
+  function TPoints.getClassName: string;
   begin
-    getClassName := 'TPath';
+    getClassName := 'TPoints';
   end;
 
-  function TPath.getClassId: word;
+  function TPoints.getClassId: word;
   begin
     getClassId := C_CLASS_ID_Path;
   end;
 
-  { TPath private }
+  { TPoints private }
 
   { Other }
 

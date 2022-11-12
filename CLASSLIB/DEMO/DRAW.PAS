@@ -1,5 +1,5 @@
 uses
-  xcrt, types, palette, udisplay, ucanvas, ulog, userial, upath;
+  xcrt, types, palette, udisplay, ucanvas, ulog, userial, upoints;
 
 procedure initLog;
 var
@@ -15,9 +15,9 @@ end;
 
 procedure doLines(canvas: PCanvas);
 var
-  p: PPath;
+  p: PPoints;
 begin
-  p := canvas^.createLinePath(0, 0, 30, 10);
+  p := canvas^.createLinePoints(0, 0, 30, 10);
   canvas^.plot(p, canvas^.getStrokeBrush, 0, 0);
   canvas^.plot(p, canvas^.getStrokeBrush, 0, 10);
   canvas^.plot(p, canvas^.getStrokeBrush, 0, 20);
@@ -27,9 +27,9 @@ end;
 
 procedure doCircles(canvas: PCanvas);
 var
-  p: PPath;
+  p: PPoints;
 begin
-  p := canvas^.createCirclePath(0, 0, 15);
+  p := canvas^.createCirclePoints(0, 0, 15);
   canvas^.plot(p, canvas^.getStrokeBrush, 50, 0);
   canvas^.plot(p, canvas^.getStrokeBrush, 50, 20);
   canvas^.plot(p, canvas^.getStrokeBrush, 50, 40);
@@ -39,16 +39,16 @@ end;
 
 procedure doPlotAlong(canvas: PCanvas);
 var
-  pA, pB: PPath;
+  pA, pB: PPoints;
   brush: PBrush;
 begin
-  pA := canvas^.createCirclePath(0, 0, 15);
-  pB := canvas^.createLinePath(90, 50, 160, 150);
+  pA := canvas^.createCirclePoints(0, 0, 15);
+  pB := canvas^.createLinePoints(90, 50, 160, 150);
   brush := canvas^.getStrokeBrush;
   brush^.color := palette.getColor(ELightRed, 8);
   canvas^.plot(pB, brush, 0, 0); 
   brush^.color := palette.getColor(ERed, 8);
-  canvas^.plotAlongPath(pA, pB, brush);
+  canvas^.plotAlongPoints(pA, pB, brush);
   pA^.release;
   pB^.release;
 end;
