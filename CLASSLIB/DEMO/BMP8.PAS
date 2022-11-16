@@ -2,7 +2,7 @@ uses
   xcrt, types, ubitmap, ufstream, ubmpfile, udisplay, ulog, userial;
 
 const
-  C_BMP_PATH = 'RES\PATTERN.BMP';
+  C_BMP_PATH = 'RES\capybara.BMP';
 
 procedure initLog;
 var
@@ -19,12 +19,15 @@ end;
 procedure displayBitmap(bitmap: PBitmap);
 var
   display: PDisplayAdapter;
+  cx, cy: word;
 begin
   display := new(PDisplayAdapter, init);
   display^.detectAdapter;
   display^.setVideoMode(0);
   display^.setPalette(bitmap^.getPalette);
-  display^.getCanvas^.getBitmap^.merge(bitmap, 0, 0);
+  cx := 160 - (bitmap^.getWidth div 2);
+  cy := 100 - (bitmap^.getHeight div 2);
+  display^.getCanvas^.getBitmap^.merge(bitmap, cx, cy);
   readkey;
   display^.setTextMode;
   display^.release;
@@ -39,18 +42,22 @@ begin
   fs := new(PFileStream, initWithPath(C_BMP_PATH, true));
   writeln('Loading bitmap ', C_BMP_PATH);
   bmp := new(PBMPFile, initWithStream(fs));
-  writeln('File: ', C_BMP_PATH);
-  writeln('Size: ', fs^.getSize);
+  writeln;
+  writeln('   Total file size: ', fs^.getSize);
   with bmp^.getInfo^ do
   begin
-    writeln('BMP Info:');
-    writeln('             size: ', size);
-    writeln('       resolution: ', width, ' x ', height);
-    writeln('           planes: ', planes);
-    writeln('   bits per pixel: ', bitsPerPixel);
-    writeln('      compression: ', compression);
-    writeln('      colors used: ', colorsUsed);
-  end; 
+    writeln('      file version: ', bmp^.getVersion);
+    writeln(' pixel data offset: ', bmp^.getHeader^.pixelDataOffset);
+    writeln('   info block size: ', infoHeaderSize);
+    writeln('        resolution: ', width, ' x ', height);
+    writeln('            planes: ', planes);
+    writeln('    bits per pixel: ', bitsPerPixel);
+    writeln('       compression: ', compression);
+    writeln('        image size: ', imageSize);
+    writeln('       colors used: ', colorsUsed);
+    writeln;
+  end;
+   
   if bmp^.isValid then 
   begin
     writeln('File is supported. Press key to display');
