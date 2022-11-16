@@ -120,7 +120,10 @@ implementation
 
   function ptrToStr(p: pointer): string9;
   begin
-    ptrToStr := WordToHex(Seg(p^)) + ':' + WordToHex(Ofs(p^));
+    if p = nil then 
+      ptrToStr := 'nil'
+    else
+      ptrToStr := WordToHex(Seg(p^)) + ':' + WordToHex(Ofs(p^));
   end;
 
   function strToInt(s: string): integer;
