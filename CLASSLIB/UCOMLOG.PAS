@@ -10,7 +10,7 @@ interface
   uses
     ulog, userial, types;
 
-  procedure comlog(str: string);
+  procedure log(str: string);
 
 implementation
 
@@ -26,9 +26,9 @@ implementation
     com^.release;
   end;
 
-  procedure comlog(str: string);
+  procedure log(str: string);
   begin
-    Log^.out(str);
+    ulog.Log^.out(str);
   end;
 
 begin
