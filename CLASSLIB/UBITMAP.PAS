@@ -89,10 +89,8 @@ implementation
     color: longint;
   begin
     if (x >= _width) or (y >= _height) then exit;
-    w := src^.getWidth;
-    h := src^.getHeight;
-    w := minword(_width-x, w) - 1;
-    h := minword(_height-y, h) - 1;
+    w := minword(_width - x, src^.getWidth) - 1;
+    h := minword(_height - y, src^.getHeight) - 1;
     for py := h downto 0 do
       for px := w downto 0 do
       begin
