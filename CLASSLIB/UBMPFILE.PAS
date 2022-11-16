@@ -2,6 +2,8 @@
   ubmpfile Unit
   8-bit palettized BMP file read-only implementation
   2022 LRT
+
+  Info obtained from https://learn.microsoft.com/en-us/windows/win32/gdi/bitmap-header-types
 }
 unit
   ubmpfile;
@@ -13,8 +15,8 @@ interface
     uobject, ustream, ubitmap, ubitmap8, upalette;
 
   type
-
-    TBMPFileHeader = packed record
+    PBMPCoreHeader = ^TBMPCoreHeader;
+    TBMPCoreHeader = packed record
       signature: array[0..1] of char; { must be 'BM' }
       filesize: longint;              { size of the BMP file }
       reserved: longint;              { defined by file creator }
@@ -23,7 +25,7 @@ interface
 
     PBMPInfoHeader = ^TBMPInfoHeader;
     TBMPInfoHeader = packed record
-      size: longint;                  { size of the info header }
+      infoHeaderSize: longint;        { size of the info header }
       width: longint;                 { bitmap width in pixels }
       height: longint;                { bitmap height in pixels }
       planes: word;                   { number of planes (usually 1) }
@@ -36,29 +38,95 @@ interface
       importantColors: longint;       { number of important colors (0=all) }
     end;
 
+    FXPT2DOT30 = longint;
+
+    CIEXYZ = packed record
+      ciexyzX: FXPT2DOT30;
+      ciexyzY: FXPT2DOT30;
+      ciexyzZ: FXPT2DOT30;
+    end;
+
+    CIEXYZTRIPLE = packed record
+      ciexyzRed: CIEXYZ;
+      ciexyzGreen: CIEXYZ;
+      ciexyzBlue: CIEXYZ;
+    end;  
+{
+    PBMPV4Header = ^TBMPV4Header;
+    TBMPV4Header = packed record
+      bV4Size: DWORD;
+      bV4Width: LONG;
+      bV4Height: LONG;
+      bV4Planes: WORD;
+      bV4BitCount: WORD;
+      bV4V4Compression: DWORD;
+      bV4SizeImage: DWORD;
+      bV4XPelsPerMeter: LONG;
+      bV4YPelsPerMeter: LONG;
+      bV4ClrUsed: DWORD;
+      bV4ClrImportant: DWORD;
+      bV4RedMask: DWORD;
+      bV4GreenMask: DWORD;
+      bV4BlueMask: DWORD;
+      bV4AlphaMask: DWORD;
+      bV4CSType: DWORD;
+      bV4Endpoints: CIEXYZTRIPLE;
+      bV4GammaRed: DWORD;
+      bV4GammaGreen: DWORD;
+      bV4GammaBlue: DWORD;
+    end;
+
+    TBMPV5Header = packed record
+      bV5Size: DWORD;
+      bV5Width: LONG;
+      bV5Height: LONG;
+      bV5Planes: WORD;
+      bV5BitCount: WORD;
+      bV5Compression: DWORD;
+      bV5SizeImage: DWORD;
+      bV5XPelsPerMeter: LONG;
+      bV5YPelsPerMeter: LONG;
+      bV5ClrUsed: DWORD;
+      bV5ClrImportant: DWORD;
+      bV5RedMask: DWORD;
+      bV5GreenMask: DWORD;
+      bV5BlueMask: DWORD;
+      bV5AlphaMask: DWORD;
+      bV5CSType: DWORD;
+      bV5Endpoints: CIEXYZTRIPLE;
+      bV5GammaRed: DWORD;
+      bV5GammaGreen: DWORD;
+      bV5GammaBlue: DWORD;
+      bV5Intent: DWORD;
+      bV5ProfileData: DWORD;
+      bV5ProfileSize: DWORD;
+      bV5Reserved: DWORD;
+    end;
+}
     PBMPFile = ^TBMPFile;
     TBMPFile = object (TObject)
     public
       constructor initWithStream(stream: PStream);
       destructor done; virtual;
       function isValid: boolean;
+      function getVersion: string10;
       function getBitmap: PBitmap;
+      function getHeader: PBMPCoreHeader;
       function getInfo: PBMPInfoHeader;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
       _stream: PStream;
-      _initialPos: longint;
-      _fileHeader: TBMPFileHeader;
+      _CoreHeader: TBMPCoreHeader;
       _infoHeader: TBMPInfoHeader;
       _bitmap: PBitmap8;
-      procedure loadMetadata;
+      procedure loadHeaders;
       procedure loadBitmap;
       procedure loadPalette;
     end;
 
-    PBMPColorEntry = ^TBMPColorEntry;
-    TBMPColorEntry = packed record b, g, r, x: byte; end;
+    PRGBQuad = ^TRGBQuad;
+    TRGBQuad = packed record b, g, r, x: byte; end;
 
 implementation
 
@@ -70,8 +138,8 @@ implementation
     _stream := stream;
     _stream^.retain;
     _bitmap := nil;
-    loadMetadata;
-    loadBitmap;
+    loadHeaders;
+    if isValid then loadBitmap;
   end;
 
   destructor TBMPFile.done;
@@ -83,14 +151,31 @@ implementation
 
   function TBMPFile.isValid: boolean;
   begin
-    isValid := (_fileHeader.signature = 'BM')
+    isValid := (_CoreHeader.signature = 'BM')
       and (_infoHeader.compression = 0)
       and (_infoHeader.bitsPerPixel = 8);
+  end;
+
+  function TBMPFile.getVersion: string10;
+  begin
+    if _infoHeader.infoHeaderSize = sizeof(TBMPInfoHeader) then
+      getVersion := 'Legacy'
+    else if _infoHeader.infoHeaderSize = 108 { sizeof(TBMPV4Header) } then
+      getVersion := 'v4'
+    else if _infoHeader.infoHeaderSize = 124 { sizeof(TBMPV5Header) } then
+      getVersion := 'v5'
+    else 
+      getVersion := 'Unknown';
   end;
 
   function TBMPFile.getBitmap: PBitmap;
   begin
     getBitmap := _bitmap;
+  end;
+
+  function TBMPFile.getHeader: PBMPCoreHeader;
+  begin
+    getHeader := @_CoreHeader;
   end;
 
   function TBMPFile.getInfo: PBMPInfoHeader;
@@ -110,37 +195,55 @@ implementation
 
   { TBMPFile private }
 
-  procedure TBMPFile.loadMetadata;
+  procedure TBMPFile.loadHeaders;
   var res: word;
   begin
-    _initialPos := _stream^.getPosition;
-    _stream^.read(@_fileHeader, sizeof(TBMPFileHeader), res);
+    _stream^.read(@_CoreHeader, sizeof(TBMPCoreHeader), res);
     _stream^.read(@_infoHeader, sizeof(TBMPInfoHeader), res);
-    if not isValid then exit;
   end;
 
   procedure TBMPFile.loadBitmap;
   var
-    res: word;
-
+    src, dst, a, b: pbyte;
+    res, w, h, line: word;
+    tempBitmapSize: word;
+    linePadding: byte;
   begin
-    _bitmap := new(PBitmap8, initWithSize(_infoHeader.width, _infoHeader.height));
-    _stream^.seek(_initialPos + _fileHeader.pixelDataOffset);
-    _stream^.read(_bitmap^.getRawPixels, _infoHeader.imageSize, res);
+    w := _infoHeader.width;
+    h := _infoHeader.height;
+
+    linePadding := 4 - (w mod 4);
+    if linePadding = 4 then linePadding := 0;
+    _bitmap := new(PBitmap8, initWithSize(w , h));
+    tempBitmapSize := (w + linePadding) * h;
+    getMem(src, tempBitmapSize);
+    _stream^.seek(_CoreHeader.pixelDataOffset);
+    _stream^.read(src, tempBitmapSize, res);
+    dst := _bitmap^.getRawPixels;
+    a := src;
+    b := dst; 
+    inc(b, w*h-w);
+    for line := _infoHeader.height - 1 downto 0 do
+    begin
+      Move(a^, b^, w);
+      dec(b, w);
+      inc(a, w + linePadding);
+    end;
+    freeMem(src, tempBitmapSize);
     loadPalette;
   end;
 
   procedure TBMPFile.loadPalette;
   var
     tablePosition: longint;
-    colorTable, p: PBMPColorEntry;
+    colorTable, p: PRGBQuad;
     colorTableSize: longint;
     i: word;
     palette: PColorPalette;
     rgbColor: TRGBColor;
   begin
-    tablePosition := _initialPos + sizeOf(TBMPFileHeader) + _infoHeader.size;
-    colorTableSize := _infoHeader.colorsUsed * sizeof(TBMPColorEntry);
+    tablePosition := sizeOf(TBMPCoreHeader) + _infoHeader.infoHeaderSize;
+    colorTableSize := _infoHeader.colorsUsed * sizeof(TRGBQuad);
     getMem(colorTable, colorTableSize);
     _stream^.seek(tablePosition);
     _stream^.read(colorTable, colorTableSize, i);
