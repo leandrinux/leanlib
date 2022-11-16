@@ -1,28 +1,16 @@
 uses
   ascii, xcrt, types, int33, utils,
-  uobject, ufstream, ujson, udict, uclasses, uexc, userial, ulog, udisplay,
+  uobject, ufstream, ujson, udict, uclasses, uexc, udisplay,
   gui, gtypes, gmsgs;
 
 const
-  GUI_FILE = 'DEMO.2';
+  GUI_FILE = 'RES\DEMO.2';
 
 type
   TMouseStatus = packed record
     statusCode: word;
     position: TPoint;
   end;
-
-procedure initLog;
-var
-  com: PSerial;
-  log: PLog;
-begin
-  com := new(PSerial, initWithPort(COM2));
-  log := new(PLog, initWithStream(com));
-  log^.setAsDefault;
-  log^.release;
-  com^.release;
-end;
 
 procedure addControls(ui: PUserInterface);
 var
@@ -66,7 +54,6 @@ var
   ch: char;
 
 begin
-  initLog;
   DisplayAdapter := new(PDisplayAdapter, init);
   DisplayAdapter^.detectAdapter;
   DisplayAdapter^.setVideoMode(0);
@@ -80,7 +67,7 @@ begin
   while ch <> C_ESC do 
   begin
     previous := current;
-    with current do getMouseStatus(position.x, position.y, statusCode); 
+    with current do getMouseStatus(word(position.x), word(position.y), statusCode); 
     sendMouseActivity(previous, current, ui);
     if keypressed then ch := readkey;
   end;
