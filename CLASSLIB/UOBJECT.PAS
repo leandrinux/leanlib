@@ -32,6 +32,7 @@ interface
         function compare(value: PObject): ECompareResult; virtual;
         function getClassName: string; virtual;
         function getClassId: word; virtual;
+        function getRetainCount: word;
       private
         _retainCount: word;
         _delegate: PObject;
@@ -122,6 +123,11 @@ implementation
   function TObject.getClassId: word;
   begin
     getClassId := C_CLASS_ID_OBJECT;
+  end;
+
+  function TObject.getRetainCount: word;
+  begin
+    getRetainCount := _retainCount;
   end;
 
 end.
