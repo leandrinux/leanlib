@@ -19,7 +19,7 @@ var
   fs: PFileStream;
   bmp: PBMPFile;
 begin
-  fs := new(PFileStream, initWithPath(filename, true));
+  fs := new(PFileStream, initWithPath(filename, EFileReadOnly));
   bmp := new(PBMPFile, initWithStream(fs));
   loadBitmap := bmp^.getBitmap;
   fs^.release;

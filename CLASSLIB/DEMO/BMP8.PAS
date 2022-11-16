@@ -27,7 +27,7 @@ var
 
 begin
   log('Hello World');
-  fs := new(PFileStream, initWithPath(C_BMP_PATH, true));
+  fs := new(PFileStream, initWithPath(C_BMP_PATH, EFileReadOnly));
   writeln('Loading bitmap ', C_BMP_PATH);
   bmp := new(PBMPFile, initWithStream(fs));
   writeln;

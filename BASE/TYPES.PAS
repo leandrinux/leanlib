@@ -108,6 +108,12 @@ interface
 
     TCompareFunc = function (a, b: pointer): ECompareResult;
 
+    EFileOpenMode = (
+      EFileReadOnly,
+      EFileReadWrite,
+      EFileCreate
+    );
+
 implementation
 
 end.

@@ -8,7 +8,7 @@ var
   l: PList;
 
 begin
-  fs := new(PFileStream, initWithPath('res\example.jsn', true));
+  fs := new(PFileStream, initWithPath('res\example.jsn', EFileReadOnly));
   js := new(PJsonReader, init);
   d := PDictionary(js^.open(fs));
   writeln('Name: ', d^.getString('name'));

@@ -18,7 +18,7 @@ var
   json: PJsonReader;
   obj: PObject;
 begin
-  fs := new(PFileStream, initWithPath(GUI_FILE, true));
+  fs := new(PFileStream, initWithPath(GUI_FILE, EFileReadOnly));
   json := new(PJsonReader, init);
   obj := json^.open(fs);
   xassert(obj^.getClassId = C_CLASS_ID_DICTIONARY, 0, 'Root object in GUI file not a dictionary!');

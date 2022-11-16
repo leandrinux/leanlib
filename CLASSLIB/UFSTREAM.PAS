@@ -15,7 +15,7 @@ interface
     PFileStream = ^TFileStream;
     TFileStream = object (TStream)
     public
-      constructor initWithPath(path: TFilePath; readOnly: boolean);
+      constructor initWithPath(path: TFilePath; mode: EFileOpenMode);
       destructor done; virtual;
       procedure read(buffer: pointer; count: word; var result: word); virtual;
       procedure write(buffer: pointer; count: word); virtual;
@@ -32,25 +32,30 @@ interface
       _fileHandle: file;
       _filePath: TFilePath;
       _isOpen: boolean;
-      _isReadOnly: boolean;
+      _mode: EFileOpenMode;
     end;
 
 implementation
 
-  constructor TFileStream.initWithPath(path: TFilePath; readOnly: boolean);
+  constructor TFileStream.initWithPath(path: TFilePath; mode: EFileOpenMode);
   begin
     inherited init;
     _filePath := path;
-    _isReadOnly := readOnly;
+    _mode := mode;
     assign(_fileHandle, path);
     {$I-}
-    if readOnly then
-    begin
-      reset(_fileHandle, 1);
-      iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_NOT_FOUND);
-    end else begin
-      rewrite(_fileHandle, 1);
-      iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_CREATION_FAILED);
+    case mode of
+      EFileReadOnly, EFileReadWrite:
+      begin
+        reset(_fileHandle, 1);
+        iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_NOT_FOUND);
+      end;
+
+      EFileCreate:
+      begin
+        rewrite(_fileHandle, 1);
+        iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_CREATION_FAILED);
+      end;
     end;
     {$I+}
     _isOpen := IOResult = 0;
@@ -76,7 +81,7 @@ implementation
   procedure TFileStream.write(buffer: pointer; count: word);
   begin
     iassert(_isOpen, @self, 0, S_ERR_RESOURCE_NOT_OPEN);
-    iassert(not _isReadOnly, @self, 0, S_ERR_UNSUPPORTED_ACTION);
+    iassert(_mode <> EFileReadOnly, @self, 0, S_ERR_UNSUPPORTED_ACTION);
     blockWrite(_fileHandle, buffer^, count);
   end;
 
@@ -110,7 +115,7 @@ implementation
 
   function TFileStream.isReadOnly: boolean;
   begin
-    isReadOnly := _isReadOnly;
+    isReadOnly := _mode = EFileReadOnly;
   end;
 
   function TFileStream.getFilePath: string;

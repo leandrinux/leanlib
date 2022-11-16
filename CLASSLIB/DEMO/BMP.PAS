@@ -39,7 +39,7 @@ begin
   if not display^.detectAdapter then exit;
   display^.setVideoMode(0);
 
-  fs := new(PFileStream, initWithPath(C_TEST_FILE, true));
+  fs := new(PFileStream, initWithPath(C_TEST_FILE, EFileReadOnly));
   bmp := new(PBMPFile, initWithStream(fs));
   image := bmp^.getBitmap;
   display^.setPalette(image^.getPalette);
