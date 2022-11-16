@@ -8,6 +8,10 @@ unit
 
 interface
 
+  const
+    C_TICK_DURATION = 54.9254;
+    C_TICKS : ^longint = ptr($0040, $006C);
+
   procedure sound(freq: word);
   procedure nosound;
   procedure delay(mseg: word);
