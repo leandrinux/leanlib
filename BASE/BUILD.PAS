@@ -12,6 +12,7 @@ uses
   MATH,
   PALETTE,
   STRINGS,
+  TEST,
   TYPES,
   UTILS,
   XCRT;
