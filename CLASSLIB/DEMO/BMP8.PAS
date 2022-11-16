@@ -1,20 +1,8 @@
 uses 
-  xcrt, types, ubitmap, ufstream, ubmpfile, udisplay, ulog, userial;
+  xcrt, types, ubitmap, ufstream, ubmpfile, udisplay, ucomlog;
 
 const
-  C_BMP_PATH = 'RES\capybara.BMP';
-
-procedure initLog;
-var
-  com: PSerial;
-  log: PLog;
-begin
-  com := new(PSerial, initWithPort(COM2));
-  log := new(PLog, initWithStream(com));
-  log^.setAsDefault;
-  log^.release;
-  com^.release;
-end;
+  C_BMP_PATH = 'RES\mini.BMP';
 
 procedure displayBitmap(bitmap: PBitmap);
 var
@@ -38,7 +26,7 @@ var
   bmp: PBMPFile;
 
 begin
-  initLog;
+  comlog('Hello World');
   fs := new(PFileStream, initWithPath(C_BMP_PATH, true));
   writeln('Loading bitmap ', C_BMP_PATH);
   bmp := new(PBMPFile, initWithStream(fs));
