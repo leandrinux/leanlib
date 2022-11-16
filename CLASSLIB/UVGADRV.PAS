@@ -9,8 +9,8 @@ unit
 interface
 
   uses
-    uexc, uclasses, types, locale, uobject, uviddrv, int10,
-    ubitmap, ubitmap8, upalette;
+    uexc, uclasses, types, locale, uobject, uviddrv, int10, math,
+    ubitmap, ubitmap8, upalette, ulog;
 
   type
     PVGADriver = ^TVGADriver;
@@ -42,6 +42,7 @@ interface
       destructor done; virtual;
       procedure setPixel(x, y: word; color: TColor); virtual;
       procedure setPixelBlock(x1, y1, x2, y2: word; color: TColor); virtual;
+      procedure merge(src: PBitmap; x, y: word); virtual;
       function getPixel(x, y: word): TColor; virtual;
       procedure clear(color: TColor); virtual;
       function getColorCount: longint; virtual;
@@ -194,6 +195,40 @@ implementation
       fillchar(p^, w, color);
       dec(p, 320);
     end;
+  end;
+
+  procedure TVGAMode13Bitmap.merge(src: PBitmap; x, y: word);
+  var
+    sw, sh: word;
+    sr, sp, tp: pbyte;
+    sx, sy, i: word;
+  begin  
+    sw := src^.getWidth;
+    sh := src^.getHeight;
+    if (src^.getBitsPerPixel = 8) then
+    begin
+      if (x = 0) and (y = 0) and (sw = 320) and (sh = 200) then
+        Move(src^.getRawPixels^, ptr($A000, 0)^, sw * sh)
+      else
+      begin
+        sw := src^.getWidth;
+        sh := src^.getHeight;
+        sr := src^.getRawPixels;
+        sx := minword(320 - x, sw);      
+        sy := minword(200 - y, sh);
+        i := sy;
+        tp := ptr($A000, y shl 8 + y shl 6 + x);
+        sp := sr;
+        while i>0 do
+        begin
+          Move(sp^, tp^, sw);
+          dec(i);
+          inc(tp, 320);
+          inc(sp, sw);
+        end;
+      end;
+    end else
+      inherited merge(src, x, y);
   end;
 
   procedure TVGAMode13Bitmap.clear(color: TColor);
