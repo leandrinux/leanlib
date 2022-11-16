@@ -83,6 +83,7 @@ implementation
     _enforceClassId := true;
     _fromClassId := fromClassId;
     _toClassId := toClassId;
+    _isWeak := false;
   end;
 
   destructor TList.done;
