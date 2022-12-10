@@ -34,7 +34,6 @@ interface
 implementation
 
   const
-    C_BUFFER_SIZE = 1024;
     C_SKIPPABLE_CHARS = [#0, ' ', C_LF, C_CR];
     C_DICTIONARY_KEY_CHARACTERS = ['A'..'Z','a'..'z','_','-'];
 
