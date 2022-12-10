@@ -1,6 +1,6 @@
 {
   ucstream Unit
-  a stream that writes and reads data from another stream using XOR encoding
+
   2022 LRT
 }
 unit
@@ -9,15 +9,14 @@ unit
 interface
 
   uses
-    consts, utils, uexc, uclasses, types, locale, uobject, ustream,
-    math;
+    consts, utils, uclasses, types, locale, math,
+    uobject, uexc, ustream;
 
   type
-    PCodedStream = ^TCodedStream;
-    TCodedStream = object (TStream)
+    PCachedStream = ^TCachedStream;
+    TCachedStream = object (TStream)
     public
-      constructor initWithPassword(password: string; stream: PStream);
-      constructor initWithBufferPassword(buffer: pointer; size: word; stream: PStream);
+      constructor initWithStream(stream: PStream; cacheSize: word);
       destructor done; virtual;
       procedure read(buffer: pointer; count: word; var result: word); virtual;
       procedure write(buffer: pointer; count: word); virtual;
@@ -30,116 +29,100 @@ interface
       function getClassId: word; virtual;
     private
       _stream: PStream;
-      _password: pointer;
-      _passlength: word;
-      procedure doXOR(input, output: PChar; count: word; passoffset: word);
+      _cache: PByte;
+      _cacheSize: word;
+      _from: longint;
+      _count: word;
+      _relativePos: longint;
     end;
 
 implementation
 
-  { TCodedStream public }
+  { TCachedStream public }
 
-  constructor TCodedStream.initWithPassword(password: string; stream: PStream);
+  constructor TCachedStream.initWithStream(stream: PStream; cacheSize: word);
   begin
     inherited init;
     _stream := stream;
     _stream^.retain;
-    _passlength := length(password);
-    GetMem(_password, _passlength);
-    Move(incptr(@password, 1)^, _password^, _passlength);
+    _cacheSize := cacheSize;
+    getMem(_cache, _cacheSize);
+    seek(0);
   end;
 
-  constructor TCodedStream.initWithBufferPassword(buffer: pointer; size: word; stream: PStream);
+  destructor TCachedStream.done;
   begin
-    inherited init;
-    _stream := stream;
-    _stream^.retain;
-    _passlength := size;
-    GetMem(_password, _passlength);
-    Move(buffer^, _password^, _passlength);
-  end;
-
-  destructor TCodedStream.done;
-  begin
+    freeMem(_cache, _cacheSize);
     _stream^.release;
-    FreeMem(_password, _passlength);
     inherited done;
   end;
 
-  procedure TCodedStream.read(buffer: pointer; count: word; var result: word);
-  var
-    passoffset: word;
+  procedure TCachedStream.read(buffer: pointer; count: word; var result: word);
+  var 
+    remaining: word;
+    src, dst: pbyte;
+    chunkSize: word;
   begin
-    passoffset := _stream^.getPosition mod _passlength;
-    _stream^.read(buffer, count, result);
-    doXOR(buffer, buffer, result, passoffset);
+    remaining := count;
+    dst := buffer;
+    while not _stream^.isEOF and (remaining > 0) do
+    begin
+      if _relativePos = _cacheSize then seek(_from + _cacheSize);
+      src := _cache;
+      inc(src, _relativePos);
+      chunkSize := minword(remaining, _count - _relativePos);
+      Move(src^, dst^, chunkSize);
+      inc(dst, chunkSize);
+      dec(remaining, chunkSize);
+      inc(_relativePos, chunkSize);
+    end;
+    result := count - remaining;
   end;
 
-  procedure TCodedStream.write(buffer: pointer; count: word);
-  var
-    encoded: pointer;
-    passoffset: word;
+  procedure TCachedStream.write(buffer: pointer; count: word); 
   begin
-    passoffset := _stream^.getPosition mod _passlength;
-    GetMem(encoded, count);
-    doXOR(buffer, encoded, count, passoffset);
-    _stream^.write(encoded, count);
-    FreeMem(encoded, count);
+    iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
 
-  procedure TCodedStream.seek(position: longint);
+  procedure TCachedStream.seek(position: longint);
   begin
     _stream^.seek(position);
-  end;
+    _stream^.read(_cache, _cacheSize, _count);
+    _from := position;
+    _relativePos := 0;
+  end; 
 
-  function TCodedStream.getPosition: longint;
+  function TCachedStream.getPosition: longint; 
   begin
-    getPosition := _stream^.getPosition;
+    getPosition := _from + _relativePos;
   end;
 
-  function TCodedStream.isReadOnly: boolean;
+  function TCachedStream.isEOF: boolean; 
   begin
-    isReadOnly := _stream^.isReadOnly;
+    isEOF := getPosition = getSize;
   end;
 
-  function TCodedStream.isEOF: boolean;
-  begin
-    isEOF := _stream^.isEOF;
-  end;
-
-  function TCodedStream.getSize: longint;
+  function TCachedStream.getSize: longint; 
   begin
     getSize := _stream^.getSize;
   end;
 
-  function TCodedStream.getClassName: string;
+  function TCachedStream.isReadOnly: boolean; 
   begin
-    getClassName := 'TCodedStream';
+    isReadOnly := true;
+  end;
+    
+  function TCachedStream.getClassName: string;
+  begin
+    getClassName := 'TCachedStream';
   end;
 
-  function TCodedStream.getClassId: word;
+  function TCachedStream.getClassId: word;
   begin
-    getClassId := C_CLASS_ID_CodedStream;
+    getClassId := C_CLASS_ID_CachedStream;
   end;
 
-  { TCodedStream private }
-
-  procedure TCodedStream.doXOR(input, output: PChar; count: word; passoffset: word);
-  var
-    i: word;
-    p: PChar;
-  begin
-    passoffset := _stream^.getPosition mod _passlength;
-    p := _password;
-    for i := count - 1 downto 0 do
-    begin
-      output^ := char(byte(input^) xor byte(p^));
-      inc(p);
-      if Ofs(p^) - Ofs(_password^) = count then p := _password;
-      inc(input);
-      inc(output);
-    end;
-  end;
+  { TCachedStream private }
 
   { Other }
 

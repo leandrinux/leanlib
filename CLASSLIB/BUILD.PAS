@@ -40,7 +40,8 @@ uses
   UJSON,
   ULOG,
   UMBITMAP,
-  UMSTREAM;
+  UMSTREAM,
+  UXSTREAM;
 
 begin
 end.

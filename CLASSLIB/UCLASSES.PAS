@@ -23,13 +23,14 @@ interface
     C_CLASS_ID_STREAM         = 100;
     C_CLASS_ID_FILESTREAM     = 101;
     C_CLASS_ID_MEMORYSTREAM   = 102;
-    C_CLASS_ID_CODEDSTREAM    = 103;
+    C_CLASS_ID_XORSTREAM      = 103;
     C_CLASS_ID_EMSSTREAM      = 104;
     C_CLASS_ID_SUBSTREAM      = 105;
     C_CLASS_ID_PACKAGE        = 106;
     C_CLASS_ID_STDOUTPUT      = 107;
     C_CLASS_ID_SERIAL         = 108;
     C_CLASS_ID_ANSIWRITER     = 109;
+    C_CLASS_ID_CACHEDSTREAM   = 110;
 
     { graphics }
     C_CLASS_ID_BITMAP         = 200;
