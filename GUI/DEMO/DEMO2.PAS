@@ -1,6 +1,6 @@
 uses
   ascii, xcrt, types, int33, utils,
-  uobject, ufstream, ujson, udict, uclasses, uexc, udisplay,
+  uobject, ufstream, ucstream, ujson, udict, uclasses, uexc, udisplay,
   gui, gtypes, gmsgs;
 
 const
@@ -15,16 +15,19 @@ type
 procedure addControls(ui: PUserInterface);
 var
   fs: PFileStream;
+  cs: PCachedStream;
   json: PJsonReader;
   obj: PObject;
 begin
   fs := new(PFileStream, initWithPath(GUI_FILE, EFileReadOnly));
+  cs := new(PCachedStream, initWithStream(fs, 4096));
   json := new(PJsonReader, init);
-  obj := json^.open(fs);
+  obj := json^.open(cs);
   xassert(obj^.getClassId = C_CLASS_ID_DICTIONARY, 0, 'Root object in GUI file not a dictionary!');
   ui^.addFromData(PDictionary(obj));
   json^.release;
   fs^.release;
+  cs^.release;
 end;
 
 procedure sendMouseActivity(var previous, current: TMouseStatus; ui: PUserInterface);
