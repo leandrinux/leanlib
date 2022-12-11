@@ -9,7 +9,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale, math,
+    consts, utils, uclasses, types, locale, math, ucomlog,
     uobject, uexc, ustream;
 
   type
@@ -29,6 +29,7 @@ interface
       function getClassId: word; virtual;
     private
       _stream: PStream;
+      _sourceSize: longint;
       _cache: PByte;
       _cacheSize: word;
       _from: longint;
@@ -45,8 +46,10 @@ implementation
     inherited init;
     _stream := stream;
     _stream^.retain;
+    _sourceSize := _stream^.getSize;
     _cacheSize := cacheSize;
     getMem(_cache, _cacheSize);
+    _count := 0;
     seek(0);
   end;
 
@@ -86,10 +89,16 @@ implementation
 
   procedure TCachedStream.seek(position: longint);
   begin
-    _stream^.seek(position);
-    _stream^.read(_cache, _cacheSize, _count);
-    _from := position;
-    _relativePos := 0;
+    if (position >= _from) and (position <= (_from + _count - 1)) then
+    begin
+      _relativePos := position - _from;
+    end else
+    begin
+      _stream^.seek(position);
+      _stream^.read(_cache, _cacheSize, _count);
+      _from := position;
+      _relativePos := 0;
+    end; 
   end; 
 
   function TCachedStream.getPosition: longint; 
@@ -99,12 +108,12 @@ implementation
 
   function TCachedStream.isEOF: boolean; 
   begin
-    isEOF := getPosition = getSize;
+    isEOF := (_from + _relativePos) = _sourceSize;
   end;
 
   function TCachedStream.getSize: longint; 
   begin
-    getSize := _stream^.getSize;
+    getSize := _sourceSize;
   end;
 
   function TCachedStream.isReadOnly: boolean; 
