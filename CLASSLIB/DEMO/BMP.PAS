@@ -25,7 +25,7 @@ end;
 { --- End custom exception manager }
 
 const
-  C_TEST_FILE = 'C:\RES\SCIDHU04.BMP'; { full path to a 320x200x256 BMP file }
+  C_TEST_FILE = 'RES\CAPYBARA.BMP'; { full path to a 320x200x256 BMP file }
 
 var
   fs: PFileStream;
