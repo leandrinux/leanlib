@@ -1,6 +1,6 @@
 uses
   xcrt, types, test,
-  uobject, ustream, ufstream, ujson, ucstream;
+  uobject, ustream, ufstream, ujson, ucstream, ucomlog;
 
 const
   C_FILE_PATH = 'RES\EXAMPLE.JSN';
@@ -35,11 +35,7 @@ end;
 
 begin
   fs := new(PFileStream, initWithPath(C_FILE_PATH, EFileReadOnly));
-{
-  measure('testJSONReadNoCache', testJSONReadNoCache, fs, 4);
-  measure('testJSONReadCached', testJSONReadCached, fs, 4);
-}
-  testJSONReadCached(fs);
-  readkey;
+  measure('testJSONReadNoCache', testJSONReadNoCache, fs, 3);
+  measure('testJSONReadCached', testJSONReadCached, fs, 3);
   fs^.release;
 end.

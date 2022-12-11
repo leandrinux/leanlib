@@ -8,11 +8,21 @@ unit
 interface
 
   uses
-    ulog, userial, types;
+    ulog, userial, types, test;
 
   procedure log(str: string);
 
 implementation
+
+  procedure log(str: string);
+  begin
+    ulog.Log^.out(str);
+  end;
+  
+  procedure logWrite(s: string); far;
+  begin
+    log(s);
+  end;
 
   procedure initLog;
   var
@@ -24,13 +34,10 @@ implementation
     log^.setAsDefault;
     log^.release;
     com^.release;
-  end;
-
-  procedure log(str: string);
-  begin
-    ulog.Log^.out(str);
+    setTestWriteProc(logWrite);
   end;
 
 begin
   initLog;
+  log('Log started.');
 end.
