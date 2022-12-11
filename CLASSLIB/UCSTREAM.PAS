@@ -65,7 +65,7 @@ implementation
   begin
     remaining := count;
     dst := buffer;
-    while not _stream^.isEOF and (remaining > 0) do
+    while not isEOF and (remaining > 0) do
     begin
       if _relativePos = _cacheSize then seek(_from + _cacheSize);
       src := _cache;

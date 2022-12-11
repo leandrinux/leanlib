@@ -1,30 +1,45 @@
 uses
-  xcrt, ufstream, ujson, ulist, udict, utils;
+  xcrt, types, test,
+  uobject, ustream, ufstream, ujson, ucstream;
+
+const
+  C_FILE_PATH = 'RES\EXAMPLE.JSN';
 
 var
   fs: PFileStream;
-  js: PJsonReader;
-  d: PDictionary;
-  l: PList;
+
+function testJSONReadNoCache(p: pointer): boolean; far;
+var
+  jr: PJsonReader;
+  stream: PStream;
+begin
+  stream := PStream(p);
+  jr := new(PJsonReader, init);
+  stream^.seek(0);
+  jr^.open(stream);
+  jr^.release;
+end;
+
+function testJSONReadCached(p: pointer): boolean; far;
+var
+  stream: PCachedStream;
+  jr: PJsonReader;
+begin
+  stream := new(PCachedStream, initWithStream(PStream(p), 4096));
+  jr := new(PJsonReader, init);
+  stream^.seek(0);
+  jr^.open(stream);
+  jr^.release;
+  stream^.release;
+end;
 
 begin
-  fs := new(PFileStream, initWithPath('res\example.jsn', EFileReadOnly));
-  js := new(PJsonReader, init);
-  d := PDictionary(js^.open(fs));
-  writeln('Name: ', d^.getString('name'));
-  writeln('Age: ', d^.getLong('age'));
-  writeln('Is Alive: ', booltostr(d^.getBool('isAlive')));
-  writeln('Is Evil: ', booltostr(d^.getBool('isEvil')));
-  l := PList(d^.getObject('victims'));
-  writeln('Victim Count: ', inttostr(l^.getCount));
-  writeln('Victim names:');
-  l^.moveToStart;
-  while l^.getObjectAtCursor <> nil do
-  begin
-    writeln('  * ', l^.getStringAtCursor);
-    l^.moveForward;
-  end;
-  js^.release;
-  fs^.release;
+  fs := new(PFileStream, initWithPath(C_FILE_PATH, EFileReadOnly));
+{
+  measure('testJSONReadNoCache', testJSONReadNoCache, fs, 4);
+  measure('testJSONReadCached', testJSONReadCached, fs, 4);
+}
+  testJSONReadCached(fs);
   readkey;
+  fs^.release;
 end.

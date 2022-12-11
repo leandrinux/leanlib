@@ -31,7 +31,7 @@ var
 
 begin
   fs := new(PFileStream, initWithPath(C_FILE_PATH, EFileReadOnly));
-  cs := new(PCachedStream, initWithStream(fs, 16000));
+  cs := new(PCachedStream, initWithStream(fs, 4096));
   dump(cs);
   cs^.release;
   fs^.release;
