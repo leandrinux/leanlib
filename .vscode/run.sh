@@ -1,7 +1,7 @@
 #!/bin/bash
 
 run_macos () {
-  open /Applications/dosbox-x.app --args -nomenu -fastlaunch -c "cd leanlib" -c "$1" -exit
+  /Applications/dosbox-x.app/Contents/MacOS/DosBox -nomenu -fastlaunch -c "cd leanlib" -c "$1" -exit
 }
 
 run_flatpak () {
