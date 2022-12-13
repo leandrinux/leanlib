@@ -1,12 +1,14 @@
 TO DO
 
 - (GUI) Make sure that buttons react to events (such as releasing the left mouse button) even when
-this happens outside their bounds box.
+  this happens outside their bounds box.
+
+- (CLASSLIB > UMOUSE) add support for double clicking
 
 DOING
 
-- (CLASSLIB) Make a wrapper for the mouse functions in the base INT33 unit, providing nice extras
- like a nicer and smaller mouse cursor as default, support for a wait cursor, support for double
- clicking. Must report activity through messages to a delegate.
-
 DONE
+
+- (CLASSLIB) Make a wrapper for the mouse functions in the base INT33 unit, providing nice extras
+  like a nicer and smaller mouse cursor as default, support for a wait cursor. Must report activity 
+  through messages to a delegate.
