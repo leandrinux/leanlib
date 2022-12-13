@@ -16,7 +16,7 @@ interface
     PJsonReader = ^TJsonReader;
     TJsonReader = object (TObject)
     public
-      function open(stream: PStream): PObject;
+      function createFromStream(stream: PStream): PObject;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -39,11 +39,11 @@ implementation
 
   { TJsonReader public }
 
-  function TJsonReader.open(stream: PStream): PObject;
+  function TJsonReader.createFromStream(stream: PStream): PObject;
   begin
-    open := nil;
+    createFromStream := nil;
     _stream := stream;
-    open := createObject;
+    createFromStream := createObject;
     _stream := nil;
   end;
 
