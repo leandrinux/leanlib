@@ -27,30 +27,19 @@ interface
 
     {
       used to set the mouse graphics cursor
-      screen  mask   result
+      screen  cursor result
       0       0      0 (black)
       0       1      1 (white)
       1       0      Bit not changed (transparent)
       1       1      Bit inverted
     }
+    PMouseCursor = ^TMouseCursor;
     TMouseCursor = packed record
-      screen: array[0..15] of word;   { screen bitmap }
-      mask: array[0..15] of word;     { mask bitmap }
-      hotX: byte;                     { cursor hotspot X coordinate }
-      hotY: byte;                     { cursor hotspot Y coordinate }
+      screenMask: array[0..15] of word; { screen mask / AND mask }
+      cursorMask: array[0..15] of word; { cursor mask / XOR mask }
+      hotX: word;                       { cursor hotspot X coordinate (-16 to 16) }
+      hotY: word;                       { cursor hotspot Y coordinate (-16 to 16) }
     end;
-
-  const
-
-    { example alternative mouse graphics cursor }
-    C_CURSOR_TRIANGLE: TMouseCursor = (
-      screen: ( $7FFF, $3FFF, $1FFF, $0FFF, $07FF, $03FF, $3FFF, $7FFF,
-                $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF );
-      mask:   ( $8000, $C000, $E000, $F000, $F800, $FC00, $C000, $8000,
-                $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000 );
-      hotX: 0;
-      hotY: 0
-    );
 
   { *** int 33h services ************************************************** }
 
@@ -92,12 +81,12 @@ interface
   {
     sets the minimum and maximum values for the mouse horizontal movement
   }
-  procedure setHorizontalMinMax(min, max: word);
+  procedure setHorizontalRange(min, max: word);
 
   {
     sets the minimum and maximum values for the mouse vertical movement
   }
-  procedure setVerticalMinMax(min, max: word);
+  procedure setVerticalRange(min, max: word);
 
   {
     sets the graphics mouse cursor
@@ -239,7 +228,7 @@ implementation
     GetInfo(6, button, info);
   end;
 
-  procedure setMinMax(cmd, min, max: word);
+  procedure setRange(cmd, min, max: word);
   begin
     asm
       mov ax, cmd
@@ -249,26 +238,28 @@ implementation
     end;
   end;
 
-  procedure setHorizontalMinMax(min, max: word);
+  procedure setHorizontalRange(min, max: word);
   begin
-    SetMinMax(7, min, max);
+    SetRange(7, min, max);
   end;
 
-  procedure setVerticalMinMax(min, max: word);
+  procedure setVerticalRange(min, max: word);
   begin
-    SetMinMax(8, min, max);
+    SetRange(8, min, max);
   end;
 
   procedure setGraphicsCursor(var cursor: TMouseCursor);
+  var x, y: word;
   begin
-    with cursor do
-      asm
-        mov ax, 0009h
-        mov bx, hotX
-        mov cx, hotY
-        les dx, cursor
-        int 33h
-      end;
+    x := cursor.hotX;
+    y := cursor.hotY;
+    asm
+      mov ax, 0009h
+      mov bx, x
+      mov cx, y
+      les dx, cursor
+      int 33h
+    end;
   end;
 
   procedure setTextCursor(front, back: byte; character: char);
