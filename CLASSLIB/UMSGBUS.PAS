@@ -20,6 +20,7 @@ interface
       procedure subscribe(obj: PObject);
       procedure unsubscribe(obj: PObject);
       procedure broadcast(msg: PObjectMessage);
+      procedure receiveMessage(msg: PObjectMessage); virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -65,6 +66,11 @@ implementation
       _list^.moveForward;
       obj := _list^.getObjectAtCursor;
     end;
+  end;
+
+  procedure TMessageBus.receiveMessage(msg: PObjectMessage);
+  begin
+    broadcast(msg);
   end;
 
   function TMessageBus.getClassName: string;
