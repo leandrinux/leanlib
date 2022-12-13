@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc,
+    uobject, uexc, umsgbus, 
     gclasses, gtypes, gcolors, gmsgs;
 
   type
@@ -24,6 +24,8 @@ interface
       function getClassId: word; virtual;
       procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
+      procedure setBus(bus: PMessageBus); virtual;
+      function getBus: PMessageBus;
       function getFrame: PFrame;
       function getId: TControlId;
       function getParent: PControl;
@@ -34,6 +36,7 @@ interface
       procedure setBackgroundStyle(backgroundStyle: EBackgroundStyle);
       function getBackgroundStyle: EBackgroundStyle;
     private
+      _bus: PMessageBus;
       _frame: TFrame;
       _id: TControlID;
       _parent: PControl;
@@ -50,6 +53,7 @@ implementation
     inherited init;
     _id := id;
     _parent := nil;
+    _bus := nil;
     _backgroundColor := DefaultColorScheme^.getColor(ECKPanelBackground);
     _backgroundStyle := EBackgroundStyleSolid;
   end;
@@ -70,15 +74,19 @@ implementation
   end;
 
   procedure TControl.receiveMessage(msg: PObjectMessage);
-  var
-    obj: PObject;
   begin
-    if (msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW) then
-    begin
-      if _parent <> nil then obj := _parent else obj := getDelegate;
-      if obj = nil then exit;
-      obj^.receiveMessage(msg)
-    end;
+  end;
+
+  procedure TControl.setBus(bus: PMessageBus);
+  begin
+    if _bus <> nil then _bus^.unsubscribe(@self);
+    _bus := bus;
+    _bus^.subscribe(@self);
+  end;
+
+  function TControl.getBus: PMessageBus;
+  begin
+    getBus := _bus;
   end;
 
   function TControl.getFrame: PFrame;

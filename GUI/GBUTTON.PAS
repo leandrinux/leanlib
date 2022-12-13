@@ -8,8 +8,8 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
-    uobject, uexc,
+    xcrt, consts, utils, types, locale,
+    uclasses, uobject, uexc, umsgs,
     gclasses, gtypes, gcontrol, gmsgs;
 
   type
@@ -68,8 +68,33 @@ implementation
 
   procedure TButton.receiveMessage(msg: PObjectMessage);
   var
-    mouseActivity: PMouseActivity;
+    mousePosition: PPoint;
+    frame: TFrame;
   begin
+    case msg^.opcode of
+      C_MSG_MOUSE_LEFT_UP, C_MSG_MOUSE_LEFT_DOWN: 
+      begin
+        frame := getFrame^;
+        getAbsolutePosition(frame.point);
+        mousePosition := msg^.payload;
+        if (_state = EButtonStateUp) 
+           and (msg^.opcode = C_MSG_MOUSE_LEFT_DOWN) 
+           and isPointInFrame(mousePosition, @frame) then 
+        begin
+          _state := EButtonStateDown;
+          sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+        end else
+          if (_state = EButtonStateDown) and (msg^.opcode = C_MSG_MOUSE_LEFT_UP) then
+          begin
+            _state := EButtonStateUp;
+            sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+            if isPointInFrame(mousePosition, @frame) then
+              sendMessage(C_MSG_BUTTON_CLICK, getBus);
+          end;
+      end;
+    end;
+
+{
     if msg^.opcode = C_MSG_MOUSE_ACTIVITY then
     begin
       mouseActivity := PMouseActivity(msg^.payload);
@@ -83,6 +108,7 @@ implementation
         sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getParent);
       end;
     end;
+  }
   end;
 
   function TButton.getState: EButtonState;

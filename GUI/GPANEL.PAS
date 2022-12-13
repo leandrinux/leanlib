@@ -8,8 +8,8 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale, ustring, ulist,
-    uobject, uexc,
+    consts, utils, types, locale, 
+    uclasses, ustring, ulist, uobject, uexc, umsgbus,
     gclasses, gtypes, gcontrol, gattribs, gcolors, gmsgs;
 
   const
@@ -26,6 +26,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure receiveMessage(msg: PObjectMessage); virtual;
+      procedure setBus(bus: PMessageBus); virtual;
       { methods }
       function getControls: PList;
       procedure setBorderStyle(borderStyle: EBorderStyle);
@@ -33,7 +34,6 @@ interface
     private
       _controls: PList;
       _borderStyle: EBorderStyle;
-      procedure sendMouseActivity(mouseActivity: PMouseActivity);
     end;
 
 implementation
@@ -65,10 +65,21 @@ implementation
 
   procedure TPanel.receiveMessage(msg: PObjectMessage);
   begin
-    if msg^.opcode = C_MSG_MOUSE_ACTIVITY then
-      sendMouseActivity(PMouseActivity(msg^.payload))
-    else
-      inherited receiveMessage(msg);
+  end;
+
+  procedure TPanel.setBus(bus: PMessageBus);
+  var
+    control: PControl;
+  begin
+    inherited setBus(bus);
+    _controls^.moveToStart;
+    control := PControl(_controls^.getObjectAtCursor);
+    while control <> nil do
+    begin
+      control^.setBus(bus);
+      _controls^.moveForward;
+      control := PControl(_controls^.getObjectAtCursor);
+    end;
   end;
 
   function TPanel.getControls: PList;
@@ -87,32 +98,6 @@ implementation
   end;
 
   { TPanel private }
-
-  procedure TPanel.sendMouseActivity(mouseActivity: PMouseActivity);
-  var
-    control: PControl;
-    frame: PFrame;
-    msg: TObjectMessage;
-  begin
-    _controls^.moveToStart;
-    control := PControl(_controls^.getObjectAtCursor);
-    while (control <> nil) and not isPointInFrame(@(mouseActivity^.position), control^.getFrame) do
-    begin
-      _controls^.moveForward;
-      control := PControl(_controls^.getObjectAtCursor);
-    end;
-    if control <> nil then
-    begin
-      with control^.getFrame^.point do
-      begin
-        dec(mouseActivity^.position.x, x);
-        dec(mouseActivity^.position.y, y);
-        msg.opcode := C_MSG_MOUSE_ACTIVITY;
-        msg.payload := mouseActivity;
-        control^.receiveMessage(@msg);
-      end;
-    end;
-  end;
 
   { Other }
 

@@ -1,81 +1,54 @@
 uses
-  ascii, xcrt, types, int33, utils,
-  uobject, ufstream, ucstream, ujson, udict, uclasses, uexc, udisplay,
-  gui, gtypes, gmsgs;
+  ascii, xcrt, types, utils,
+  uobject, uclasses, uexc, udisplay, umouse, ucomlog,
+  gui, gtypes, gmsgs, gform, gcontrol;
 
 const
-  GUI_FILE = 'RES\DEMO.2';
+  C_GUI_FILE = 'RES\DEMO.2';
 
 type
-  TMouseStatus = packed record
-    statusCode: word;
-    position: TPoint;
+  PMyForm = ^TMyForm;
+  TMyForm = object (TForm)
+    procedure onEvent(opcode: word; sender: PControl); virtual;
+    function createControl: PControl; virtual;
   end;
 
-procedure addControls(ui: PUserInterface);
-var
-  fs: PFileStream;
-  cs: PCachedStream;
-  json: PJsonReader;
-  obj: PObject;
+function TMyForm.createControl: PControl;
 begin
-  fs := new(PFileStream, initWithPath(GUI_FILE, EFileReadOnly));
-  cs := new(PCachedStream, initWithStream(fs, 4096));
-  json := new(PJsonReader, init);
-  obj := json^.open(cs);
-  xassert(obj^.getClassId = C_CLASS_ID_DICTIONARY, 0, 'Root object in GUI file not a dictionary!');
-  ui^.addFromData(PDictionary(obj));
-  json^.release;
-  fs^.release;
-  cs^.release;
+  createControl := createControlFromFile(C_GUI_FILE);
 end;
 
-procedure sendMouseActivity(var previous, current: TMouseStatus; ui: PUserInterface);
-var
-  activity: TMouseActivity;
-  msg: TObjectMessage;
-begin 
-  activity.event := EMouseEventNone;
-  if ((previous.statusCode and C_MOUSE_LEFT) = 0) and ((current.statusCode and C_MOUSE_LEFT) <> 0) then
-    activity.event := EMouseEventLeftDown
-  else if ((previous.statusCode and C_MOUSE_LEFT) <> 0) and ((current.statusCode and C_MOUSE_LEFT) = 0) then
-    activity.event := EMouseEventLeftUp
-  else exit;
-  activity.position.x := current.position.x shr 1;
-  activity.position.y := current.position.y;
-  fillchar(msg, sizeof(msg), 0);
-  msg.opcode := C_MSG_MOUSE_ACTIVITY;
-  msg.payload := @activity;
-  hideMouseCursor;
-  ui^.receiveMessage(@msg);
-  showMouseCursor;
+procedure TMyForm.onEvent(opcode: word; sender: PControl);
+begin
+  log('onEvent from ' + sender^.getId);
 end;
 
 var
+  mouse: PMouse;
   ui: PUserInterface;
-  previous, current: TMouseStatus;
-  ch: char;
+  form: PForm;
+  key: char;
 
 begin
-  DisplayAdapter := new(PDisplayAdapter, init);
-  DisplayAdapter^.detectAdapter;
-  DisplayAdapter^.setVideoMode(0);
+  createDefaultDisplayAdapter;         { open default graphics mode }
+  mouse := new(PMouse, init);          { create mouse instance }
+  form := new(PMyForm, init);          { create form instance }
+  ui := new(PUserInterface, init);     { create user interface }
+  ui^.addForm(form);                   { add the form to our user interface }
+  mouse^.setDelegate(ui^.getBus);      { send mouse messages to the user interface }
+  mouse^.show;                         { show the mouse cursor }
+  ui^.render;                          { render the user interface }
 
-  ui := new(PUserInterface, init);
-  addControls(ui);
-  ui^.render;
-  showMouseCursor;
-  fillchar(current, sizeof(TMouseStatus), 0);
-  ch := #0;
-  while ch <> C_ESC do 
+  key := #0;
+  while key <> C_ESC do                { stay in this loop until the ESC key is pressed }
   begin
-    previous := current;
-    with current do getMouseStatus(word(position.x), word(position.y), statusCode); 
-    sendMouseActivity(previous, current, ui);
-    if keypressed then ch := readkey;
+    if keypressed then key := readkey;
+    mouse^.update;                     { update mouse status }
   end;
-  hideMouseCursor;
 
-  ui^.release;
-  DisplayAdapter^.setTextMode;
+  mouse^.hide;                         { hide the mouse cursor }
+  ui^.release;                         { destroy objects }
+  form^.release;
+  mouse^.release;
+  DisplayAdapter^.setTextMode;         { return to text mode }
 end.

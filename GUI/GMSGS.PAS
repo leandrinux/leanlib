@@ -7,13 +7,12 @@ unit
 
 interface
 
-  uses
-    types;
-
   const
-    C_MSG_CONTROL_REQUEST_REDRAW = 2020;
-    C_MSG_MOUSE_ACTIVITY         = 2021;
-    C_MSG_KEYBOARD_ACTIVITY      = 2022;
+    C_MSG_CONTROL_REQUEST_REDRAW = $FBF4; { sent by controls that need to be redrawn }
+
+    C_MSG_CONTROL_EVENT_MASK     = $FC00; { mask used to recognize valid control event codes }
+    C_MSG_BUTTON_CLICK           = $FC01; { when a button is clicked }
+    
 
 implementation
 

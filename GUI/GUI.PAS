@@ -9,8 +9,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict,
-    gclasses, gtypes, grender, gmeteor, gfactory, gcontrol, gmsgs;
+    uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict, umsgbus, ucomlog,
+    gclasses, gtypes, grender, gmeteor, gcontrol, gmsgs, gform;
 
   type
     PUserInterface = ^TUserInterface;
@@ -24,14 +24,14 @@ interface
       function getClassId: word; virtual;
       procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
-      function createFromData(data: PDictionary): PControl;
-      function getControls: PList;
-      procedure addFromData(data: PDictionary);
+      procedure addForm(form: PForm);
       procedure render;
+      function getBus: PMessageBus;
     private
       _renderer: PRenderer;
-      _controls: PList;
-      procedure sendMouseActivity(mouseActivity: PMouseActivity);
+      _forms: PList;
+      _bus: PMessageBus;
+      procedure notifyFormAboutEvent(msg: PObjectMessage);
     end;
 
 implementation
@@ -41,13 +41,16 @@ implementation
   begin
     inherited init;
     _renderer := new(PMeteor, initWithCanvas(DisplayAdapter^.getCanvas));
-    _controls := new(PList, initWithClassFamily(C_CLASS_ID_CONTROL, C_CLASS_ID_CONTROL_FAMILY));
+    _forms := new(PList, initWithClassId(C_CLASS_ID_FORM));
+    _bus := new(PMessageBus, init);
+    _bus^.subscribe(@self);
   end;
 
   destructor TUserInterface.done;
   begin
     _renderer^.release;
-    _controls^.release;
+    _forms^.release;
+    _bus^.release;
     inherited done;
   end;
 
@@ -63,78 +66,55 @@ implementation
 
   procedure TUserInterface.receiveMessage(msg: PObjectMessage);
   begin
-    if msg^.opcode = C_MSG_MOUSE_ACTIVITY then
-      sendMouseActivity(PMouseActivity(msg^.payload))
-    else if msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW then
-    begin
-      _renderer^.render(PControl(msg^.sender));
-    end;
+    if msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW then
+      _renderer^.render(PControl(msg^.sender))
+    else if (msg^.opcode and C_MSG_CONTROL_EVENT_MASK) = C_MSG_CONTROL_EVENT_MASK then
+      notifyFormAboutEvent(msg);
   end;
 
-  function TUserInterface.createFromData(data: PDictionary): PControl;
-  var
-    cf: PControlFactory;
+  procedure TUserInterface.addForm(form: PForm);
   begin
-    cf := new(PControlFactory, init);
-    createFromData := cf^.create(data);
-    cf^.release;    
-  end;
-
-  function TUserInterface.getControls: PList;
-  begin
-    getControls := _controls;
-  end;
-
-  procedure TUserInterface.addFromData(data: PDictionary);
-  var
-    control: PControl;
-  begin
-    control := createFromData(data);
-    control^.setDelegate(@self);
-    _controls^.addObject(control);
-    control^.release;
+    form^.getControl^.setBus(_bus);
+    _forms^.addObject(form);
   end;
 
   procedure TUserInterface.render;
   var
-    control: PControl;
+    form: PForm;
   begin
-    _controls^.moveToStart;
-    control := PControl(_controls^.getObjectAtCursor);
-    while control <> nil do
+    _forms^.moveToStart;
+    form := PForm(_forms^.getObjectAtCursor);
+    while form <> nil do
     begin
-      _renderer^.render(control);
-      _controls^.moveForward;
-      control := PControl(_controls^.getObjectAtCursor);
+      _renderer^.render(form^.getControl);
+      _forms^.moveForward;
+      form := PForm(_forms^.getObjectAtCursor);
     end;
+  end;
+
+  function TUserInterface.getBus: PMessageBus;
+  begin
+    getBus := _bus;
   end;
 
   { TUserInterface private }
 
-  procedure TUserInterface.sendMouseActivity(mouseActivity: PMouseActivity);
+  procedure TUserInterface.notifyFormAboutEvent(msg: PObjectMessage);
   var
     control: PControl;
-    frame: PFrame;
-    msg: TObjectMessage;
+    form: PForm;
   begin
-    _controls^.moveToStart;
-    control := PControl(_controls^.getObjectAtCursor);
-    while (control <> nil) and not isPointInFrame(@mouseActivity^.position, control^.getFrame) do
+    control := PControl(msg^.sender);
+    while control^.getParent <> nil do control := control^.getParent;
+    _forms^.moveToStart;
+    form := PForm(_forms^.getObjectAtCursor);
+    while (form <> nil) and (form^.getControl <> control) do
     begin
-      _controls^.moveForward;
-      control := PControl(_controls^.getObjectAtCursor);
+      _forms^.moveForward;
+      form := PForm(_forms^.getObjectAtCursor);
     end;
-    if control <> nil then
-    begin
-      with control^.getFrame^.point do
-      begin
-        dec(mouseActivity^.position.x, x);
-        dec(mouseActivity^.position.y, y);
-        msg.opcode := C_MSG_MOUSE_ACTIVITY;
-        msg.payload := mouseActivity;
-        control^.receiveMessage(@msg);
-      end;
-    end;
+    if form <> nil then
+      form^.onEvent(msg^.opcode, PControl(msg^.sender));
   end;
 
   { Other }
