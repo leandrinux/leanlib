@@ -120,19 +120,20 @@ implementation
     delegate := getDelegate;
     with position do
     begin
-      getMouseStatus(word(x), word(y), status);   
+      getMouseStatus(word(x), word(y), status); 
+      x := x shr 1; { FIX THIS - it will only work for 320 x 200 }  
       if delegate <> nil then    
       begin
         if (x <> _lastPosition.x) or (y <> _lastPosition.y) then
           sendMessageWithData(C_MSG_MOUSE_MOVEMENT, delegate, @position, sizeof(TPoint));
         if (_lastStatus and C_MOUSE_LEFT) > (status and C_MOUSE_LEFT) then 
-          sendMessage(C_MSG_MOUSE_LEFT_UP, delegate);
+          sendMessageWithData(C_MSG_MOUSE_LEFT_UP, delegate, @position, sizeof(TPoint));
         if (_lastStatus and C_MOUSE_LEFT) < (status and C_MOUSE_LEFT) then 
-          sendMessage(C_MSG_MOUSE_LEFT_DOWN, delegate);
+          sendMessageWithData(C_MSG_MOUSE_LEFT_DOWN, delegate, @position, sizeof(TPoint));
         if (_lastStatus and C_MOUSE_RIGHT) > (status and C_MOUSE_RIGHT) then 
-          sendMessage(C_MSG_MOUSE_RIGHT_UP, delegate);
+          sendMessageWithData(C_MSG_MOUSE_RIGHT_UP, delegate, @position, sizeof(TPoint));
         if (_lastStatus and C_MOUSE_RIGHT) < (status and C_MOUSE_RIGHT) then 
-          sendMessage(C_MSG_MOUSE_RIGHT_DOWN, delegate);
+          sendMessageWithData(C_MSG_MOUSE_RIGHT_DOWN, delegate, @position, sizeof(TPoint));
       end;    
     end;
     _lastPosition := position;
