@@ -119,6 +119,7 @@ implementation
     position: TPoint;
     status: word;
   begin
+    if not _isVisible then exit;
     delegate := getDelegate;
     with position do
     begin
