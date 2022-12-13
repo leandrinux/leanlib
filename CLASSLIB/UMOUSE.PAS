@@ -41,6 +41,9 @@ interface
       _lastStatus: word;
     end;
 
+  var
+    Mouse: PMouse;
+
 implementation
 
   const
@@ -73,7 +76,6 @@ implementation
     _cursors[ECursorWait] := @C_CURSOR_HOURGLASS;
     _lastPosition := C_POINT_ZERO;
     _lastStatus := 0;
-    reset;
   end;
 
   destructor TMouse.done;
@@ -173,5 +175,6 @@ implementation
   { TMouse private }
 
   { Other }
-
+begin
+  Mouse := new(PMouse, init);
 end.

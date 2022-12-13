@@ -10,7 +10,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, ucanvas,
+    uobject, uexc, ucanvas, umouse,
     gclasses, gtypes, gcontrol, gpanel, glabel, gbutton;
 
   type
@@ -74,11 +74,13 @@ implementation
 
   procedure TRenderer.render(control: PControl);
   begin
+    Mouse^.hide;
     case control^.getClassId of
       C_CLASS_ID_PANEL: renderPanel(PPanel(control));
       C_CLASS_ID_LABEL: renderLabel(PLabel(control));
       C_CLASS_ID_BUTTON: renderButton(PButton(control));
     end;
+    Mouse^.show;
   end;
 
   { TRenderer private }
