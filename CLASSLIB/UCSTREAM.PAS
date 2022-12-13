@@ -9,7 +9,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale, math, ucomlog,
+    consts, utils, uclasses, types, locale, math,
     uobject, uexc, ustream;
 
   type

@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict, umsgbus, ucomlog,
+    uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict, umsgbus,
     gclasses, gtypes, grender, gmeteor, gcontrol, gmsgs, gform;
 
   type

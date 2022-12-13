@@ -1,6 +1,6 @@
 uses
   ascii, xcrt, types, utils,
-  uobject, uclasses, uexc, udisplay, umouse, ucomlog,
+  uobject, uclasses, uexc, udisplay, umouse,
   gui, gtypes, gmsgs, gform, gcontrol;
 
 const
@@ -20,7 +20,7 @@ end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);
 begin
-  log('onEvent from ' + sender^.getId);
+  { log('onEvent from ' + sender^.getId); } 
 end;
 
 var
@@ -31,12 +31,14 @@ var
 begin
   createDefaultDisplayAdapter;         { open default graphics mode }
   Mouse^.reset;                        { prepare the mouse after changing video mode }
+  Mouse^.show;                         { show the mouse cursor }
+  Mouse^.selectCursor(ECursorWait);    { use wait cursor until load is complete }
   form := new(PMyForm, init);          { create form instance }
   ui := new(PUserInterface, init);     { create user interface }
   ui^.addForm(form);                   { add the form to our user interface }
   Mouse^.setDelegate(ui^.getBus);      { send mouse messages to the user interface }
-  Mouse^.show;                         { show the mouse cursor }
   ui^.render;                          { render the user interface }
+  Mouse^.selectCursor(ECursorDefault); { use default cursor now that everything is loaded }
 
   key := #0;
   while key <> C_ESC do                { stay in this loop until the ESC key is pressed }

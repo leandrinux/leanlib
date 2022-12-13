@@ -1,5 +1,5 @@
 uses 
-  xcrt, types, ubitmap, ufstream, ubmpfile, udisplay, ucomlog;
+  xcrt, types, ubitmap, ufstream, ubmpfile, udisplay;
 
 const
   C_BMP_PATH = 'RES\mini.BMP';
