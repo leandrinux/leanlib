@@ -89,7 +89,7 @@ implementation
             _state := EButtonStateUp;
             sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
             if isPointInFrame(mousePosition, @frame) then
-              sendMessage(C_MSG_BUTTON_CLICK, getBus);
+              sendMessage(C_MSG_CONTROL_CLICKED, getBus);
           end;
       end;
     end;
