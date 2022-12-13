@@ -12,6 +12,11 @@ interface
     uclasses, uobject, uexc, umsgs;
 
   type
+    ECursorType = (
+      ECursorDefault,
+      ECursorWait
+    );
+
     PMouse = ^TMouse;
     TMouse = object (TObject)
     public
@@ -23,17 +28,20 @@ interface
       procedure show;
       procedure hide;
       procedure update;
+      procedure selectCursor(cursorType: ECursorType);
+      procedure changeCursor(cursorType: ECursorType; cursor: PMouseCursor);
       function isCursorVisible: boolean;
       function isLeftDown: boolean;
       function isRightDown: boolean;
-      function getLastPosition: PPoint;
+      function getPosition: PPoint;
     private
-      _defaultCursor: PMouseCursor;
-      _waitCursor: PMouseCursor;
+      _cursors: array [ECursorType] of PMouseCursor;
       _isVisible: boolean;
       _lastPosition: TPoint;
       _lastStatus: word;
     end;
+
+implementation
 
   const
     { example alternative mouse graphics cursor }
@@ -46,7 +54,14 @@ interface
       hotY: 0
     );
 
-implementation
+    C_CURSOR_HOURGLASS: TMouseCursor = (
+      screenMask: ( $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF,
+                    $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF, $FFFF );
+      cursorMask: ( $FFF0, $8010, $8010, $E070, $F0F0, $79E0, $3FC0, $1F80,
+                    $1080, $2640, $4020, $8010, $8610, $8F10, $9F90, $FFF0 );
+      hotX: 5;
+      hotY: 6
+    );
 
   { TMouse public }
 
@@ -54,8 +69,8 @@ implementation
   begin
     inherited init;
     _isVisible := false;
-    _defaultCursor := @C_CURSOR_TRIANGLE;
-    _waitCursor := nil;
+    _cursors[ECursorDefault] := @C_CURSOR_TRIANGLE;
+    _cursors[ECursorWait] := @C_CURSOR_HOURGLASS;
     _lastPosition := C_POINT_ZERO;
     _lastStatus := 0;
     reset;
@@ -79,7 +94,7 @@ implementation
   procedure TMouse.reset;
   begin
     mouseReset;
-    setGraphicsCursor(_defaultCursor^);
+    setGraphicsCursor(_cursors[ECursorDefault]^);
   end;
 
   procedure TMouse.show;
@@ -124,6 +139,16 @@ implementation
     _lastStatus := status;
   end;
 
+  procedure TMouse.changeCursor(cursorType: ECursorType; cursor: PMouseCursor);
+  begin
+    _cursors[cursorType] := cursor;
+  end;
+
+  procedure TMouse.selectCursor(cursorType: ECursorType);
+  begin
+    setGraphicsCursor(_cursors[cursorType]^);    
+  end;
+
   function TMouse.isCursorVisible: boolean;
   begin
     isCursorVisible := _isVisible;
@@ -139,9 +164,9 @@ implementation
     isRightDown := (_lastStatus and C_MOUSE_RIGHT) <> 0;
   end;
 
-  function TMouse.getLastPosition: PPoint;
+  function TMouse.getPosition: PPoint;
   begin
-    getLastPosition := @_lastPosition;
+    getPosition := @_lastPosition;
   end;
 
   { TMouse private }
