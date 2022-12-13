@@ -19,6 +19,7 @@ interface
     public
       constructor init;
       constructor initWithClassFamily(fromClassId, toClassId: word);
+      constructor initWithClassId(classId: word);
       destructor done; virtual;
       procedure addObject(obj: PObject);
       procedure addString(value: string);
@@ -84,6 +85,11 @@ implementation
     _fromClassId := fromClassId;
     _toClassId := toClassId;
     _isWeak := false;
+  end;
+
+  constructor TList.initWithClassId(classId: word);
+  begin
+    initWithClassFamily(classId, classId);
   end;
 
   destructor TList.done;
