@@ -10,7 +10,7 @@ var
 begin
   fs := new(PFileStream, initWithPath('res\example.jsn', EFileReadOnly));
   js := new(PJsonReader, init);
-  d := PDictionary(js^.open(fs));
+  d := PDictionary(js^.createFromStream(fs));
   writeln('Name: ', d^.getString('name', ''));
   writeln('Age: ', d^.getLong('age', 0));
   writeln('Is Alive: ', booltostr(d^.getBool('isAlive', false)));

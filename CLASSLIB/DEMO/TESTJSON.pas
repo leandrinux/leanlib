@@ -16,7 +16,7 @@ begin
   stream := PStream(p);
   jr := new(PJsonReader, init);
   stream^.seek(0);
-  jr^.open(stream);
+  jr^.createFromStream(stream);
   jr^.release;
 end;
 
@@ -28,7 +28,7 @@ begin
   stream := new(PCachedStream, initWithStream(PStream(p), 4096));
   jr := new(PJsonReader, init);
   stream^.seek(0);
-  jr^.open(stream);
+  jr^.createFromStream(stream);
   jr^.release;
   stream^.release;
 end;
