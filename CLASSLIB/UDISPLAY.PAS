@@ -39,6 +39,8 @@ interface
   var
     DisplayAdapter: PDisplayAdapter;
 
+  procedure createDefaultDisplayAdapter;
+
 implementation
 
   { TDisplayAdapter }
@@ -146,6 +148,13 @@ implementation
   { private }
 
   { Other }
+
+  procedure createDefaultDisplayAdapter;
+  begin
+    DisplayAdapter := new(PDisplayAdapter, init);
+    DisplayAdapter^.detectAdapter;
+    DisplayAdapter^.setVideoMode(0);
+  end;
 
 begin
   DisplayAdapter := nil;
