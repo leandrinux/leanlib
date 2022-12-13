@@ -21,6 +21,7 @@ uses
   ULIST,
   USTRING,
   UNUMBER,
+  UMOUSE,
   USERIAL,
   UMSGBUS,
   UBITMAP,

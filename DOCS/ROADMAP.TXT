@@ -7,6 +7,6 @@ DOING
 
 - (CLASSLIB) Make a wrapper for the mouse functions in the base INT33 unit, providing nice extras
  like a nicer and smaller mouse cursor as default, support for a wait cursor, support for double
- clicking
+ clicking. Must report activity through messages to a delegate.
 
 DONE

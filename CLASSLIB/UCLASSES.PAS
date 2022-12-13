@@ -48,6 +48,7 @@ interface
     { devices }
     C_CLASS_ID_DISPLAYADAPTER = 300;
     C_CLASS_ID_SPEAKER        = 301;
+    C_CLASS_ID_MOUSE          = 302;
     C_CLASS_ID_VIDEODRIVER    = 310;
     C_CLASS_ID_VGADRIVER      = 311;
 
