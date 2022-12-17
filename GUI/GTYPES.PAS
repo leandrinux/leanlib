@@ -10,6 +10,7 @@ interface
       ECKPanelBorderTopLeft,
       ECKPanelBorderBottomRight,
       ECKPanelBackground,
+      ECKCheckboxBorder,
       ECKLabelText,
       ECKButtonText
     );

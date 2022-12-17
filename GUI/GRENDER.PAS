@@ -11,7 +11,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ucanvas, umouse,
-    gclasses, gtypes, gcontrol, gpanel, glabel, gbutton;
+    gclasses, gtypes, gcontrol, gpanel, glabel, gbutton, gchkbox;
 
   type
     PRenderer = ^TRenderer;
@@ -31,6 +31,7 @@ interface
       procedure renderPanel(panel: PPanel); virtual;
       procedure renderLabel(lbl: PLabel); virtual;
       procedure renderButton(button: PButton); virtual;
+      procedure renderCheckbox(checkbox: PCheckbox); virtual;
     private
       _canvas: PCanvas;
     end;
@@ -79,6 +80,7 @@ implementation
       C_CLASS_ID_PANEL: renderPanel(PPanel(control));
       C_CLASS_ID_LABEL: renderLabel(PLabel(control));
       C_CLASS_ID_BUTTON: renderButton(PButton(control));
+      C_CLASS_ID_CHECKBOX: renderCheckbox(PCheckbox(control));
     end;
     Mouse^.show;
   end;
@@ -98,6 +100,10 @@ implementation
   end;
 
   procedure TRenderer.renderButton(button: PButton);
+  begin
+  end;
+
+  procedure TRenderer.renderCheckbox(checkbox: PCheckbox);
   begin
   end;
 

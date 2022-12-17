@@ -47,6 +47,7 @@ implementation
     _ColorArray[ECKPanelBorderTopLeft] := pColor(EWhite);
     _ColorArray[ECKPanelBorderBottomRight] := pColor(EDarkgray);
     _ColorArray[ECKPanelBackground] := pColor(ELightgray);
+    _ColorArray[ECKCheckboxBorder] := pColor(EBlack);
     _ColorArray[ECKLabelText] := pColor(EBlack);
     _ColorArray[ECKButtonText] := pColor(EBlack);
   end;

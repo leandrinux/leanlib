@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, ucanvas, utrender,
-    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel, gbutton;
+    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox;
 
   type
     PMeteor = ^TMeteor;
@@ -28,6 +28,7 @@ interface
       procedure renderPanel(panel: PPanel); virtual;
       procedure renderLabel(lbl: PLabel); virtual;
       procedure renderButton(button: PButton); virtual;
+      procedure renderCheckbox(checkbox: PCheckbox); virtual;
     private
     end;
 
@@ -201,6 +202,30 @@ implementation
     tr^.setCursor(x, y);
     tr^.write(button^.getCaption);
     tr^.release; 
+  end;
+
+  procedure TMeteor.renderCheckbox(checkbox: PCheckbox);
+  var
+    absolutePosition: TPoint;
+  begin
+    renderControl(checkbox);
+    checkbox^.getAbsolutePosition(absolutePosition);
+    with checkbox^, getCanvas^, getFrame^ do
+    begin
+      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKCheckboxBorder);
+      rect(absolutePosition.x, absolutePosition.y, size.width, size.height);
+      if checkbox^.isChecked then
+      begin
+        line(
+          absolutePosition.x + 4, absolutePosition.y + 4,
+          absolutePosition.x + size.width - 5, absolutePosition.y + size.height - 5
+        );
+        line(
+          absolutePosition.x + size.width - 5, absolutePosition.y + 4,
+          absolutePosition.x + 4, absolutePosition.y + size.height - 5
+        );
+      end;
+    end;
   end;
 
   { TMeteor private }

@@ -40,6 +40,8 @@ interface
 
     C_ATTR_CAPTION              = 'caption';
 
+    C_ATTR_CHECKED              = 'checked';
+
     C_PATH_FRAME_X              = 'frame.x';
     C_PATH_FRAME_Y              = 'frame.y';
     C_PATH_FRAME_WIDTH          = 'frame.width';
@@ -48,6 +50,7 @@ interface
     C_CONTROL_TYPE_PANEL  = 'panel';
     C_CONTROL_TYPE_LABEL  = 'label';
     C_CONTROL_TYPE_BUTTON = 'button';
+    C_CONTROL_TYPE_CHECKBOX = 'checkbox';
 
 implementation
 

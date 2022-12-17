@@ -1,6 +1,7 @@
 uses
   GAttribs,
   GButton,
+  GChkbox,
   GClasses,
   GColors,
   GControl,

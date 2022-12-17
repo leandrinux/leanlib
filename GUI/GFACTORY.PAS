@@ -10,8 +10,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, udict, ulist,
-    gclasses, gtypes, gattribs, gcontrol, gpanel, glabel, gbutton;
+    uobject, uexc, udict, ulist, 
+    gclasses, gtypes, gattribs, gcontrol, gpanel, glabel, gbutton, gchkbox;
 
   type
     PControlFactory = ^TControlFactory;
@@ -29,10 +29,13 @@ interface
       function createPanel(data: PDictionary): PPanel;
       function createLabel(data: PDictionary): PLabel;
       function createButton(data: PDictionary): PButton;
+      function createCheckbox(data: PDictionary): PCheckbox;
+
       procedure initControl(control: PControl; data: PDictionary);
       procedure initPanel(panel: PPanel; data: PDictionary);
       procedure initLabel(lbl: PLabel; data: PDictionary);
       procedure initButton(button: PButton; data: PDictionary);
+      procedure initCheckbox(checkbox: PCheckbox; data: PDictionary);
     end;
 
 implementation
@@ -70,6 +73,8 @@ implementation
       create := createLabel(data)
     else if controlType = C_CONTROL_TYPE_BUTTON then 
       create := createButton(data)
+    else if controlType = C_CONTROL_TYPE_CHECKBOX then 
+      create := createCheckbox(data)
     else
       raise(@self, 0, S_ERR_UNEXPECTED_TYPE);
   end;
@@ -100,6 +105,15 @@ implementation
     button := new(PButton, initWithId(data^.getString(C_ATTR_ID, '')));
     initButton(button, data);
     createButton := button;
+  end;
+
+  function TControlFactory.createCheckbox(data: PDictionary): PCheckbox;
+  var
+    checkbox: PCheckbox;
+  begin
+    checkbox := new(PCheckbox, initWithId(data^.getString(C_ATTR_ID, '')));
+    initCheckbox(checkbox, data);
+    createCheckbox := checkbox;
   end;
 
   procedure TControlFactory.initControl(control: PControl; data: PDictionary);
@@ -188,6 +202,17 @@ implementation
   begin
     initControl(button, data);
     button^.setCaption(data^.getString(C_ATTR_CAPTION, ''));
+  end;
+
+  procedure TControlFactory.initCheckbox(checkbox: PCheckbox; data: PDictionary);
+  begin
+    initControl(checkbox, data);
+    with checkbox^.getFrame^ do
+    begin
+      size.width := 15;
+      size.height := 15;
+    end;
+    checkbox^.setChecked(data^.getBool(C_ATTR_CHECKED, false));
   end;
 
   { Other }
