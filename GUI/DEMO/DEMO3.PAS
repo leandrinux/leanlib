@@ -23,7 +23,16 @@ end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);
 begin
-  if (opcode = C_MSG_CONTROL_CLICKED) and (sender^.getId = 'quitBtn') then runFlag := false; 
+  if (opcode = C_MSG_CONTROL_CLICKED) then
+  begin
+    if (sender^.getId = 'quitBtn') then
+    begin 
+      runFlag := false;
+    end else if (sender^.getId = 'beepBtn') then
+    begin
+      beep;
+    end; 
+  end;
 end;
 
 var

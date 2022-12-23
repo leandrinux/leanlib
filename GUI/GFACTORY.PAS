@@ -11,7 +11,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, udict, ulist, 
-    gclasses, gtypes, gattribs, gcontrol, gpanel, glabel, gbutton, gchkbox;
+    gclasses, gtypes, gattribs, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
     PControlFactory = ^TControlFactory;
@@ -30,12 +30,14 @@ interface
       function createLabel(data: PDictionary): PLabel;
       function createButton(data: PDictionary): PButton;
       function createCheckbox(data: PDictionary): PCheckbox;
+      function createTextField(data: PDictionary): PTextField;
 
       procedure initControl(control: PControl; data: PDictionary);
       procedure initPanel(panel: PPanel; data: PDictionary);
       procedure initLabel(lbl: PLabel; data: PDictionary);
       procedure initButton(button: PButton; data: PDictionary);
       procedure initCheckbox(checkbox: PCheckbox; data: PDictionary);
+      procedure initTextField(textField: PTextField; data: PDictionary);
     end;
 
 implementation
@@ -75,6 +77,8 @@ implementation
       create := createButton(data)
     else if controlType = C_CONTROL_TYPE_CHECKBOX then 
       create := createCheckbox(data)
+    else if controlType = C_CONTROL_TYPE_TEXTFIELD then 
+      create := createTextField(data)
     else
       raise(@self, 0, S_ERR_UNEXPECTED_TYPE);
   end;
@@ -114,6 +118,15 @@ implementation
     checkbox := new(PCheckbox, initWithId(data^.getString(C_ATTR_ID, '')));
     initCheckbox(checkbox, data);
     createCheckbox := checkbox;
+  end;
+
+  function TControlFactory.createTextField(data: PDictionary): PTextField;
+  var
+    textField: PTextField;
+  begin
+    textField := new(PTextField, initWithId(data^.getString(C_ATTR_ID, '')));
+    initTextField(textField, data);
+    createTextField := textField;
   end;
 
   procedure TControlFactory.initControl(control: PControl; data: PDictionary);
@@ -213,6 +226,11 @@ implementation
       size.height := 15;
     end;
     checkbox^.setChecked(data^.getBool(C_ATTR_CHECKED, false));
+  end;
+
+  procedure TControlFactory.initTextField(textField: PTextField; data: PDictionary);
+  begin
+    initControl(textField, data);
   end;
 
   { Other }

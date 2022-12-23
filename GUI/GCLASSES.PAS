@@ -22,6 +22,7 @@ interface
     C_CLASS_ID_LABEL          = 2013;
     C_CLASS_ID_BUTTON         = 2014;
     C_CLASS_ID_CHECKBOX       = 2015;
+    C_CLASS_ID_TEXTFIELD      = 2016;
     C_CLASS_ID_CONTROL_FAMILY = 2020;
 
 implementation

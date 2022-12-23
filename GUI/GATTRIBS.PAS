@@ -51,6 +51,7 @@ interface
     C_CONTROL_TYPE_LABEL  = 'label';
     C_CONTROL_TYPE_BUTTON = 'button';
     C_CONTROL_TYPE_CHECKBOX = 'checkbox';
+    C_CONTROL_TYPE_TEXTFIELD = 'textfield';
 
 implementation
 

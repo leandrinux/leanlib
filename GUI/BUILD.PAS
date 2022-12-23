@@ -6,6 +6,7 @@ uses
   GColors,
   GControl,
   GFactory,
+  GField,
   GLabel,
   GMeteor,
   GMsgs,

@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, ucanvas, utrender,
-    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox;
+    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
     PMeteor = ^TMeteor;
@@ -29,6 +29,7 @@ interface
       procedure renderLabel(lbl: PLabel); virtual;
       procedure renderButton(button: PButton); virtual;
       procedure renderCheckbox(checkbox: PCheckbox); virtual;
+      procedure renderTextField(textField: PTextField); virtual;
     private
     end;
 
@@ -233,6 +234,23 @@ implementation
     end;
   end;
 
+  procedure TMeteor.renderTextField(textField: PTextField);
+  var
+    absolutePosition: TPoint;
+  begin
+    renderControl(textField);
+    textField^.getAbsolutePosition(absolutePosition);
+    with textField^, getCanvas^, getFrame^, absolutePosition, size do
+    begin
+      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderLowered);
+      hline(x, x + width - 1, y);
+      vline(y + 1, y + height - 1, x);
+      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderRaised);
+      hline(x, x + width - 1, y + height - 1);
+      vline(y + 1, y + height - 1, x + width - 1);
+    end;
+  end;
+  
   { TMeteor private }
 
   { Other }
