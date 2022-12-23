@@ -44,10 +44,10 @@ implementation
   begin
     inherited init;
     pSetColorDepth(DisplayAdapter^.getCanvas^.getBitmap^.getBitsPerPixel);
-    _ColorArray[ECKPanelBorderTopLeft] := pColor(EWhite);
-    _ColorArray[ECKPanelBorderBottomRight] := pColor(EDarkgray);
+    _ColorArray[ECKPanelBorderRaised] := pColor(EWhite);
+    _ColorArray[ECKPanelBorderLowered] := pColor(EDarkgray);
     _ColorArray[ECKPanelBackground] := pColor(ELightgray);
-    _ColorArray[ECKCheckboxBorder] := pColor(EBlack);
+    _ColorArray[ECKCheckboxSymbol] := pColor(EBlue);
     _ColorArray[ECKLabelText] := pColor(EBlack);
     _ColorArray[ECKButtonText] := pColor(EBlack);
   end;

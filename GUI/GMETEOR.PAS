@@ -94,14 +94,14 @@ implementation
         
         EBorderStyleRaised:
         begin
-          colorTL := getColor(ECKPanelBorderTopLeft);
-          colorBR := getColor(ECKPanelBorderBottomRight);
+          colorTL := getColor(ECKPanelBorderRaised);
+          colorBR := getColor(ECKPanelBorderLowered);
         end;
 
         EBorderStyleLowered:
         begin
-          colorTL := getColor(ECKPanelBorderBottomRight);
-          colorBR := getColor(ECKPanelBorderTopLeft);
+          colorTL := getColor(ECKPanelBorderLowered);
+          colorBR := getColor(ECKPanelBorderRaised);
         end;
       end;
       getStrokeBrush^.color := colorTL;
@@ -173,14 +173,14 @@ implementation
     case button^.getState of
       EButtonStateUp:
       begin
-        colorTL := DefaultColorScheme^.getColor(ECKPanelBorderTopLeft);
-        colorBR := DefaultColorScheme^.getColor(ECKPanelBorderBottomRight);
+        colorTL := DefaultColorScheme^.getColor(ECKPanelBorderRaised);
+        colorBR := DefaultColorScheme^.getColor(ECKPanelBorderLowered);
       end;
 
       EButtonStateDown:
       begin
-        colorTL := DefaultColorScheme^.getColor(ECKPanelBorderBottomRight);
-        colorBR := DefaultColorScheme^.getColor(ECKPanelBorderTopLeft);
+        colorTL := DefaultColorScheme^.getColor(ECKPanelBorderLowered);
+        colorBR := DefaultColorScheme^.getColor(ECKPanelBorderRaised);
       end;
     end;
     with getCanvas^, button^.getFrame^, size do
@@ -210,15 +210,20 @@ implementation
   begin
     renderControl(checkbox);
     checkbox^.getAbsolutePosition(absolutePosition);
-    with checkbox^, getCanvas^, getFrame^ do
+    with checkbox^, getCanvas^, getFrame^, absolutePosition, size do
     begin
-      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKCheckboxBorder);
-      rect(absolutePosition.x, absolutePosition.y, size.width, size.height);
+      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderLowered);
+      hline(x, x + width - 1, y);
+      vline(y + 1, y + height - 1, x);
+      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderRaised);
+      hline(x, x + width - 1, y + height - 1);
+      vline(y + 1, y + height - 1, x + width - 1);
       if checkbox^.isChecked then
       begin
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKCheckboxSymbol);
         line(
-          absolutePosition.x + 4, absolutePosition.y + 4,
-          absolutePosition.x + size.width - 5, absolutePosition.y + size.height - 5
+          x + 4, y + 4,
+          x + size.width - 5, y + size.height - 5
         );
         line(
           absolutePosition.x + size.width - 5, absolutePosition.y + 4,

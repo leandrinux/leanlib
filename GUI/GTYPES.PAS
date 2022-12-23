@@ -7,10 +7,10 @@ interface
 
   type
     EColorKey = (
-      ECKPanelBorderTopLeft,
-      ECKPanelBorderBottomRight,
+      ECKPanelBorderRaised,
+      ECKPanelBorderLowered,
       ECKPanelBackground,
-      ECKCheckboxBorder,
+      ECKCheckboxSymbol,
       ECKLabelText,
       ECKButtonText
     );
