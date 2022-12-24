@@ -28,10 +28,11 @@ interface
       function createControlFromJson(stream: PStream): PControl;
       function createControlFromFile(filename: string): PControl;
       function createControl: PControl; virtual;
-      function getControl: PControl;
+      function getRootControl: PControl;
+      procedure onStart; virtual;
       procedure onEvent(opcode: word; sender: PControl); virtual;
     private
-      _control: PControl;
+      _rootControl: PControl;
     end;
 
 implementation
@@ -41,14 +42,15 @@ implementation
   constructor TForm.init;
   begin
     inherited init;
-    _control := createControl;
-    _control^.setDelegate(@self);
+    _rootControl := createControl;
+    _rootControl^.setDelegate(@self);
+    onStart;
   end;
 
   destructor TForm.done;
   begin
     inherited done;
-    _control^.release;
+    _rootControl^.release;
   end;
 
   function TForm.getClassName: string;
@@ -100,9 +102,13 @@ implementation
     createControl := new(PControl, initWithId(''));
   end;
 
-  function TForm.getControl: PControl;
+  function TForm.getRootControl: PControl;
   begin
-    getControl := _control;
+    getRootControl := _rootControl;
+  end;
+
+  procedure TForm.onStart;
+  begin
   end;
 
   procedure TForm.onEvent(opcode: word; sender: PControl);
