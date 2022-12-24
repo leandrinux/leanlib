@@ -26,7 +26,6 @@ end;
 procedure TMyForm.onStart;
 begin
   field1 := PTextField(getRootControl^.findControl('field1'));
-  field1^.setText('cockadoodledoo');
 end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);

@@ -37,6 +37,7 @@ interface
     
     C_ATTR_TEXT                 = 'text';
     C_ATTR_TEXT_COLOR           = 'text-color';
+    C_ATTR_PLACEHOLDER          = 'placeholder';
 
     C_ATTR_CAPTION              = 'caption';
 

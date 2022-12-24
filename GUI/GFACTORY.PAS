@@ -232,6 +232,7 @@ implementation
   begin
     initControl(textField, data);
     textField^.setText(data^.getString(C_ATTR_TEXT, ''));
+    textField^.setPlaceholder(data^.getString(C_ATTR_PLACEHOLDER, ''));
   end;
 
   { Other }

@@ -239,6 +239,7 @@ implementation
     absolutePosition: TPoint;
     tr: PTextRenderer;
     textSize: TSize;
+    textValue: TTextValue;
   begin
     renderControl(textField);
     textField^.getAbsolutePosition(absolutePosition);
@@ -255,15 +256,22 @@ implementation
       { text } 
       tr := new(PTextRenderer, init);
       tr^.setCanvas(getCanvas);
-      tr^.getTextSize(textField^.getText, @textSize);
+      textValue := textField^.getText;
+      if not isFocused and (length(textValue) = 0) then 
+      begin
+        textValue := textField^.getPlaceholder;
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKTextPlaceholder);
+      end else begin
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKLabelText);
+      end;
+      tr^.getTextSize(textValue, @textSize);
       tr^.setCursor(x + 5, y + 5);
       if not isEnabled then 
       begin
         setPattern(EDots, getStrokeBrush);
         getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKTextDisabled);
-      end else
-        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKLabelText);;
-      tr^.write(textField^.getText);
+      end;
+      tr^.write(textValue);
       setPattern(ESolid, getStrokeBrush);
       tr^.release; 
 

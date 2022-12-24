@@ -15,7 +15,8 @@ interface
       ECKButtonText,
       ECKControlFocus,
       ECKTextDisabled,
-      ECKTextCursor
+      ECKTextCursor,
+      ECKTextPlaceholder
     );
     
     PControlId = ^TControlId;

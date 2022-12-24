@@ -13,6 +13,9 @@ interface
     gclasses, gtypes, gcontrol, gmsgs;
 
   type
+    TTextValue = string32;
+    TPlaceholderText = string32;
+
     PTextField = ^TTextField;
     TTextField = object (TControl)
     public
@@ -26,11 +29,14 @@ interface
       procedure setEnabled(enabled: boolean); virtual;
       { methods }
       function isFocused: boolean;
-      procedure setText(text: string);
-      function getText: string;
+      procedure setText(text: TTextValue);
+      function getText: TTextValue;
+      procedure setPlaceholder(placeholder: TPlaceholderText);
+      function getPlaceholder: TPlaceholderText;
     private
       _isFocused: boolean;
-      _text: string;
+      _text: TTextValue;
+      _placeholder: TPlaceholderText;
     end;
 
 implementation
@@ -42,6 +48,7 @@ implementation
     inherited initWithId(id);
     _isFocused := false;
     _text := '';
+    _placeholder := '';
   end;
 
   destructor TTextField.done;
@@ -124,15 +131,25 @@ implementation
     isFocused := _isFocused;
   end;
 
-  procedure TTextField.setText(text: string);
+  procedure TTextField.setText(text: TTextValue);
   begin
     _text := text;
     sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
   end;
 
-  function TTextField.getText: string;
+  function TTextField.getText: TTextValue;
   begin
     getText := _text;
+  end;
+
+  procedure TTextField.setPlaceholder(placeholder: TPlaceholderText);
+  begin
+    _placeholder := placeholder;
+  end;
+
+  function TTextField.getPlaceholder: TPlaceholderText;
+  begin
+    getPlaceholder := _placeholder;
   end;
 
   { TTextField private }
