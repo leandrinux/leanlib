@@ -23,6 +23,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure receiveMessage(msg: PObjectMessage); virtual;
+      procedure setEnabled(enabled: boolean); virtual;
       { methods }
       function isFocused: boolean;
       procedure setText(text: string);
@@ -110,6 +111,12 @@ implementation
       end;
 
     end;
+  end;
+
+  procedure TTextField.setEnabled(enabled: boolean);
+  begin
+    if _isFocused and not enabled then _isFocused := false;
+    inherited setEnabled(enabled);
   end;
 
   function TTextField.isFocused: boolean;

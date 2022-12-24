@@ -35,7 +35,7 @@ interface
       function getBackgroundColor: TColor;     
       procedure setBackgroundStyle(backgroundStyle: EBackgroundStyle);
       function getBackgroundStyle: EBackgroundStyle;
-      procedure setEnabled(enabled: boolean);
+      procedure setEnabled(enabled: boolean); virtual;
       function isEnabled: boolean;
       function findControl(id: TControlId): PControl; virtual;
     private
