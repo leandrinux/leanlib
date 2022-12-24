@@ -252,30 +252,28 @@ implementation
       hline(x, x + width - 1, y + height - 1);
       vline(y + 1, y + height - 1, x + width - 1);
 
-      getFillBrush^.color := DefaultColorScheme^.getColor(ECKPanelBackground);
-      if isFocused then
-      begin
-        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKControlFocus);
-        setPattern(EDots, getStrokeBrush);
-      end else
-      begin
-        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBackground);
-      end;
-      rect(x+1, y+1, width - 2, height-2);
-      setPattern(ESolid, getStrokeBrush);
-
+      { text } 
       tr := new(PTextRenderer, init);
       tr^.setCanvas(getCanvas);
       tr^.getTextSize(textField^.getText, @textSize);
       getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKButtonText);
       tr^.setCursor(x + 5, y + 5);
+      if not isEnabled then setPattern(EDots, getStrokeBrush);
       tr^.write(textField^.getText);
+      setPattern(ESolid, getStrokeBrush);
       tr^.release; 
 
+      { focus border }
+      getFillBrush^.color := DefaultColorScheme^.getColor(ECKPanelBackground);
       if isFocused then
       begin
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKControlFocus);
+        setPattern(EDots, getStrokeBrush);
+        rect(x+1, y+1, width - 2, height-2);
+        setPattern(ESolid, getStrokeBrush);
+        { text cursor }
         getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKTextCursor);
-        vline(y+4, y + height - 4, x + 6 + textSize.width);
+        vline(y+4, y + height - 5, x + 6 + textSize.width);
       end;
       
     end;
