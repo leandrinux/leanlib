@@ -31,6 +31,7 @@ interface
       function getControls: PList;
       procedure setBorderStyle(borderStyle: EBorderStyle);
       function getBorderStyle: EBorderStyle;
+      function findControl(id: TControlId): PControl; virtual;
     private
       _controls: PList;
       _borderStyle: EBorderStyle;
@@ -95,6 +96,24 @@ implementation
   function TPanel.getBorderStyle: EBorderStyle;
   begin
     getBorderStyle := _borderStyle;
+  end;
+
+  function TPanel.findControl(id: TControlId): PControl;
+  var
+    control: PControl;
+  begin
+    if getId = id then
+      findControl := @self
+    else begin
+      _controls^.moveToStart;
+      control := PControl(_controls^.getObjectAtCursor);
+      while (control <> nil) and (control^.getId <> id) do
+      begin
+        _controls^.moveForward;
+        control := PControl(_controls^.getObjectAtCursor);
+      end;
+      findControl := control;
+    end;
   end;
 
   { TPanel private }

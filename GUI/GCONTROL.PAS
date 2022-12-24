@@ -35,6 +35,9 @@ interface
       function getBackgroundColor: TColor;     
       procedure setBackgroundStyle(backgroundStyle: EBackgroundStyle);
       function getBackgroundStyle: EBackgroundStyle;
+      procedure setEnabled(enabled: boolean);
+      function isEnabled: boolean;
+      function findControl(id: TControlId): PControl; virtual;
     private
       _bus: PMessageBus;
       _frame: TFrame;
@@ -42,6 +45,7 @@ interface
       _parent: PControl;
       _backgroundColor: TColor;
       _backgroundStyle: EBackgroundStyle;
+      _isEnabled: boolean;
     end;
 
 implementation
@@ -56,6 +60,7 @@ implementation
     _bus := nil;
     _backgroundColor := DefaultColorScheme^.getColor(ECKPanelBackground);
     _backgroundStyle := EBackgroundStyleSolid;
+    _isEnabled := true;
   end;
 
   destructor TControl.done;
@@ -143,6 +148,24 @@ implementation
     getBackgroundStyle := _backgroundStyle;
   end;
 
+  procedure TControl.setEnabled(enabled: boolean);
+  begin
+    _isEnabled := enabled;
+    sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus); 
+  end;
+
+  function TControl.isEnabled: boolean;
+  begin
+    isEnabled := _isEnabled;
+  end;
+
+  function TControl.findControl(id: TControlId): PControl;
+  begin
+    if _id = id then
+      findControl := @self
+    else
+      findControl := nil;
+  end;
   { TControl private }
 
   { Other }
