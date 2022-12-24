@@ -1,7 +1,7 @@
 uses
   ascii, xcrt, types, utils,
   uobject, uclasses, uexc, udisplay, umouse, ukeybrd,
-  gui, gtypes, gmsgs, gform, gcontrol;
+  gui, gtypes, gmsgs, gform, gcontrol, gchkbox, gfield;
 
 const
   C_GUI_FILE = 'RES\DEMO.3';
@@ -12,6 +12,8 @@ var
 type
   PMyForm = ^TMyForm;
   TMyForm = object (TForm)
+    field1: PTextField;
+    procedure onStart; virtual;
     procedure onEvent(opcode: word; sender: PControl); virtual;
     function createControl: PControl; virtual;
   end;
@@ -19,6 +21,12 @@ type
 function TMyForm.createControl: PControl;
 begin
   createControl := createControlFromFile(C_GUI_FILE);
+end;
+
+procedure TMyForm.onStart;
+begin
+  field1 := PTextField(getRootControl^.findControl('field1'));
+  field1^.setText('cockadoodledoo');
 end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);
@@ -31,7 +39,10 @@ begin
     end else if (sender^.getId = 'beepBtn') then
     begin
       beep;
-    end; 
+    end else if (sender^.getId = 'chkbox1') then
+    begin
+      field1^.setEnabled(not field1^.isEnabled);
+    end;
   end;
 end;
 

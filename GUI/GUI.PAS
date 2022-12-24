@@ -74,7 +74,7 @@ implementation
 
   procedure TUserInterface.addForm(form: PForm);
   begin
-    form^.getControl^.setBus(_bus);
+    form^.getRootControl^.setBus(_bus);
     _forms^.addObject(form);
   end;
 
@@ -86,7 +86,7 @@ implementation
     form := PForm(_forms^.getObjectAtCursor);
     while form <> nil do
     begin
-      _renderer^.render(form^.getControl);
+      _renderer^.render(form^.getRootControl);
       _forms^.moveForward;
       form := PForm(_forms^.getObjectAtCursor);
     end;
@@ -108,7 +108,7 @@ implementation
     while control^.getParent <> nil do control := control^.getParent;
     _forms^.moveToStart;
     form := PForm(_forms^.getObjectAtCursor);
-    while (form <> nil) and (form^.getControl <> control) do
+    while (form <> nil) and (form^.getRootControl <> control) do
     begin
       _forms^.moveForward;
       form := PForm(_forms^.getObjectAtCursor);
