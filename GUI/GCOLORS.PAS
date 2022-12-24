@@ -50,7 +50,8 @@ implementation
     _ColorArray[ECKCheckboxSymbol] := pColor(EBlue);
     _ColorArray[ECKLabelText] := pColor(EBlack);
     _ColorArray[ECKButtonText] := pColor(EBlack);
-    _ColorArray[ECKControlFocus] := pColor(EBlue);    
+    _ColorArray[ECKControlFocus] := pColor(EBlue);
+    _ColorArray[ECKTextCursor] := pColor(EBlue);
   end;
 
   destructor TColorScheme.done;

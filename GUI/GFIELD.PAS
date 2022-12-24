@@ -8,7 +8,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
+    ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, umsgs, 
     gclasses, gtypes, gcontrol, gmsgs;
 
@@ -70,8 +70,19 @@ implementation
       C_MSG_KEYBOARD_KEY_DOWN:
       begin
         if not _isFocused then exit;
-        inc(_text[0]);
-        _text[length(_text)] := PChar(msg^.payload)^;
+        case PChar(msg^.payload)^ of
+
+          C_BACKSPACE: 
+            if length(_text) > 0 then dec(_text[0]);
+
+          C_ESC, C_CR: 
+            _isFocused := false;
+
+          else begin
+            inc(_text[0]);
+            _text[length(_text)] := PChar(msg^.payload)^;
+          end;
+        end; 
         sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
       end;
 

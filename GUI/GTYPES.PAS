@@ -13,7 +13,8 @@ interface
       ECKCheckboxSymbol,
       ECKLabelText,
       ECKButtonText,
-      ECKControlFocus
+      ECKControlFocus,
+      ECKTextCursor
     );
     
     PControlId = ^TControlId;

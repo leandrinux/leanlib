@@ -93,22 +93,6 @@ implementation
           end;
       end;
     end;
-
-{
-    if msg^.opcode = C_MSG_MOUSE_ACTIVITY then
-    begin
-      mouseActivity := PMouseActivity(msg^.payload);
-      if (mouseActivity^.event = EMouseEventLeftDown) and (_state = EButtonStateUp) then
-      begin 
-        _state := EButtonStateDown;
-        sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getParent);
-      end else if (mouseActivity^.event = EMouseEventLeftUp) and (_state = EButtonStateDown) then
-      begin
-        _state := EButtonStateUp;
-        sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getParent);
-      end;
-    end;
-  }
   end;
 
   function TButton.getState: EButtonState;

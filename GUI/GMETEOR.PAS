@@ -238,11 +238,13 @@ implementation
   var
     absolutePosition: TPoint;
     tr: PTextRenderer;
+    textSize: TSize;
   begin
     renderControl(textField);
     textField^.getAbsolutePosition(absolutePosition);
     with textField^, getCanvas^, getFrame^, absolutePosition, size do
     begin
+      { draw borders }
       getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderLowered);
       hline(x, x + width - 1, y);
       vline(y + 1, y + height - 1, x);
@@ -259,15 +261,22 @@ implementation
       begin
         getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBackground);
       end;
-      frect(x+1, y+1, width - 2, height-2);
+      rect(x+1, y+1, width - 2, height-2);
       setPattern(ESolid, getStrokeBrush);
 
       tr := new(PTextRenderer, init);
       tr^.setCanvas(getCanvas);
+      tr^.getTextSize(textField^.getText, @textSize);
       getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKButtonText);
       tr^.setCursor(x + 5, y + 5);
       tr^.write(textField^.getText);
       tr^.release; 
+
+      if isFocused then
+      begin
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKTextCursor);
+        vline(y+4, y + height - 4, x + 6 + textSize.width);
+      end;
       
     end;
   end;
