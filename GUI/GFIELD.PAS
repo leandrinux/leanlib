@@ -9,30 +9,34 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc,
-    gclasses, gtypes, gcontrol;
+    uobject, uexc, umsgs, 
+    gclasses, gtypes, gcontrol, gmsgs;
 
   type
     PTextField = ^TTextField;
     TTextField = object (TControl)
     public
       { constructors and destructors}
-      constructor init;
+      constructor initWithId(id: TControlId);
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
+      function isFocused: boolean;
     private
+      _isFocused: boolean;
     end;
 
 implementation
 
   { TTextField public }
 
-  constructor TTextField.init;
+  constructor TTextField.initWithId(id: TControlId);
   begin
-    inherited init;
+    inherited initWithId(id);
+    _isFocused := false;
   end;
 
   destructor TTextField.done;
@@ -48,6 +52,43 @@ implementation
   function TTextField.getClassId: word;
   begin
     getClassId := C_CLASS_ID_TextField;
+  end;
+
+  procedure TTextField.receiveMessage(msg: PObjectMessage);
+  var
+    mousePosition: PPoint;
+    frame: TFrame;
+  begin
+    frame := getFrame^;
+    getAbsolutePosition(frame.point);
+    mousePosition := msg^.payload;
+    case msg^.opcode of 
+      C_MSG_MOUSE_LEFT_DOWN:  
+      begin
+        if _isFocused then exit;
+        if isPointInFrame(mousePosition, @frame) then 
+        begin
+          _isFocused := true;
+          sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+          sendMessage(C_MSG_CONTROL_FOCUS_CHANGED, getBus);
+        end;
+      end;
+
+      C_MSG_CONTROL_FOCUS_CHANGED: 
+      begin
+        if _isFocused and (msg^.sender <> @self) then
+        begin
+          _isFocused := false;
+          sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+        end;
+      end;
+
+    end;
+  end;
+
+  function TTextField.isFocused: boolean;
+  begin
+    isFocused := _isFocused;
   end;
 
   { TTextField private }

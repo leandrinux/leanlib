@@ -248,6 +248,17 @@ implementation
       getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderRaised);
       hline(x, x + width - 1, y + height - 1);
       vline(y + 1, y + height - 1, x + width - 1);
+      if isFocused then
+      begin
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKControlFocus);
+        setPattern(EDots, getStrokeBrush);
+        rect(x+1, y+1, width - 2, height-2);
+        setPattern(ESolid, getStrokeBrush);
+      end else
+      begin
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBackground);
+        rect(x+1, y+1, width - 2, height-2);
+      end;
     end;
   end;
   

@@ -12,7 +12,8 @@ interface
       ECKPanelBackground,
       ECKCheckboxSymbol,
       ECKLabelText,
-      ECKButtonText
+      ECKButtonText,
+      ECKControlFocus
     );
     
     PControlId = ^TControlId;
