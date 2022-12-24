@@ -70,6 +70,7 @@ implementation
 
       C_MSG_KEYBOARD_KEY_DOWN:
       begin
+        if not isEnabled then exit;
         if not _isFocused then exit;
         case PChar(msg^.payload)^ of
 
@@ -89,6 +90,7 @@ implementation
 
       C_MSG_MOUSE_LEFT_DOWN:  
       begin
+        if not isEnabled then exit;
         if _isFocused then exit;
         if isPointInFrame(mousePosition, @frame) then 
         begin
