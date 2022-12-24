@@ -237,6 +237,7 @@ implementation
   procedure TMeteor.renderTextField(textField: PTextField);
   var
     absolutePosition: TPoint;
+    tr: PTextRenderer;
   begin
     renderControl(textField);
     textField^.getAbsolutePosition(absolutePosition);
@@ -248,17 +249,26 @@ implementation
       getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderRaised);
       hline(x, x + width - 1, y + height - 1);
       vline(y + 1, y + height - 1, x + width - 1);
+
+      getFillBrush^.color := DefaultColorScheme^.getColor(ECKPanelBackground);
       if isFocused then
       begin
         getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKControlFocus);
         setPattern(EDots, getStrokeBrush);
-        rect(x+1, y+1, width - 2, height-2);
-        setPattern(ESolid, getStrokeBrush);
       end else
       begin
         getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBackground);
-        rect(x+1, y+1, width - 2, height-2);
       end;
+      frect(x+1, y+1, width - 2, height-2);
+      setPattern(ESolid, getStrokeBrush);
+
+      tr := new(PTextRenderer, init);
+      tr^.setCanvas(getCanvas);
+      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKButtonText);
+      tr^.setCursor(x + 5, y + 5);
+      tr^.write(textField^.getText);
+      tr^.release; 
+      
     end;
   end;
   

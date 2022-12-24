@@ -25,8 +25,10 @@ interface
       procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       function isFocused: boolean;
+      function getText: string;
     private
       _isFocused: boolean;
+      _text: string;
     end;
 
 implementation
@@ -37,6 +39,7 @@ implementation
   begin
     inherited initWithId(id);
     _isFocused := false;
+    _text := '';
   end;
 
   destructor TTextField.done;
@@ -63,6 +66,15 @@ implementation
     getAbsolutePosition(frame.point);
     mousePosition := msg^.payload;
     case msg^.opcode of 
+
+      C_MSG_KEYBOARD_KEY_DOWN:
+      begin
+        if not _isFocused then exit;
+        inc(_text[0]);
+        _text[length(_text)] := PChar(msg^.payload)^;
+        sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+      end;
+
       C_MSG_MOUSE_LEFT_DOWN:  
       begin
         if _isFocused then exit;
@@ -89,6 +101,11 @@ implementation
   function TTextField.isFocused: boolean;
   begin
     isFocused := _isFocused;
+  end;
+
+  function TTextField.getText: string;
+  begin
+    getText := _text;
   end;
 
   { TTextField private }
