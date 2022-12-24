@@ -52,6 +52,7 @@ implementation
     _ColorArray[ECKButtonText] := pColor(EBlack);
     _ColorArray[ECKControlFocus] := pColor(EBlue);
     _ColorArray[ECKTextCursor] := pColor(EBlue);
+    _ColorArray[ECKTextDisabled] := pColor(EDarkgray);
   end;
 
   destructor TColorScheme.done;

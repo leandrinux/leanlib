@@ -256,9 +256,13 @@ implementation
       tr := new(PTextRenderer, init);
       tr^.setCanvas(getCanvas);
       tr^.getTextSize(textField^.getText, @textSize);
-      getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKButtonText);
       tr^.setCursor(x + 5, y + 5);
-      if not isEnabled then setPattern(EDots, getStrokeBrush);
+      if not isEnabled then 
+      begin
+        setPattern(EDots, getStrokeBrush);
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKTextDisabled);
+      end else
+        getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKLabelText);;
       tr^.write(textField^.getText);
       setPattern(ESolid, getStrokeBrush);
       tr^.release; 

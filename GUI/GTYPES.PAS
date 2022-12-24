@@ -14,6 +14,7 @@ interface
       ECKLabelText,
       ECKButtonText,
       ECKControlFocus,
+      ECKTextDisabled,
       ECKTextCursor
     );
     
