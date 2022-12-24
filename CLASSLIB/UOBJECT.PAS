@@ -82,6 +82,7 @@ implementation
   var 
     msg: TObjectMessage;
   begin
+    if target = nil then exit;
     msg.opcode := opcode;
     msg.target := target;
     msg.sender := @self;
@@ -92,6 +93,7 @@ implementation
   var 
     msg: TObjectMessage;
   begin
+    if target = nil then exit;
     msg.opcode := opcode;
     msg.target := target;
     msg.sender := @self;
