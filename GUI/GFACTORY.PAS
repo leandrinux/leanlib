@@ -231,6 +231,7 @@ implementation
   procedure TControlFactory.initTextField(textField: PTextField; data: PDictionary);
   begin
     initControl(textField, data);
+    textField^.setText(data^.getString(C_ATTR_TEXT, ''));
   end;
 
   { Other }
