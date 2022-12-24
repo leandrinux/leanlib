@@ -25,6 +25,7 @@ interface
       procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       function isFocused: boolean;
+      procedure setText(text: string);
       function getText: string;
     private
       _isFocused: boolean;
@@ -112,6 +113,12 @@ implementation
   function TTextField.isFocused: boolean;
   begin
     isFocused := _isFocused;
+  end;
+
+  procedure TTextField.setText(text: string);
+  begin
+    _text := text;
+    sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
   end;
 
   function TTextField.getText: string;
