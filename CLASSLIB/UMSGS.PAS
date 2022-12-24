@@ -19,6 +19,8 @@ interface
     C_MSG_MOUSE_RIGHT_UP       = 13;
     C_MSG_MOUSE_RIGHT_DOWN     = 14;
 
+    C_MSG_KEYBOARD_KEY_DOWN    = 20;
+
 implementation
 
 end.
