@@ -36,6 +36,7 @@ interface
     private
       _isFocused: boolean;
       _text: TTextValue;
+      _previousText: TTextValue;
       _placeholder: TPlaceholderText;
     end;
 
@@ -85,8 +86,16 @@ implementation
           C_BACKSPACE: 
             if length(_text) > 0 then dec(_text[0]);
 
-          C_ESC, C_CR: 
+          C_ESC:
+          begin
             _isFocused := false;
+            _text := _previousText;
+          end;
+          
+          C_CR:
+          begin
+            _isFocused := false;
+          end;
 
           else begin
             inc(_text[0]);
@@ -103,6 +112,7 @@ implementation
         if isPointInFrame(mousePosition, @frame) then 
         begin
           _isFocused := true;
+          _previousText := _text;
           sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
           sendMessage(C_MSG_CONTROL_FOCUS_CHANGED, getBus);
         end;
