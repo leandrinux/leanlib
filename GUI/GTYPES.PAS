@@ -33,16 +33,17 @@ interface
       EBackgroundStyleTransparent
     );
 
-    ETextAlign = (
-      ETextAlignTopLeft,
-      ETextAlignTop,
-      ETextAlignTopRight,
-      ETextAlignLeft,
-      ETextAlignCenter,
-      ETextAlignRight,
-      ETextAlignBottomLeft,
-      ETextAlignBottom,
-      ETextAlignBottomRight
+    EAlignment = (
+      EAlignNone,
+      EAlignTopLeft,
+      EAlignTop,
+      EAlignTopRight,
+      EAlignLeft,
+      EAlignCenter,
+      EAlignRight,
+      EAlignBottomLeft,
+      EAlignBottom,
+      EAlignBottomRight
     );
 
     EMouseEvent = (

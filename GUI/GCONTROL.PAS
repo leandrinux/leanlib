@@ -38,6 +38,8 @@ interface
       procedure setEnabled(enabled: boolean); virtual;
       function isEnabled: boolean;
       function findControl(id: TControlId): PControl; virtual;
+      procedure setAlignment(alignment: EAlignment);
+      function getAlignment: EAlignment;
     private
       _bus: PMessageBus;
       _frame: TFrame;
@@ -46,6 +48,7 @@ interface
       _backgroundColor: TColor;
       _backgroundStyle: EBackgroundStyle;
       _isEnabled: boolean;
+      _alignment: EAlignment;
     end;
 
 implementation
@@ -61,6 +64,7 @@ implementation
     _backgroundColor := DefaultColorScheme^.getColor(ECKPanelBackground);
     _backgroundStyle := EBackgroundStyleSolid;
     _isEnabled := true;
+    _alignment := EAlignNone;
   end;
 
   destructor TControl.done;
@@ -166,6 +170,17 @@ implementation
     else
       findControl := nil;
   end;
+
+  procedure TControl.setAlignment(alignment: EAlignment);
+  begin
+    _alignment := alignment;
+  end;
+
+  function TControl.getAlignment: EAlignment;
+  begin
+    getAlignment := _alignment;
+  end;
+
   { TControl private }
 
   { Other }

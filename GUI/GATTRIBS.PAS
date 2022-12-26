@@ -24,16 +24,17 @@ interface
     
     C_ATTR_CONTROLS             = 'controls';
 
-    C_ATTR_TEXT_ALIGN           = 'text-align';
-    C_ATTR_TEXT_ALIGN_TL        = 'top-left';
-    C_ATTR_TEXT_ALIGN_TOP       = 'top';
-    C_ATTR_TEXT_ALIGN_TR        = 'top-right';
-    C_ATTR_TEXT_ALIGN_LEFT      = 'left';
-    C_ATTR_TEXT_ALIGN_CENTER    = 'center';
-    C_ATTR_TEXT_ALIGN_RIGHT     = 'right';
-    C_ATTR_TEXT_ALIGN_BL        = 'bottom-left';
-    C_ATTR_TEXT_ALIGN_BOTTOM    = 'bottom';
-    C_ATTR_TEXT_ALIGN_BR        = 'bottom-right';
+    C_ATTR_ALIGN           = 'align';
+    C_ATTR_TEXT_ALIGN      = 'text-align';
+    C_ATTR_ALIGN_TL        = 'top-left';
+    C_ATTR_ALIGN_TOP       = 'top';
+    C_ATTR_ALIGN_TR        = 'top-right';
+    C_ATTR_ALIGN_LEFT      = 'left';
+    C_ATTR_ALIGN_CENTER    = 'center';
+    C_ATTR_ALIGN_RIGHT     = 'right';
+    C_ATTR_ALIGN_BL        = 'bottom-left';
+    C_ATTR_ALIGN_BOTTOM    = 'bottom';
+    C_ATTR_ALIGN_BR        = 'bottom-right';
     
     C_ATTR_TEXT                 = 'text';
     C_ATTR_TEXT_COLOR           = 'text-color';

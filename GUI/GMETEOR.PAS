@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, ucanvas, utrender,
+    uobject, uexc, ucanvas, utrender, udisplay, 
     gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
@@ -65,10 +65,45 @@ implementation
   procedure TMeteor.renderControl(control: PControl);
   var
     absolutePosition: TPoint;
+    parent: PControl;
+    parentSize: TSize;
   begin
+
+    { update control frame point when alignment <> EAlignNone }
+    if control^.getAlignment <> EAlignNone then
+    begin
+      parent := control^.getParent;
+      if parent <> nil then
+      begin
+        parentSize := parent^.getFrame^.size; 
+      end else begin
+        parentSize.width := DisplayAdapter^.getCurrentVideoMode^.resX;
+        parentSize.height := DisplayAdapter^.getCurrentVideoMode^.resY;
+      end;
+      with control^.getFrame^ do
+      begin
+        case control^.getAlignment of
+          EAlignTop, EAlignCenter, EAlignBottom:
+            point.x := (parentSize.width div 2) - (size.width div 2);
+          EAlignTopRight, EAlignRight, EAlignBottomRight:
+            point.x := parentSize.width - size.width;
+          EAlignTopLeft, EAlignLeft, EAlignBottomLeft:
+            point.x := 0;
+        end;
+        case control^.getAlignment of
+          EAlignLeft, EAlignCenter, EAlignRight:
+            point.y := (parentSize.height div 2) - (size.height div 2);
+          EAlignBottomLeft, EAlignBottom, EAlignBottomRight:
+            point.y := parentSize.height - size.height;
+          EAlignTopLeft, EAlignTop, EAlignTopRight:
+            point.y := 0;
+        end;
+      end;
+    end;
+
     control^.getAbsolutePosition(absolutePosition);
     with getCanvas^, control^, getFrame^.size, absolutePosition do
-    begin
+    begin      
       if control^.getBackgroundStyle = EBackgroundStyleSolid then
       begin
         getBitmap^.setPixelBlock(x, y, x+width-1, y+height-1, getBackgroundColor);
@@ -143,15 +178,15 @@ implementation
     x := absolutePosition.x;
     y := absolutePosition.y;
     case lbl^.getTextAlign of
-      ETextAlignTop, ETextAlignCenter, ETextAlignBottom:
+      EAlignTop, EAlignCenter, EAlignBottom:
         inc(x, (lbl^.getFrame^.size.width div 2) - (textSize.width div 2));
-      ETextAlignTopRight, ETextAlignRight, ETextAlignBottomRight:
+      EAlignTopRight, EAlignRight, EAlignBottomRight:
         inc(x, lbl^.getFrame^.size.width - textSize.width);
     end;
     case lbl^.getTextAlign of
-      ETextAlignLeft, ETextAlignCenter, ETextAlignRight:
+      EAlignLeft, EAlignCenter, EAlignRight:
         inc(y, (lbl^.getFrame^.size.height div 2) - (textSize.height div 2));
-      ETextAlignBottomLeft, ETextAlignBottom, ETextAlignBottomRight:
+      EAlignBottomLeft, EAlignBottom, EAlignBottomRight:
         inc(y, lbl^.getFrame^.size.height - textSize.height);
     end;
     tr^.setCursor(x, y);
