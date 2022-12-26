@@ -67,15 +67,16 @@ implementation
     absolutePosition: TPoint;
   begin
     inherited renderControl(control);
-    control^.getAbsolutePosition(absolutePosition);
     with getCanvas^, control^, getFrame^.size, absolutePosition do
     begin      
+      sendMessageWithData(C_MSG_CONTROL_DRAW, getBus, getCanvas, 0);    
+      getAbsolutePosition(absolutePosition);
+      setPattern(ESolid, getStrokeBrush);
       if control^.getBackgroundStyle = EBackgroundStyleSolid then
       begin
         getBitmap^.setPixelBlock(x, y, x+width-1, y+height-1, getBackgroundColor);
       end;
     end;
-    control^.sendMessageWithData(C_MSG_CONTROL_DRAW, control^.getBus, getCanvas, 0);
   end;
 
   procedure TMeteor.renderPanel(panel: PPanel);
@@ -88,13 +89,7 @@ implementation
     panel^.getAbsolutePosition(absolutePosition);
     with getCanvas^, panel^, getFrame^.size, absolutePosition, DefaultColorScheme^  do
     begin
-      case getBorderStyle of
-        EBorderStyleNone:
-        begin
-          colorTL := getBackgroundColor;
-          colorBR := colorTL;
-        end;
-        
+      case getBorderStyle of        
         EBorderStyleRaised:
         begin
           colorTL := getColor(ECKPanelBorderRaised);
@@ -107,13 +102,17 @@ implementation
           colorBR := getColor(ECKPanelBorderRaised);
         end;
       end;
-      getStrokeBrush^.color := colorTL;
-      hline(x, x + width - 1, y);
-      vline(y + 1, y + height - 1, x);
-      getStrokeBrush^.color := colorBR;
-      hline(x, x + width - 1, y + height - 1);
-      vline(y + 1, y + height - 1, x + width - 1);
-      
+
+      if getBorderStyle <> EBorderStyleNone then
+      begin
+        getStrokeBrush^.color := colorTL;
+        hline(x, x + width - 1, y);
+        vline(y + 1, y + height - 1, x);
+        getStrokeBrush^.color := colorBR;
+        hline(x, x + width - 1, y + height - 1);
+        vline(y + 1, y + height - 1, x + width - 1);
+      end;
+
       with getControls^ do
       begin
         moveToStart;

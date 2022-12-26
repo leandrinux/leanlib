@@ -22,6 +22,7 @@ interface
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       function getText: string;
       procedure setText(text: string);
@@ -60,6 +61,10 @@ implementation
   function TLabel.getClassId: word;
   begin
     getClassId := C_CLASS_ID_Label;
+  end;
+
+  procedure TLabel.receiveMessage(msg: PObjectMessage);
+  begin
   end;
 
   function TLabel.getText: string;

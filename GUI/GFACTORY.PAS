@@ -26,6 +26,7 @@ interface
       { methods }
       function create(data: PDictionary): PControl;
     private
+      function createControl(data: PDictionary): PControl;
       function createPanel(data: PDictionary): PPanel;
       function createLabel(data: PDictionary): PLabel;
       function createButton(data: PDictionary): PButton;
@@ -69,7 +70,9 @@ implementation
     controlType: string16;
   begin
     controlType := data^.getString(C_ATTR_TYPE, '');
-    if controlType = C_CONTROL_TYPE_PANEL then 
+    if controlType = C_CONTROL_TYPE_CONTROL then 
+      create := createControl(data)
+    else if controlType = C_CONTROL_TYPE_PANEL then 
       create := createPanel(data)
     else if controlType = C_CONTROL_TYPE_LABEL then 
       create := createLabel(data)
@@ -84,6 +87,15 @@ implementation
   end;
 
   { TControlFactory private }
+  function TControlFactory.createControl(data: PDictionary): PControl;
+  var
+    control: PControl;
+  begin
+    control := new(PControl, initWithId(data^.getString(C_ATTR_ID, '')));
+    initControl(control, data);
+    createControl := control;
+  end;
+
   function TControlFactory.createPanel(data: PDictionary): PPanel;
   var
     panel: PPanel;

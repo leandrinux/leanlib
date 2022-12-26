@@ -79,6 +79,7 @@ implementation
     Mouse^.hide;
     control^.setCanvas(getCanvas);
     case control^.getClassId of
+      C_CLASS_ID_CONTROL: renderControl(control);
       C_CLASS_ID_PANEL: renderPanel(PPanel(control));
       C_CLASS_ID_LABEL: renderLabel(PLabel(control));
       C_CLASS_ID_BUTTON: renderButton(PButton(control));

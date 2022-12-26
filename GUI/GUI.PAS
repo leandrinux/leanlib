@@ -104,8 +104,10 @@ implementation
     control: PControl;
     form: PForm;
   begin
+    { find the root control to this control }
     control := PControl(msg^.sender);
     while control^.getParent <> nil do control := control^.getParent;
+    { find the form that has that root control}
     _forms^.moveToStart;
     form := PForm(_forms^.getObjectAtCursor);
     while (form <> nil) and (form^.getRootControl <> control) do
@@ -113,6 +115,7 @@ implementation
       _forms^.moveForward;
       form := PForm(_forms^.getObjectAtCursor);
     end;
+    { if form was found then notify about this event }
     if form <> nil then
       form^.onEvent(msg^.opcode, PControl(msg^.sender));
   end;

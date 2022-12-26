@@ -7,7 +7,7 @@ const
   C_GUI_FILE = 'RES\TFEDIT.4';
   C_GRID_COLUMNS = 5;
   C_GRID_ROWS = 6;
-  C_GRID_CELL_SIZE = 12;
+  C_GRID_CELL_SIZE = 16;
 
 var
   runFlag: boolean;
@@ -20,6 +20,7 @@ type
     procedure onEvent(opcode: word; sender: PControl); virtual;
     function createControl: PControl; virtual;
     procedure drawGrid;
+    procedure clickGrid;
   end;
 
 function TMyForm.createControl: PControl;
@@ -38,20 +39,36 @@ procedure TMyForm.onEvent(opcode: word; sender: PControl);
 begin
   case opcode of
     C_MSG_CONTROL_CLICKED:
-      if (sender^.getId = 'quitBtn') then runFlag := false;
+      if (sender^.getId = 'quitBtn') then 
+        runFlag := false
+      else if (sender^.getId = 'grid') then 
+        clickGrid; 
 
     C_MSG_CONTROL_DRAW:
-      if (sender^.getId = 'grid') then drawGrid;
-
+      if (sender^.getId = 'grid') then 
+        drawGrid;
   end;
 end;
 
 procedure TMyForm.drawGrid;
 var
   p: TPoint;
+  c: PCanvas;
 begin
   _grid^.getAbsolutePosition(p);
-  _grid^.getCanvas^.grid(p.x, p.y, 5, 6, C_GRID_CELL_SIZE, C_GRID_CELL_SIZE);
+  _grid^.setBackgroundStyle(EBackgroundStyleTransparent);
+  with _grid^, getCanvas^, getFrame^ do
+  begin
+    getBitmap^.setPixelBlock(p.x, p.y, p.x + size.width - 1, p.y + size.height - 1, ord(EBlack));
+    getStrokeBrush^.color := ord(EDarkGray);
+    setPattern(EDots, getStrokeBrush);
+    grid(p.x, p.y, 5, 6, C_GRID_CELL_SIZE, C_GRID_CELL_SIZE);
+  end;
+end;
+
+procedure TMyForm.clickGrid;
+begin
+  beep;
 end;
 
 var

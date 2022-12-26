@@ -8,8 +8,9 @@ unit
 interface
 
   uses
+  xcrt,
     consts, utils, uclasses, types, locale,
-    uobject, uexc, umsgbus, ucanvas,
+    uobject, uexc, umsgbus, ucanvas, umsgs,
     gclasses, gtypes, gcolors, gmsgs;
 
   type
@@ -87,7 +88,20 @@ implementation
   end;
 
   procedure TControl.receiveMessage(msg: PObjectMessage);
+  var
+    mousePosition: PPoint;
+    frame: TFrame;  
   begin
+    case msg^.opcode of
+      C_MSG_MOUSE_LEFT_DOWN:
+      begin
+        frame := getFrame^;
+        getAbsolutePosition(frame.point);
+        mousePosition := msg^.payload;
+        if isPointInFrame(mousePosition, @frame) then
+          sendMessage(C_MSG_CONTROL_CLICKED, getBus);
+      end;
+    end;
   end;
 
   procedure TControl.setBus(bus: PMessageBus);
