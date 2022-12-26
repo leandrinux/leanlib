@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, ucanvas, utrender, 
-    gclasses, gtypes, grender, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
+    gclasses, gtypes, grender, gmsgs, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
     PMeteor = ^TMeteor;
@@ -75,6 +75,7 @@ implementation
         getBitmap^.setPixelBlock(x, y, x+width-1, y+height-1, getBackgroundColor);
       end;
     end;
+    control^.sendMessageWithData(C_MSG_CONTROL_DRAW, control^.getBus, getCanvas, 0);
   end;
 
   procedure TMeteor.renderPanel(panel: PPanel);

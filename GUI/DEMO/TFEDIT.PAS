@@ -1,10 +1,13 @@
 uses
   ascii, xcrt, types, utils,
-  uobject, uclasses, uexc, udisplay, umouse, ukeybrd,
+  uobject, uclasses, uexc, udisplay, umouse, ukeybrd, ucanvas,
   gui, gtypes, gmsgs, gform, gcontrol, gchkbox, gfield;
 
 const
-  C_GUI_FILE = 'RES\DEMO.4';
+  C_GUI_FILE = 'RES\TFEDIT.4';
+  C_GRID_COLUMNS = 5;
+  C_GRID_ROWS = 6;
+  C_GRID_CELL_SIZE = 12;
 
 var
   runFlag: boolean;
@@ -12,10 +15,11 @@ var
 type
   PMyForm = ^TMyForm;
   TMyForm = object (TForm)
-    field1: PTextField;
+    _grid: PControl;
     procedure onStart; virtual;
     procedure onEvent(opcode: word; sender: PControl); virtual;
     function createControl: PControl; virtual;
+    procedure drawGrid;
   end;
 
 function TMyForm.createControl: PControl;
@@ -25,24 +29,29 @@ end;
 
 procedure TMyForm.onStart;
 begin
-  field1 := PTextField(getRootControl^.findControl('field1'));
+  _grid := getRootControl^.findControl('grid');
+  _grid^.getFrame^.size.width := C_GRID_CELL_SIZE * C_GRID_COLUMNS + C_GRID_COLUMNS;
+  _grid^.getFrame^.size.height := C_GRID_CELL_SIZE * C_GRID_ROWS + C_GRID_ROWS;
 end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);
 begin
-  if (opcode = C_MSG_CONTROL_CLICKED) then
-  begin
-    if (sender^.getId = 'quitBtn') then
-    begin 
-      runFlag := false;
-    end else if (sender^.getId = 'beepBtn') then
-    begin
-      beep;
-    end else if (sender^.getId = 'chkbox1') then
-    begin
-      field1^.setEnabled(not field1^.isEnabled);
-    end;
+  case opcode of
+    C_MSG_CONTROL_CLICKED:
+      if (sender^.getId = 'quitBtn') then runFlag := false;
+
+    C_MSG_CONTROL_DRAW:
+      if (sender^.getId = 'grid') then drawGrid;
+
   end;
+end;
+
+procedure TMyForm.drawGrid;
+var
+  p: TPoint;
+begin
+  _grid^.getAbsolutePosition(p);
+  _grid^.getCanvas^.grid(p.x, p.y, 5, 6, C_GRID_CELL_SIZE, C_GRID_CELL_SIZE);
 end;
 
 var

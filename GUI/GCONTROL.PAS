@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, umsgbus, 
+    uobject, uexc, umsgbus, ucanvas,
     gclasses, gtypes, gcolors, gmsgs;
 
   type
@@ -40,6 +40,8 @@ interface
       function findControl(id: TControlId): PControl; virtual;
       procedure setAlignment(alignment: EAlignment);
       function getAlignment: EAlignment;
+      procedure setCanvas(canvas: PCanvas);
+      function getCanvas: PCanvas;
     private
       _bus: PMessageBus;
       _frame: TFrame;
@@ -49,6 +51,7 @@ interface
       _backgroundStyle: EBackgroundStyle;
       _isEnabled: boolean;
       _alignment: EAlignment;
+      _canvas: PCanvas;
     end;
 
 implementation
@@ -65,6 +68,7 @@ implementation
     _backgroundStyle := EBackgroundStyleSolid;
     _isEnabled := true;
     _alignment := EAlignNone;
+    _canvas := nil;
   end;
 
   destructor TControl.done;
@@ -179,6 +183,16 @@ implementation
   function TControl.getAlignment: EAlignment;
   begin
     getAlignment := _alignment;
+  end;
+
+  procedure TControl.setCanvas(canvas: PCanvas);
+  begin
+    _canvas := canvas;
+  end;
+
+  function TControl.getCanvas: PCanvas;
+  begin
+    getCanvas := _canvas;
   end;
 
   { TControl private }

@@ -77,6 +77,7 @@ implementation
   procedure TRenderer.render(control: PControl);
   begin
     Mouse^.hide;
+    control^.setCanvas(getCanvas);
     case control^.getClassId of
       C_CLASS_ID_PANEL: renderPanel(PPanel(control));
       C_CLASS_ID_LABEL: renderLabel(PLabel(control));
