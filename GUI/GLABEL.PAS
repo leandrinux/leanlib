@@ -115,6 +115,7 @@ implementation
   begin
     tr := new(PTextRenderer, init);
     tr^.getTextSize(_text, @(getFrame^.size));
+    getFrame^.size.height := C_DEFAULT_LABEL_HEIGHT;
     tr^.release;
   end;
 
