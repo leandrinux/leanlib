@@ -5,7 +5,7 @@ uses
 
 var
   ui: PUserInterface;
-  form: PMyForm;
+  form: PMainForm;
   key: char;
 
 begin
@@ -13,7 +13,7 @@ begin
   Mouse^.reset;                        { prepare the mouse after changing video mode }
   Mouse^.show;                         { show the mouse cursor }
   Mouse^.selectCursor(ECursorWait);    { use wait cursor until load is complete }
-  form := new(PMyForm, init);          { create form instance }
+  form := new(PMainForm, init);        { create form instance }
   ui := new(PUserInterface, init);     { create user interface }
   ui^.addForm(form);                   { add the form to our user interface }
   Mouse^.setDelegate(ui^.getBus);      { send mouse messages to the user interface }

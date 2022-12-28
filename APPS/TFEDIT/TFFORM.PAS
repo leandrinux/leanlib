@@ -8,8 +8,8 @@ interface
     gui, gtypes, gmsgs, gform, gcontrol, gchkbox, gfield;
 
   type
-    PMyForm = ^TMyForm;
-    TMyForm = object (TForm)
+    PMainForm = ^TMainForm;
+    TMainForm = object (TForm)
       public
         quitFlag: boolean;
         constructor init;
@@ -21,6 +21,7 @@ interface
         _value: longint;
         procedure drawGlyph;
         procedure drawGrid;
+        procedure drawCell(gridPosition, cellPosition: TPoint);
         procedure clickGrid;
     end;
 
@@ -31,23 +32,24 @@ implementation
     C_GRID_COLUMNS = 5;
     C_GRID_ROWS = 6;
     C_GRID_CELL_SIZE = 16;
-    C_GRID_LINES_COLOR = EDarkGray;
-    C_GRID_CELL_COLOR = EWhite;
+    C_GRID_BACKGROUND_COLOR = ord(EBlack);
+    C_GRID_LINES_COLOR = ord(EDarkGray);
+    C_GRID_CELL_COLOR = ord(EWhite);
 
   { Public }
 
-  constructor TMyForm.init;
+  constructor TMainForm.init;
   begin
     inherited init;
     quitFlag := false;
   end;
 
-  function TMyForm.createControl: PControl;
+  function TMainForm.createControl: PControl;
   begin
     createControl := createControlFromFile(C_GUI_FILE);
   end;
   
-  procedure TMyForm.onStart;
+  procedure TMainForm.onStart;
   begin
     _value := $FC39087C;
     _grid := getRootControl^.findControl('grid');
@@ -55,7 +57,7 @@ implementation
     _grid^.getFrame^.size.height := C_GRID_CELL_SIZE * C_GRID_ROWS + C_GRID_ROWS;
   end;
 
-  procedure TMyForm.onEvent(opcode: word; sender: PControl);
+  procedure TMainForm.onEvent(opcode: word; sender: PControl);
   begin
     case opcode of
         C_MSG_CONTROL_CLICKED:
@@ -75,7 +77,7 @@ implementation
 
   { Private }
 
-  procedure TMyForm.drawGrid;
+  procedure TMainForm.drawGrid;
   var
     p: TPoint;
     c: PCanvas;
@@ -84,14 +86,14 @@ implementation
     _grid^.setBackgroundStyle(EBackgroundStyleTransparent);
     with _grid^, getCanvas^, getFrame^ do
     begin
-        getBitmap^.setPixelBlock(p.x, p.y, p.x + size.width, p.y + size.height, ord(EBlack));
-        getStrokeBrush^.color := ord(C_GRID_LINES_COLOR);
+        getBitmap^.setPixelBlock(p.x, p.y, p.x + size.width, p.y + size.height, C_GRID_BACKGROUND_COLOR);
+        getStrokeBrush^.color := C_GRID_LINES_COLOR;
         setPattern(EDots, getStrokeBrush);
         grid(p.x, p.y, 5, 6, C_GRID_CELL_SIZE, C_GRID_CELL_SIZE);
     end;
   end;
 
-  procedure TMyForm.drawGlyph;
+  procedure TMainForm.drawGlyph;
   var
     i: byte;
     v: longint;
@@ -107,13 +109,13 @@ implementation
         x := 1 + absolutePosition.x + (i mod C_GRID_COLUMNS) * (C_GRID_CELL_SIZE + 1);
         y := 1 + absolutePosition.y + (i div C_GRID_COLUMNS) * (C_GRID_CELL_SIZE + 1);
         with _grid^.getCanvas^.getBitmap^ do
-            setPixelBlock(x, y, x + C_GRID_CELL_SIZE - 1, y + C_GRID_CELL_SIZE - 1, ord(C_GRID_CELL_COLOR));
+            setPixelBlock(x, y, x + C_GRID_CELL_SIZE - 1, y + C_GRID_CELL_SIZE - 1, C_GRID_CELL_COLOR);
         end;
         v := v shr 1;
     end;
   end;
  
-  procedure TMyForm.clickGrid;
+  procedure TMainForm.clickGrid;
   var
     mousePosition: TPoint;
     gridPosition: TPoint;
@@ -124,10 +126,24 @@ implementation
     cellPosition.x := (mousePosition.x - gridPosition.x) div (C_GRID_CELL_SIZE + 1);
     cellPosition.y := (mousePosition.y - gridPosition.y) div (C_GRID_CELL_SIZE + 1);
     _value := _value xor ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS));
-    Mouse^.hide;
-    drawGrid;
-    drawGlyph;
-    Mouse^.show;
+    drawCell(gridPosition, cellPosition);
   end;
    
+  procedure TMainForm.drawCell(gridPosition, cellPosition: TPoint);
+  var
+    x, y: word;
+    color: TColor;
+  begin
+    Mouse^.hide;
+    x := 1 + gridPosition.x + cellPosition.x * (C_GRID_CELL_SIZE + 1);
+    y := 1 + gridPosition.y + cellPosition.y * (C_GRID_CELL_SIZE + 1);
+    if _value and ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS)) = 0 then
+      color := C_GRID_BACKGROUND_COLOR
+    else
+      color := C_GRID_CELL_COLOR;
+    with _grid^.getCanvas^.getBitmap^ do
+      setPixelBlock(x, y, x + C_GRID_CELL_SIZE - 1, y + C_GRID_CELL_SIZE - 1, color);
+    Mouse^.show;
+  end;
+
 end.
