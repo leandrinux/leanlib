@@ -11,7 +11,6 @@ interface
     PMainForm = ^TMainForm;
     TMainForm = object (TForm)
       public
-        quitFlag: boolean;
         constructor init;
         procedure onStart; virtual;
         procedure onEvent(opcode: word; sender: PControl); virtual;
@@ -41,7 +40,6 @@ implementation
   constructor TMainForm.init;
   begin
     inherited init;
-    quitFlag := false;
   end;
 
   function TMainForm.createControl: PControl;
@@ -62,7 +60,8 @@ implementation
     case opcode of
         C_MSG_CONTROL_CLICKED:
         if (sender^.getId = 'quitBtn') then 
-            quitFlag := true
+            sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate)
+
         else if (sender^.getId = 'grid') then 
             clickGrid; 
 

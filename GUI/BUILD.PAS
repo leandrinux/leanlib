@@ -1,4 +1,5 @@
 uses
+  GApp,
   GAttribs,
   GButton,
   GChkbox,

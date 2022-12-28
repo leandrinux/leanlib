@@ -15,6 +15,7 @@ interface
     C_CLASS_ID_METEOR          = 2003;
     C_CLASS_ID_COLORSCHEME     = 2004;
     C_CLASS_ID_FORM            = 2005;
+    C_CLASS_ID_GUIAPP          = 2006;
 
     { control family }
     C_CLASS_ID_CONTROL        = 2011;
