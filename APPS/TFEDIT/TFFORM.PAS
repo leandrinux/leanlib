@@ -13,7 +13,6 @@ interface
     TMainForm = object (TForm)
       public
         constructor init;
-        procedure onStart; virtual;
         procedure onEvent(opcode: word; sender: PControl); virtual;
         function createControl: PControl; virtual;
       private
@@ -26,7 +25,6 @@ implementation
   const
     C_TITLE_TEXT = 'TinyForm Editor';
     C_TITLE_HMARGIN = 40;
-    C_TITLE_VMARGIN = 6;
     C_QUIT_BUTTON_CAPTION = 'X';
 
   { Public }
@@ -59,8 +57,8 @@ implementation
       setTextColor(ord(EWhite));
       setTextAlignment(EAlignCenter);
       adjustSizeToText;
-      inc(width, C_TITLE_HMARGIN);
-      inc(height, C_TITLE_VMARGIN);
+      { inc(width, C_TITLE_HMARGIN); }
+      width := 200;
     end;
     panel^.addControl(lbl);
 
@@ -82,10 +80,6 @@ implementation
     createControl := panel;
   end;
   
-  procedure TMainForm.onStart;
-  begin
-  end;
-
   procedure TMainForm.onEvent(opcode: word; sender: PControl);
   begin
     case opcode of
@@ -94,18 +88,6 @@ implementation
             sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate)
     end;
   end;
-{  
-        else if (sender^.getId = 'grid') then 
-            clickGrid; 
-
-        C_MSG_CONTROL_CUSTOM_DRAW:
-        if (sender^.getId = 'grid') then
-        begin
-            drawGrid;
-            drawGlyph;
-        end;
-    end;
-}
 
   { Private }
 

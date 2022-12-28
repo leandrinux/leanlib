@@ -47,7 +47,6 @@ implementation
     C_DEFAULT_BUTTON_WIDTH = 75;
     C_DEFAULT_BUTTON_HEIGHT = 14;
     C_TEXT_HPADDING = 14;
-    C_TEXT_VPADDING = 4;
 
   { TButton public }
 
