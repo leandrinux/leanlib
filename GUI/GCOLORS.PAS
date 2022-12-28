@@ -43,17 +43,16 @@ implementation
   constructor TColorScheme.init;
   begin
     inherited init;
-    pSetColorDepth(DisplayAdapter^.getCanvas^.getBitmap^.getBitsPerPixel);
-    _ColorArray[ECKPanelBorderRaised] := pColor(EWhite);
-    _ColorArray[ECKPanelBorderLowered] := pColor(EDarkgray);
-    _ColorArray[ECKPanelBackground] := pColor(ELightgray);
-    _ColorArray[ECKCheckboxSymbol] := pColor(EBlue);
-    _ColorArray[ECKLabelText] := pColor(EBlack);
-    _ColorArray[ECKButtonText] := pColor(EBlack);
-    _ColorArray[ECKControlFocus] := pColor(EBlue);
-    _ColorArray[ECKTextCursor] := pColor(EBlue);
-    _ColorArray[ECKTextDisabled] := pColor(EDarkgray);
-    _ColorArray[ECKTextPlaceholder] := pColor(EDarkgray);
+    _ColorArray[ECKPanelBorderRaised] := ord(EWhite);
+    _ColorArray[ECKPanelBorderLowered] := ord(EDarkgray);
+    _ColorArray[ECKPanelBackground] := ord(ELightgray);
+    _ColorArray[ECKCheckboxSymbol] := ord(EBlue);
+    _ColorArray[ECKLabelText] := ord(EBlack);
+    _ColorArray[ECKButtonText] := ord(EBlack);
+    _ColorArray[ECKControlFocus] := ord(EBlue);
+    _ColorArray[ECKTextCursor] := ord(EBlue);
+    _ColorArray[ECKTextDisabled] := ord(EDarkgray);
+    _ColorArray[ECKTextPlaceholder] := ord(EDarkgray);
   end;
 
   destructor TColorScheme.done;

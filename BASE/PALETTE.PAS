@@ -19,17 +19,7 @@ interface
       $FF0000FF, $FF00FFFF, $FFFF00FF, $FFFFFFFF
     );
 
-  type
-    TColorFunc = function(color: EColor): TColor;
-
-  var
-    pColor: TColorFunc;
-
   function getColor(color: EColor; bitsPerPixel: byte): TColor;
-  procedure pSetColorDepth(bitsPerPixel: byte);
-  function pColor1(color: EColor): TColor; far;
-  function pColor8(color: EColor): TColor; far;
-  function pColor32(color: EColor): TColor; far;
 
 implementation
 
@@ -44,31 +34,4 @@ implementation
     end;
   end;
 
-  procedure pSetColorDepth(bitsPerPixel: byte);
-  begin
-    case bitsPerPixel of
-      8: pColor := pColor8;
-      32: pColor := pColor32;
-    else
-      pColor := pColor1;
-    end;
-  end;
-
-  function pColor1(color: EColor): TColor;
-  begin
-    if color = EBlack then pColor1 := 1 else pColor1 := 0;
-  end;
-
-  function pColor8(color: EColor): TColor;
-  begin
-    pColor8 := ord(color);
-  end;
-
-  function pColor32(color: EColor): TColor;
-  begin
-    pColor32 := C_RGB_COLORS[color];
-  end;
-
-begin
-  pColor := pColor8;
 end.
