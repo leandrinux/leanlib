@@ -5,7 +5,8 @@ interface
   uses
     ascii, types, utils,
     uobject, uclasses, uexc, udisplay,
-    gui, gtypes, gmsgs, gform, gcontrol, gpanel, glabel, gbutton;
+    gui, gtypes, gmsgs, gform, gcontrol, gpanel, glabel, gbutton,
+    tfgrid;
 
   type
     PMainForm = ^TMainForm;
@@ -17,12 +18,7 @@ interface
         function createControl: PControl; virtual;
       private
         _quitButton: PButton;
-      {
-        procedure drawGlyph;
-        procedure drawGrid;
-        procedure drawCell(gridPosition, cellPosition: TPoint);
-        procedure clickGrid;
-      }
+        _grid: PGrid;
     end;
 
 implementation
@@ -78,17 +74,16 @@ implementation
     end;
     panel^.addControl(_quitButton);
 
+    { grid }  
+    _grid := new(PGrid, init);
+    _grid^.setAlignment(EAlignCenter);
+    panel^.addControl(_grid);
+
     createControl := panel;
   end;
   
   procedure TMainForm.onStart;
   begin
-    {
-    _value := $FC39087C;
-    _grid := getRootControl^.findControl('grid');
-    _grid^.getFrame^.size.width := C_GRID_CELL_SIZE * C_GRID_COLUMNS + C_GRID_COLUMNS;
-    _grid^.getFrame^.size.height := C_GRID_CELL_SIZE * C_GRID_ROWS + C_GRID_ROWS;
-    }
   end;
 
   procedure TMainForm.onEvent(opcode: word; sender: PControl);
@@ -114,19 +109,4 @@ implementation
 
   { Private }
 
-{ 
-  procedure TMainForm.clickGrid;
-  var
-    mousePosition: TPoint;
-    gridPosition: TPoint;
-    cellPosition: TPoint;
-  begin
-    _grid^.getAbsolutePosition(gridPosition);
-    mousePosition := Mouse^.getPosition^;
-    cellPosition.x := (mousePosition.x - gridPosition.x) div (C_GRID_CELL_SIZE + 1);
-    cellPosition.y := (mousePosition.y - gridPosition.y) div (C_GRID_CELL_SIZE + 1);
-    _value := _value xor ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS));
-    drawCell(gridPosition, cellPosition);
-  end;
-}
 end.

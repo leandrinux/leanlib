@@ -3,7 +3,9 @@ unit TFGrid;
 interface
 
   uses
-    gcontrol;
+    types, utils,
+    uobject, umsgs, ucanvas, umouse,
+    gtypes, gcontrol;
 
   const
     C_GRID_COLUMNS = 5;
@@ -17,11 +19,14 @@ interface
     PGrid = ^TGrid;
     TGrid = object(TControl)
     public
+      constructor init;
       function getValue: longint;
       procedure setValue(value: longint);
-      procedure defaultDraw;
+      procedure defaultDraw; virtual;
+      procedure receiveMessage(msg: PObjectMessage); virtual;
     private
-      _value: longint;     
+      _value: longint;
+      procedure onClick(mousePosition: PPoint);  
       procedure drawGrid; 
       procedure drawGlyph;
       procedure drawCell(gridPosition, cellPosition: TPoint);
@@ -30,6 +35,17 @@ interface
 implementation
 
   { Public }
+
+  constructor TGrid.init;
+  begin
+    inherited init;
+    _value := $FC39087C;
+    with getFrame^.size do
+    begin
+      width := C_GRID_CELL_SIZE * C_GRID_COLUMNS + C_GRID_COLUMNS;
+      height := C_GRID_CELL_SIZE * C_GRID_ROWS + C_GRID_ROWS;
+    end;
+  end;
 
   function TGrid.getValue: longint;
   begin
@@ -43,9 +59,33 @@ implementation
 
   procedure TGrid.defaultDraw;
   begin
+    drawGrid;
+    drawGlyph;
+  end;
+
+  procedure TGrid.receiveMessage(msg: PObjectMessage);
+  begin
+    if msg^.opcode = C_MSG_MOUSE_LEFT_DOWN then 
+      onClick(msg^.payload);
   end;
 
   { Private }
+
+  procedure TGrid.onClick(mousePosition: PPoint);
+  var
+    cellPosition: TPoint;
+    frame: TFrame;  
+  begin
+    frame := getFrame^;
+    getAbsolutePosition(frame.point);
+    if isPointInFrame(mousePosition, @frame) then
+    begin
+      cellPosition.x := (mousePosition^.x - frame.point.x) div (C_GRID_CELL_SIZE + 1);
+      cellPosition.y := (mousePosition^.y - frame.point.y) div (C_GRID_CELL_SIZE + 1);
+      _value := _value xor ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS));
+      drawCell(frame.point, cellPosition);
+    end;
+  end;
 
   procedure TGrid.drawGrid;
   var
@@ -96,7 +136,7 @@ implementation
       color := C_GRID_BACKGROUND_COLOR
     else
       color := C_GRID_CELL_COLOR;
-    with _grid^.getCanvas^.getBitmap^ do
+    with getCanvas^.getBitmap^ do
       setPixelBlock(x, y, x + C_GRID_CELL_SIZE - 1, y + C_GRID_CELL_SIZE - 1, color);
     Mouse^.show;
   end;
