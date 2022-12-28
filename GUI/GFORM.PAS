@@ -99,7 +99,7 @@ implementation
 
   function TForm.createControl: PControl;
   begin
-    createControl := new(PControl, initWithId(''));
+    createControl := new(PControl, init);
   end;
 
   function TForm.getRootControl: PControl;

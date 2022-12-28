@@ -13,14 +13,15 @@ interface
     gclasses, gtypes, gcontrol, gattribs, gcolors, gmsgs;
 
   const
-    C_DEFAULT_PANEL_BORDER_STYLE = EBorderStyleNone;
+    C_DEFAULT_PANEL_BORDER_STYLE = EBorderStyleRaised;
+    C_DEFAULT_PANEL_ALIGN = EAlignCenter;
 
   type
     PPanel = ^TPanel;
     TPanel = object (TControl)
     public
       { constructors and destructors}
-      constructor initWithId(id: TControlId);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
@@ -32,6 +33,7 @@ interface
       procedure setBorderStyle(borderStyle: EBorderStyle);
       function getBorderStyle: EBorderStyle;
       function findControl(id: TControlId): PControl; virtual;
+      procedure addControl(control: PControl);
     private
       _controls: PList;
       _borderStyle: EBorderStyle;
@@ -40,12 +42,12 @@ interface
 implementation
 
   { TPanel public }
-
-  constructor TPanel.initWithId(id: TControlId);
+  constructor TPanel.init;
   begin
-    inherited initWithId(id);
+    inherited init;
     _controls := new(PList, initWithClassFamily(C_CLASS_ID_CONTROL, C_CLASS_ID_CONTROL_FAMILY));
     _borderStyle := C_DEFAULT_PANEL_BORDER_STYLE;
+    setAlignment(C_DEFAULT_PANEL_ALIGN);
   end;
 
   destructor TPanel.done;
@@ -114,6 +116,12 @@ implementation
       end;
       findControl := control;
     end;
+  end;
+
+  procedure TPanel.addControl(control: PControl);
+  begin
+    _controls^.addObject(control);
+    control^.setParent(@self);
   end;
 
   { TPanel private }

@@ -18,7 +18,7 @@ interface
     TCheckbox = object (TControl)
     public
       { constructors and destructors}
-      constructor initWithId(id: TControlId);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
@@ -35,9 +35,9 @@ implementation
 
   { TCheckbox public }
 
-  constructor TCheckbox.initWithId(id: TControlId);
+  constructor TCheckbox.init;
   begin
-    inherited initWithId(id);
+    inherited init;
     _checked := false;
   end;
 

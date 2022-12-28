@@ -18,7 +18,7 @@ interface
     TControl = object (TObject)
     public
       { constructors and destructors}
-      constructor initWithId(id: TControlId);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
@@ -28,6 +28,7 @@ interface
       procedure setBus(bus: PMessageBus); virtual;
       function getBus: PMessageBus;
       function getFrame: PFrame;
+      procedure setId(id: TControlId);
       function getId: TControlId;
       function getParent: PControl;
       procedure setParent(parent: PControl);
@@ -43,10 +44,11 @@ interface
       function getAlignment: EAlignment;
       procedure setCanvas(canvas: PCanvas);
       function getCanvas: PCanvas;
+      procedure defaultDraw; virtual;
     private
+      _id: TControlID;
       _bus: PMessageBus;
       _frame: TFrame;
-      _id: TControlID;
       _parent: PControl;
       _backgroundColor: TColor;
       _backgroundStyle: EBackgroundStyle;
@@ -59,10 +61,10 @@ implementation
 
   { TControl public }
 
-  constructor TControl.initWithId(id: TControlId);
+  constructor TControl.init;
   begin
     inherited init;
-    _id := id;
+    _id := '';
     _parent := nil;
     _bus := nil;
     _backgroundColor := DefaultColorScheme^.getColor(ECKPanelBackground);
@@ -70,6 +72,13 @@ implementation
     _isEnabled := true;
     _alignment := EAlignNone;
     _canvas := nil;
+    with _frame, point, size do
+    begin
+      x := 0;
+      y := 0;
+      width := 75;
+      height := 50;
+    end;
   end;
 
   destructor TControl.done;
@@ -119,6 +128,11 @@ implementation
   function TControl.getFrame: PFrame;
   begin
     getFrame := @_frame;
+  end;
+
+  procedure TControl.setId(id: TControlId);  
+  begin
+    _id := id;
   end;
 
   function TControl.getId: TControlId;
@@ -209,6 +223,9 @@ implementation
     getCanvas := _canvas;
   end;
 
+  procedure TControl.defaultDraw;
+  begin
+  end;
   { TControl private }
 
   { Other }

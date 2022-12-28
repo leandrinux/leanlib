@@ -91,7 +91,8 @@ implementation
   var
     control: PControl;
   begin
-    control := new(PControl, initWithId(data^.getString(C_ATTR_ID, '')));
+    control := new(PControl, init);
+    control^.setId(data^.getString(C_ATTR_ID, ''));
     initControl(control, data);
     createControl := control;
   end;
@@ -100,7 +101,8 @@ implementation
   var
     panel: PPanel;
   begin
-    panel := new(PPanel, initWithId(data^.getString(C_ATTR_ID, '')));
+    panel := new(PPanel, init);
+    panel^.setId(data^.getString(C_ATTR_ID, ''));
     initPanel(panel, data);
     createPanel := panel;
   end;
@@ -109,7 +111,8 @@ implementation
   var
     lbl: PLabel;
   begin
-    lbl := new(PLabel, initWithId(data^.getString(C_ATTR_ID, '')));
+    lbl := new(PLabel, init);
+    lbl^.setId(data^.getString(C_ATTR_ID, ''));
     initLabel(lbl, data);
     createLabel := lbl;
   end;
@@ -118,7 +121,8 @@ implementation
   var
     button: PButton;
   begin
-    button := new(PButton, initWithId(data^.getString(C_ATTR_ID, '')));
+    button := new(PButton, init);
+    button^.setId(data^.getString(C_ATTR_ID, ''));
     initButton(button, data);
     createButton := button;
   end;
@@ -127,7 +131,8 @@ implementation
   var
     checkbox: PCheckbox;
   begin
-    checkbox := new(PCheckbox, initWithId(data^.getString(C_ATTR_ID, '')));
+    checkbox := new(PCheckbox, init);
+    checkbox^.setId(data^.getString(C_ATTR_ID, ''));
     initCheckbox(checkbox, data);
     createCheckbox := checkbox;
   end;
@@ -136,7 +141,8 @@ implementation
   var
     textField: PTextField;
   begin
-    textField := new(PTextField, initWithId(data^.getString(C_ATTR_ID, '')));
+    textField := new(PTextField, init);
+    textField^.setId(data^.getString(C_ATTR_ID, ''));
     initTextField(textField, data);
     createTextField := textField;
   end;
@@ -198,8 +204,7 @@ implementation
         if obj^.getClassId = C_CLASS_ID_DICTIONARY then
         begin
           control := create(PDictionary(obj));
-          control^.setParent(panel);
-          panel^.getControls^.addObject(control);
+          panel^.addControl(control);
           control^.release;
         end;
         list^.moveForward;
@@ -224,15 +229,15 @@ implementation
       lbl^.setBackgroundStyle(EBackgroundStyleSolid);
 
     str := data^.getString(C_ATTR_TEXT_ALIGN, '');
-    if str = C_ATTR_ALIGN_TL then lbl^.setTextAlign(EAlignTopLeft)
-      else if str = C_ATTR_ALIGN_TOP then lbl^.setTextAlign(EAlignTop)
-      else if str = C_ATTR_ALIGN_TR then lbl^.setTextAlign(EAlignTopRight)
-      else if str = C_ATTR_ALIGN_LEFT then lbl^.setTextAlign(EAlignLeft)
-      else if str = C_ATTR_ALIGN_CENTER then lbl^.setTextAlign(EAlignCenter)
-      else if str = C_ATTR_ALIGN_RIGHT then lbl^.setTextAlign(EAlignRight)
-      else if str = C_ATTR_ALIGN_BL then lbl^.setTextAlign(EAlignBottomLeft)
-      else if str = C_ATTR_ALIGN_BOTTOM then lbl^.setTextAlign(EAlignBottom)
-      else if str = C_ATTR_ALIGN_BR then lbl^.setTextAlign(EAlignBottomRight);
+    if str = C_ATTR_ALIGN_TL then lbl^.setTextAlignment(EAlignTopLeft)
+      else if str = C_ATTR_ALIGN_TOP then lbl^.setTextAlignment(EAlignTop)
+      else if str = C_ATTR_ALIGN_TR then lbl^.setTextAlignment(EAlignTopRight)
+      else if str = C_ATTR_ALIGN_LEFT then lbl^.setTextAlignment(EAlignLeft)
+      else if str = C_ATTR_ALIGN_CENTER then lbl^.setTextAlignment(EAlignCenter)
+      else if str = C_ATTR_ALIGN_RIGHT then lbl^.setTextAlignment(EAlignRight)
+      else if str = C_ATTR_ALIGN_BL then lbl^.setTextAlignment(EAlignBottomLeft)
+      else if str = C_ATTR_ALIGN_BOTTOM then lbl^.setTextAlignment(EAlignBottom)
+      else if str = C_ATTR_ALIGN_BR then lbl^.setTextAlignment(EAlignBottomRight);
   end;
 
   procedure TControlFactory.initButton(button: PButton; data: PDictionary);

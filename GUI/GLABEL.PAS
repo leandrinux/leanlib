@@ -8,8 +8,8 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
-    uobject, uexc,
+    consts, utils, types, locale,
+    uclasses, uobject, uexc, utrender, 
     gclasses, gtypes, gcontrol, gcolors;
 
   type
@@ -17,7 +17,7 @@ interface
     TLabel = object (TControl)
     public
       { constructors and destructors}
-      constructor initWithId(id: TControlId);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
@@ -28,8 +28,9 @@ interface
       procedure setText(text: string);
       function getTextColor: TColor;
       procedure setTextColor(textColor: TColor);
-      function getTextAlign: EAlignment;
-      procedure setTextAlign(textAlign: EAlignment);
+      function getTextAlignment: EAlignment;
+      procedure setTextAlignment(textAlign: EAlignment);
+      procedure adjustSizeToText;
     private
       _text: string;
       _textColor: TColor;
@@ -38,14 +39,25 @@ interface
 
 implementation
 
+  const
+    C_DEFAULT_LABEL_WIDTH = 75;
+    C_DEFAULT_LABEL_HEIGHT = 14;
+
   { TLabel public }
 
-  constructor TLabel.initWithId(id: TControlId);
+  constructor TLabel.init;
   begin
-    inherited initWithId(id);
+    inherited init;
     _text := '';
     _textColor := DefaultColorScheme^.getColor(ECKLabelText);
-    _textAlign := EAlignTopLeft;
+    _textAlign := EAlignLeft;
+    with getFrame^, point, size do
+    begin
+      x := 0;
+      y := 0;
+      width := C_DEFAULT_LABEL_WIDTH;
+      height := C_DEFAULT_LABEL_HEIGHT;
+    end;
   end;
 
   destructor TLabel.done;
@@ -87,14 +99,23 @@ implementation
     _textColor := textColor;
   end;
 
-  function TLabel.getTextAlign: EAlignment;
+  function TLabel.getTextAlignment: EAlignment;
   begin
-    getTextAlign := _textAlign;
+    getTextAlignment := _textAlign;
   end;
 
-  procedure TLabel.setTextAlign(textAlign: EAlignment);
+  procedure TLabel.setTextAlignment(textAlign: EAlignment);
   begin
     _textAlign := textAlign;
+  end;
+
+  procedure TLabel.adjustSizeToText;
+  var
+    tr: PTextRenderer;
+  begin
+    tr := new(PTextRenderer, init);
+    tr^.getTextSize(_text, @(getFrame^.size));
+    tr^.release;
   end;
 
   { TLabel private }

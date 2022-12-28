@@ -14,7 +14,6 @@ interface
 
     C_MSG_CONTROL_EVENT_MASK     = $FC00; { mask used to recognize valid control event codes }
     C_MSG_CONTROL_CLICKED        = $FC01; { when a control, such as a button, is clicked }
-    C_MSG_CONTROL_DRAW           = $FC02; { when a control needs to be drawn }
 
 implementation
 

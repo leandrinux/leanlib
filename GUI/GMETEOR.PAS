@@ -69,7 +69,7 @@ implementation
     inherited renderControl(control);
     with getCanvas^, control^, getFrame^.size, absolutePosition do
     begin      
-      sendMessageWithData(C_MSG_CONTROL_DRAW, getBus, getCanvas, 0);    
+      control^.defaultDraw;
       getAbsolutePosition(absolutePosition);
       setPattern(ESolid, getStrokeBrush);
       if control^.getBackgroundStyle = EBackgroundStyleSolid then
@@ -143,13 +143,13 @@ implementation
     tr^.getTextSize(lbl^.getText, @textSize);
     x := absolutePosition.x;
     y := absolutePosition.y;
-    case lbl^.getTextAlign of
+    case lbl^.getTextAlignment of
       EAlignTop, EAlignCenter, EAlignBottom:
         inc(x, (lbl^.getFrame^.size.width div 2) - (textSize.width div 2));
       EAlignTopRight, EAlignRight, EAlignBottomRight:
         inc(x, lbl^.getFrame^.size.width - textSize.width);
     end;
-    case lbl^.getTextAlign of
+    case lbl^.getTextAlignment of
       EAlignLeft, EAlignCenter, EAlignRight:
         inc(y, (lbl^.getFrame^.size.height div 2) - (textSize.height div 2));
       EAlignBottomLeft, EAlignBottom, EAlignBottomRight:

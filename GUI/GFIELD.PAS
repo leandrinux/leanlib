@@ -20,7 +20,7 @@ interface
     TTextField = object (TControl)
     public
       { constructors and destructors}
-      constructor initWithId(id: TControlId);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
@@ -44,9 +44,9 @@ implementation
 
   { TTextField public }
 
-  constructor TTextField.initWithId(id: TControlId);
+  constructor TTextField.init;
   begin
-    inherited initWithId(id);
+    inherited init;
     _isFocused := false;
     _text := '';
     _placeholder := '';

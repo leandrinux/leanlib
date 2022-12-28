@@ -9,7 +9,7 @@ interface
 
   uses
     xcrt, consts, utils, types, locale,
-    uclasses, uobject, uexc, umsgs,
+    uclasses, uobject, uexc, umsgs, utrender,
     gclasses, gtypes, gcontrol, gmsgs;
 
   type
@@ -24,7 +24,7 @@ interface
     TButton = object (TControl)
     public
       { constructors and destructors}
-      constructor initWithId(id: TControlId);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
@@ -35,6 +35,7 @@ interface
       procedure setState(state: EButtonState);
       function getCaption: TButtonCaption;
       procedure setCaption(caption: TButtonCaption);
+      procedure adjustSizeToText;
     private
       _state: EButtonState;
       _caption: TButtonCaption;
@@ -42,13 +43,26 @@ interface
 
 implementation
 
+  const
+    C_DEFAULT_BUTTON_WIDTH = 75;
+    C_DEFAULT_BUTTON_HEIGHT = 14;
+    C_TEXT_HPADDING = 14;
+    C_TEXT_VPADDING = 4;
+
   { TButton public }
 
-  constructor TButton.initWithId(id: TControlId);
+  constructor TButton.init;
   begin
-    inherited initWithId(id);
+    inherited init;
     _state := EButtonStateUp;
     _caption := '';
+    with getFrame^, point, size do
+    begin
+      x := 0;
+      y := 0;
+      width := C_DEFAULT_BUTTON_WIDTH;
+      height := C_DEFAULT_BUTTON_HEIGHT;
+    end;
   end;
 
   destructor TButton.done;
@@ -113,6 +127,20 @@ implementation
   procedure TButton.setCaption(caption: TButtonCaption);
   begin
     _caption := caption;
+  end;
+
+  procedure TButton.adjustSizeToText;
+  var
+    tr: PTextRenderer;
+  begin
+    tr := new(PTextRenderer, init);
+    tr^.getTextSize(_caption, @(getFrame^.size));
+    with getFrame^.size do
+    begin
+      inc(width, C_TEXT_HPADDING);
+      height := C_DEFAULT_BUTTON_HEIGHT;
+    end;
+    tr^.release;
   end;
 
   { TButton private }
