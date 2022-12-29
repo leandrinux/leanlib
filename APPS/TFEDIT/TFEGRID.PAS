@@ -12,12 +12,12 @@ interface
     TEditGrid = object(TControl)
     public
       constructor init;
-      function getValue: longint;
-      procedure setValue(value: longint);
+      function getSymbol: longint;
+      procedure setSymbol(Symbol: longint);
       procedure defaultDraw; virtual;
       procedure receiveMessage(msg: PObjectMessage); virtual;
     private
-      _value: longint;
+      _symbol: longint;
       procedure onClick(mousePosition: PPoint);  
       procedure drawEditGrid; 
       procedure drawGlyph;
@@ -39,7 +39,7 @@ implementation
   constructor TEditGrid.init;
   begin
     inherited init;
-    _value := $FC39087C;
+    _symbol := $FC39087C;
     with getFrame^.size do
     begin
       width := C_GRID_CELL_SIZE * C_GRID_COLUMNS + C_GRID_COLUMNS;
@@ -47,14 +47,14 @@ implementation
     end;
   end;
 
-  function TEditGrid.getValue: longint;
+  function TEditGrid.getSymbol: longint;
   begin
-    getValue := _value;
+    getSymbol := _symbol;
   end;
 
-  procedure TEditGrid.setValue(value: longint);
+  procedure TEditGrid.setSymbol(Symbol: longint);
   begin
-    _value := value;
+    _symbol := Symbol;
   end;
 
   procedure TEditGrid.defaultDraw;
@@ -82,7 +82,7 @@ implementation
     begin
       cellPosition.x := (mousePosition^.x - frame.point.x) div (C_GRID_CELL_SIZE + 1);
       cellPosition.y := (mousePosition^.y - frame.point.y) div (C_GRID_CELL_SIZE + 1);
-      _value := _value xor ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS));
+      _symbol := _symbol xor ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS));
       drawCell(frame.point, cellPosition);
     end;
   end;
@@ -110,7 +110,7 @@ implementation
     x, y: word;
   begin
     getAbsolutePosition(absolutePosition);
-    v := _value shr 2;
+    v := _symbol shr 2;
     for i:= 29 downto 0 do
     begin
         if (v and 1) > 0 then
@@ -132,7 +132,7 @@ implementation
     Mouse^.hide;
     x := 1 + gridPosition.x + cellPosition.x * (C_GRID_CELL_SIZE + 1);
     y := 1 + gridPosition.y + cellPosition.y * (C_GRID_CELL_SIZE + 1);
-    if _value and ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS)) = 0 then
+    if _symbol and ($80000000 shr (cellPosition.x + cellPosition.y * C_GRID_COLUMNS)) = 0 then
       color := C_GRID_BACKGROUND_COLOR
     else
       color := C_GRID_CELL_COLOR;

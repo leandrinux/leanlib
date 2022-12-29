@@ -3,16 +3,17 @@ unit TFForm;
 interface
 
   uses
-    ascii, types, utils,
+    xcrt, ascii, types, utils,
     uobject, uclasses, uexc, udisplay, usysfont, utfont,
     gui, gtypes, gmsgs, gform, gcontrol, gpanel, glabel, gbutton, gfield,
-    tfegrid, tfcgrid;
+    tfegrid, tfsgrid, tfebase;
 
   type
     PMainForm = ^TMainForm;
     TMainForm = object (TForm)
       public
         constructor init;
+        procedure receiveMessage(msg: PObjectMessage); virtual;
         procedure onEvent(opcode: word; sender: PControl); virtual;
         function createControl: PControl; virtual;
       private
@@ -20,6 +21,7 @@ interface
         _quitButton: PButton;
         _editGrid: PEditGrid;
         _symbolGrid: PSymbolGrid;
+        procedure onSymbolChanged;
     end;
 
 implementation
@@ -35,6 +37,12 @@ implementation
   constructor TMainForm.init;
   begin
     inherited init;
+  end;
+
+  procedure TMainForm.receiveMessage(msg: PObjectMessage); 
+  begin
+    inherited receiveMessage(msg);
+    if (msg^.sender = PObject(_symbolGrid)) and (msg^.opcode = C_MSG_CHANGED_SELECTION) then onSymbolChanged;
   end;
 
   function TMainForm.createControl: PControl;
@@ -82,6 +90,7 @@ implementation
       y := 40;
     end;
     _symbolGrid^.setFontData(@C_SYSTEM_FONT_DATA);
+    _symbolGrid^.setDelegate(@self);
     panel^.addControl(_symbolGrid);
 
     { font name text field }
@@ -118,5 +127,11 @@ implementation
   end;
 
   { Private }
+
+  procedure TMainForm.onSymbolChanged;
+  begin
+    _editGrid^.setSymbol(_symbolGrid^.getSelectedSymbol);
+    _editGrid^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _editGrid^.getBus);
+  end;
 
 end.
