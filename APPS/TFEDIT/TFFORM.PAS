@@ -4,8 +4,8 @@ interface
 
   uses
     ascii, types, utils,
-    uobject, uclasses, uexc, udisplay, usysfont,
-    gui, gtypes, gmsgs, gform, gcontrol, gpanel, glabel, gbutton,
+    uobject, uclasses, uexc, udisplay, usysfont, utfont,
+    gui, gtypes, gmsgs, gform, gcontrol, gpanel, glabel, gbutton, gfield,
     tfegrid, tfcgrid;
 
   type
@@ -16,6 +16,7 @@ interface
         procedure onEvent(opcode: word; sender: PControl); virtual;
         function createControl: PControl; virtual;
       private
+        _name: PTextField;
         _quitButton: PButton;
         _editGrid: PEditGrid;
         _symbolGrid: PSymbolGrid;
@@ -24,7 +25,8 @@ interface
 implementation
 
   const
-    C_TITLE_TEXT = 'TinyForm Editor';
+    C_NAME_TEXTFIELD_PLACEHOLDER = 'Font name';
+    C_TITLE_TEXT = 'TinyFont Editor';
     C_TITLE_HMARGIN = 40;
     C_QUIT_BUTTON_CAPTION = 'X';
 
@@ -44,8 +46,8 @@ implementation
     panel := new(PPanel, init);
     with panel^.getFrame^, size do
     begin
-      width := 256;
-      height := 180;
+      width := 300;
+      height := 190;
     end;
 
     { title label } 
@@ -77,17 +79,29 @@ implementation
     with _symbolGrid^, getFrame^, point do
     begin
       x := 10;
-      y := 24;
+      y := 40;
     end;
     _symbolGrid^.setFontData(@C_SYSTEM_FONT_DATA);
     panel^.addControl(_symbolGrid);
+
+    { font name text field }
+    _name := new(PTextField, init);
+    with _name^, getFrame^, point, size do
+    begin
+      x := 10;
+      y := 24; 
+      width := _symbolGrid^.getFrame^.size.width;
+      setPlaceholder(C_NAME_TEXTFIELD_PLACEHOLDER);
+      setText(_symbolGrid^.getFont^.getName);
+    end;
+    panel^.addControl(_name);
 
     { edit grid }  
     _editGrid := new(PEditGrid, init);
     with _editGrid^, getFrame^, point do
     begin
       x := 160;
-      y := 24;
+      y := 40;
     end;
     panel^.addControl(_editGrid);
 

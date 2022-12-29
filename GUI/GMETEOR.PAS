@@ -266,7 +266,7 @@ implementation
         getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKLabelText);
       end;
       tr^.getTextSize(textValue, @textSize);
-      tr^.setCursor(x + 5, y + 5);
+      tr^.setCursor(x + 4, y + 4);
       if not isEnabled then 
       begin
         setPattern(EDots, getStrokeBrush);

@@ -17,6 +17,7 @@ interface
       procedure defaultDraw; virtual;
       procedure receiveMessage(msg: PObjectMessage); virtual;
       procedure setFontData(fontData: PTinyFontData);
+      function getFont: PTinyFont;
     private
       _font: PTinyFont;
       _fontData: PTinyFontData;
@@ -95,6 +96,11 @@ implementation
     _fontData := fontData;
     if _font <> nil then _font^.release;
     _font := new(PTinyFont, initWithData(_fontData));
+  end;
+
+  function TSymbolGrid.getFont: PTinyFont;
+  begin
+    getFont := _font;
   end;
 
 end.

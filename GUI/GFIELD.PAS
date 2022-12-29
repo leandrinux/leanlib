@@ -42,6 +42,10 @@ interface
 
 implementation
 
+  const
+    C_DEFAULT_TEXTFIELD_WIDTH = 200;
+    C_DEFAULT_TEXTFIELD_HEIGHT = 14;
+
   { TTextField public }
 
   constructor TTextField.init;
@@ -50,6 +54,11 @@ implementation
     _isFocused := false;
     _text := '';
     _placeholder := '';
+    with getFrame^, point, size do
+    begin
+      width := C_DEFAULT_TEXTFIELD_WIDTH;
+      height := C_DEFAULT_TEXTFIELD_HEIGHT;
+    end;
   end;
 
   destructor TTextField.done;
