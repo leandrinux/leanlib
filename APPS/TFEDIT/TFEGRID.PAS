@@ -1,4 +1,4 @@
-unit TFGrid;
+unit TFEGrid;
 
 interface
 
@@ -7,17 +7,9 @@ interface
     uobject, umsgs, ucanvas, umouse,
     gtypes, gcontrol;
 
-  const
-    C_GRID_COLUMNS = 5;
-    C_GRID_ROWS = 6;
-    C_GRID_CELL_SIZE = 16;
-    C_GRID_BACKGROUND_COLOR = ord(EBlack);
-    C_GRID_LINES_COLOR = ord(EDarkGray);
-    C_GRID_CELL_COLOR = ord(EWhite);
-
   type
-    PGrid = ^TGrid;
-    TGrid = object(TControl)
+    PEditGrid = ^TEditGrid;
+    TEditGrid = object(TControl)
     public
       constructor init;
       function getValue: longint;
@@ -27,16 +19,24 @@ interface
     private
       _value: longint;
       procedure onClick(mousePosition: PPoint);  
-      procedure drawGrid; 
+      procedure drawEditGrid; 
       procedure drawGlyph;
       procedure drawCell(gridPosition, cellPosition: TPoint);
     end;
 
 implementation
 
+  const
+    C_GRID_COLUMNS = 5;
+    C_GRID_ROWS = 6;
+    C_GRID_CELL_SIZE = 16;
+    C_GRID_BACKGROUND_COLOR = ord(EBlack);
+    C_GRID_LINES_COLOR = ord(EDarkGray);
+    C_GRID_CELL_COLOR = ord(EWhite);
+
   { Public }
 
-  constructor TGrid.init;
+  constructor TEditGrid.init;
   begin
     inherited init;
     _value := $FC39087C;
@@ -47,23 +47,23 @@ implementation
     end;
   end;
 
-  function TGrid.getValue: longint;
+  function TEditGrid.getValue: longint;
   begin
     getValue := _value;
   end;
 
-  procedure TGrid.setValue(value: longint);
+  procedure TEditGrid.setValue(value: longint);
   begin
     _value := value;
   end;
 
-  procedure TGrid.defaultDraw;
+  procedure TEditGrid.defaultDraw;
   begin
-    drawGrid;
+    drawEditGrid;
     drawGlyph;
   end;
 
-  procedure TGrid.receiveMessage(msg: PObjectMessage);
+  procedure TEditGrid.receiveMessage(msg: PObjectMessage);
   begin
     if msg^.opcode = C_MSG_MOUSE_LEFT_DOWN then 
       onClick(msg^.payload);
@@ -71,7 +71,7 @@ implementation
 
   { Private }
 
-  procedure TGrid.onClick(mousePosition: PPoint);
+  procedure TEditGrid.onClick(mousePosition: PPoint);
   var
     cellPosition: TPoint;
     frame: TFrame;  
@@ -87,7 +87,7 @@ implementation
     end;
   end;
 
-  procedure TGrid.drawGrid;
+  procedure TEditGrid.drawEditGrid;
   var
     p: TPoint;
   begin
@@ -102,7 +102,7 @@ implementation
     end;
   end;
 
-  procedure TGrid.drawGlyph;
+  procedure TEditGrid.drawGlyph;
   var
     i: byte;
     v: longint;
@@ -124,7 +124,7 @@ implementation
     end;
   end;
 
-  procedure TGrid.drawCell(gridPosition, cellPosition: TPoint);
+  procedure TEditGrid.drawCell(gridPosition, cellPosition: TPoint);
   var
     x, y: word;
     color: TColor;

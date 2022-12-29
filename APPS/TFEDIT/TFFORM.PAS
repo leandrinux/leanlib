@@ -4,9 +4,9 @@ interface
 
   uses
     ascii, types, utils,
-    uobject, uclasses, uexc, udisplay,
+    uobject, uclasses, uexc, udisplay, usysfont,
     gui, gtypes, gmsgs, gform, gcontrol, gpanel, glabel, gbutton,
-    tfgrid;
+    tfegrid, tfcgrid;
 
   type
     PMainForm = ^TMainForm;
@@ -17,7 +17,8 @@ interface
         function createControl: PControl; virtual;
       private
         _quitButton: PButton;
-        _grid: PGrid;
+        _editGrid: PEditGrid;
+        _symbolGrid: PSymbolGrid;
     end;
 
 implementation
@@ -43,8 +44,8 @@ implementation
     panel := new(PPanel, init);
     with panel^.getFrame^, size do
     begin
-      width := 250;
-      height := 150;
+      width := 256;
+      height := 180;
     end;
 
     { title label } 
@@ -57,8 +58,7 @@ implementation
       setTextColor(ord(EWhite));
       setTextAlignment(EAlignCenter);
       adjustSizeToText;
-      { inc(width, C_TITLE_HMARGIN); }
-      width := 200;
+      inc(width, C_TITLE_HMARGIN);
     end;
     panel^.addControl(lbl);
 
@@ -72,10 +72,24 @@ implementation
     end;
     panel^.addControl(_quitButton);
 
-    { grid }  
-    _grid := new(PGrid, init);
-    _grid^.setAlignment(EAlignCenter);
-    panel^.addControl(_grid);
+    { symbol edit grid }  
+    _symbolGrid := new(PSymbolGrid, init);
+    with _symbolGrid^, getFrame^, point do
+    begin
+      x := 10;
+      y := 24;
+    end;
+    _symbolGrid^.setFontData(@C_SYSTEM_FONT_DATA);
+    panel^.addControl(_symbolGrid);
+
+    { edit grid }  
+    _editGrid := new(PEditGrid, init);
+    with _editGrid^, getFrame^, point do
+    begin
+      x := 160;
+      y := 24;
+    end;
+    panel^.addControl(_editGrid);
 
     createControl := panel;
   end;
