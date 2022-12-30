@@ -44,7 +44,7 @@ implementation
 
   const
     C_DEFAULT_LABEL_WIDTH = 75;
-    C_DEFAULT_LABEL_HEIGHT = 14;
+    C_DEFAULT_LABEL_HEIGHT = 12;
 
   { TLabel public }
 

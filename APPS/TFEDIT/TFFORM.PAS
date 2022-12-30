@@ -18,10 +18,11 @@ interface
         procedure onEvent(opcode: word; sender: PControl); virtual;
         function createControl: PControl; virtual;
       private
+        _quitButton: PButton;
         _loadButton: PButton;
         _saveButton: PButton;
+        _indexLabel: PLabel;
         _nameField: PTextField;
-        _quitButton: PButton;
         _editGrid: PEditGrid;
         _symbolGrid: PSymbolGrid;        
         _font: PTinyFont;
@@ -124,6 +125,18 @@ implementation
     panel^.addControl(_saveButton);
     _saveButton^.release;
 
+    { index label }
+    _indexLabel := new(PLabel, init);
+    with _indexLabel^, getFrame^, point, size do
+    begin
+      setText('#0');
+      x := 5;
+      y := 143;
+      width := 50;
+    end;
+    panel^.addControl(_indexLabel);
+    _indexLabel^.release;
+
     { symbol edit grid }  
     _symbolGrid := new(PSymbolGrid, init);
     with _symbolGrid^, getFrame^, point do
@@ -180,6 +193,8 @@ implementation
   begin
     _editGrid^.setSymbol(_symbolGrid^.getSelectedSymbol);
     _editGrid^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _editGrid^.getBus);
+    _indexLabel^.setText('#' + inttostr(ord(_symbolGrid^.getSelectedChar)));
+    _indexLabel^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _indexLabel^.getBus);
   end;
 
   procedure TMainForm.updateModifiedSymbol;
