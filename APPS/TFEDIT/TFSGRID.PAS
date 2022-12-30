@@ -17,12 +17,11 @@ interface
       destructor done; virtual;
       procedure defaultDraw; virtual;
       procedure receiveMessage(msg: PObjectMessage); virtual;
-      procedure setFontData(fontData: PTinyFontData);
+      procedure setFont(font: PTinyFont);
       function getFont: PTinyFont;
       function getSelectedSymbol: longint;
     private
       _font: PTinyFont;
-      _fontData: PTinyFontData;
       _selectedIndex: byte;
       _selectedPoint: TPoint;
       _selectedSymbol: longint;
@@ -45,7 +44,6 @@ implementation
   begin
     inherited init;
     _font := nil;
-    _fontData := nil;
     _selectedIndex := 0;
     _selectedSymbol := 0;
     with _selectedPoint do
@@ -63,7 +61,6 @@ implementation
 
   destructor TSymbolGrid.done;
   begin
-    if _font <> nil then _font^.release;
     inherited done;
   end;
 
@@ -85,9 +82,9 @@ implementation
         grid(x, y, C_GRID_CELL_SIDE_COUNT, C_GRID_CELL_SIDE_COUNT, C_GRID_CELL_SIZE, C_GRID_CELL_SIZE);
       end;
       setPattern(ESolid, getStrokeBrush);
-      if _fontData <> nil then
+      if _font <> nil then
       begin
-        symbol := _fontData^.symbols;
+        symbol := _font^.getFontData^.symbols;
         for i := 0 to 255 do
         begin
           p.x := position.x + 2 + (i mod C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
@@ -112,11 +109,9 @@ implementation
       onClick(msg^.payload);  
   end;
   
-  procedure TSymbolGrid.setFontData(fontData: PTinyFontData);
+  procedure TSymbolGrid.setFont(font: PTinyFont);
   begin
-    _fontData := fontData;
-    if _font <> nil then _font^.release;
-    _font := new(PTinyFont, initWithData(_fontData));
+    _font := font;
   end;
 
   function TSymbolGrid.getFont: PTinyFont;
@@ -164,9 +159,13 @@ implementation
         x := (mousePosition^.x - frame.point.x) div (C_GRID_CELL_SIZE + 1);
         y := (mousePosition^.y - frame.point.y) div (C_GRID_CELL_SIZE + 1);
         _selectedIndex := y * C_GRID_CELL_SIDE_COUNT + x;
-        symbol := _fontData^.symbols;
-        inc(symbol, _selectedIndex);
-        _selectedSymbol := symbol^;
+        if _font <> nil then
+        begin
+          symbol := _font^.getFontData^.symbols;
+          inc(symbol, _selectedIndex);
+          _selectedSymbol := symbol^;
+        end else
+          _selectedSymbol := 0;
       end;
 
       with getCanvas^, _selectedPoint do

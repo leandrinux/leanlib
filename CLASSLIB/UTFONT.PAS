@@ -21,6 +21,8 @@ interface
       symbols: plong;
     end;
 
+    TTinyFontSymbols = array[0..255] of longint;
+
   type
     PTinyFont = ^TTinyFont;
     TTinyFont = object (TFont)
@@ -32,6 +34,7 @@ interface
       function getName: string; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      function getFontData: PTinyFontData;
     private
       _mustFreeMem: boolean;
       _fontData: PTinyFontData;
@@ -88,16 +91,17 @@ implementation
     brush := canvas^.getStrokeBrush;
     canvas^.getFillBrush^.color := brush^.color;
     symbol := p^ shr 2;
-    for cy := C_CHAR_HEIGHT - 1 downto 0 do
-      for cx := C_CHAR_WIDTH - 1 downto 0 do
-      begin
-        if (symbol and 1) <> 0 then
-          if scale = 1 then
-            canvas^.setPixel(cx + x, cy + y, brush)
-          else
-            canvas^.frect(x+(cx*scale), y+(cy*scale), scale, scale);
-        symbol := symbol shr 1;
-      end;
+    if symbol <> 0 then 
+      for cy := C_CHAR_HEIGHT - 1 downto 0 do
+        for cx := C_CHAR_WIDTH - 1 downto 0 do
+        begin
+          if (symbol and 1) <> 0 then
+            if scale = 1 then
+              canvas^.setPixel(cx + x, cy + y, brush)
+            else
+              canvas^.frect(x+(cx*scale), y+(cy*scale), scale, scale);
+          symbol := symbol shr 1;
+        end;
     canvas^.getFillBrush^.color := previousFillColor;
   end;
 
@@ -119,6 +123,11 @@ implementation
     getClassId := C_CLASS_ID_TinyFont;
   end;
 
+  function TTinyFont.getFontData: PTinyFontData;
+  begin
+    getFontData := _fontData;
+  end;
+  
   { TTinyFont private }
 
   { Other }

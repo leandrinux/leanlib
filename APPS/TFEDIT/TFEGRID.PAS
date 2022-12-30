@@ -39,7 +39,7 @@ implementation
   constructor TEditGrid.init;
   begin
     inherited init;
-    _symbol := $FC39087C;
+    _symbol := 0;
     with getFrame^.size do
     begin
       width := C_GRID_CELL_SIZE * C_GRID_COLUMNS + C_GRID_COLUMNS;

@@ -13,14 +13,21 @@ interface
     TMainForm = object (TForm)
       public
         constructor init;
+        destructor done; virtual;
         procedure receiveMessage(msg: PObjectMessage); virtual;
         procedure onEvent(opcode: word; sender: PControl); virtual;
         function createControl: PControl; virtual;
       private
-        _name: PTextField;
+        _loadButton: PButton;
+        _saveButton: PButton;
+        _nameField: PTextField;
         _quitButton: PButton;
         _editGrid: PEditGrid;
         _symbolGrid: PSymbolGrid;
+        
+        _fontSymbols: TTinyFontSymbols;
+        _fontData: TTinyFontData;
+        _font: PTinyFont;
         procedure onSymbolChanged;
     end;
 
@@ -28,6 +35,8 @@ implementation
 
   const
     C_NAME_TEXTFIELD_PLACEHOLDER = 'Font name';
+    C_LOAD_BUTTON_CAPTION = 'L';
+    C_SAVE_BUTTON_CAPTION = 'S';
     C_TITLE_TEXT = 'TinyFont Editor';
     C_TITLE_HMARGIN = 40;
     C_QUIT_BUTTON_CAPTION = 'X';
@@ -37,6 +46,12 @@ implementation
   constructor TMainForm.init;
   begin
     inherited init;
+  end;
+
+  destructor TMainForm.done;
+  begin
+    _font^.release;
+    inherited done;
   end;
 
   procedure TMainForm.receiveMessage(msg: PObjectMessage); 
@@ -54,7 +69,7 @@ implementation
     panel := new(PPanel, init);
     with panel^.getFrame^, size do
     begin
-      width := 300;
+      width := 246;
       height := 190;
     end;
 
@@ -71,6 +86,7 @@ implementation
       inc(width, C_TITLE_HMARGIN);
     end;
     panel^.addControl(lbl);
+    lbl^.release;
 
     { quit button } 
     _quitButton := new(PButton, init);
@@ -81,38 +97,77 @@ implementation
       adjustSizeToText;
     end;
     panel^.addControl(_quitButton);
+    _quitButton^.release;
+
+    { load button}
+    _loadButton := new(PButton, init);
+    with _loadButton^, getFrame^, point, size do
+    begin
+      setCaption(C_LOAD_BUTTON_CAPTION);
+      x := 5;
+      y := 24;
+      width := 14;
+    end;
+    panel^.addControl(_loadButton);
+    _loadButton^.release;
+
+    { save button}
+    _saveButton := new(PButton, init);
+    with _saveButton^, getFrame^, point, size do
+    begin
+      setCaption(C_SAVE_BUTTON_CAPTION);
+      x := 20;
+      y := 24;
+      width := 14;
+    end;
+    panel^.addControl(_saveButton);
+    _saveButton^.release;
 
     { symbol edit grid }  
     _symbolGrid := new(PSymbolGrid, init);
     with _symbolGrid^, getFrame^, point do
     begin
-      x := 10;
+      x := 95;
       y := 40;
     end;
-    _symbolGrid^.setFontData(@C_SYSTEM_FONT_DATA);
+
+    with _fontData do
+    begin
+      fillChar(_fontSymbols, sizeof(TTinyFontSymbols), 0);
+      name := '';
+      fromChar := #0;
+      toChar := #$FF;
+      symbols := @_fontSymbols;
+    end;
+
+    _font := new(PTinyFont, initWithData(@_fontData));
+    _symbolGrid^.setFont(_font);
     _symbolGrid^.setDelegate(@self);
     panel^.addControl(_symbolGrid);
+    _symbolGrid^.release;
 
     { font name text field }
-    _name := new(PTextField, init);
-    with _name^, getFrame^, point, size do
+    _nameField := new(PTextField, init);
+    with _nameField^, getFrame^, point, size do
     begin
-      x := 10;
+      x := 95;
       y := 24; 
       width := _symbolGrid^.getFrame^.size.width;
       setPlaceholder(C_NAME_TEXTFIELD_PLACEHOLDER);
       setText(_symbolGrid^.getFont^.getName);
     end;
-    panel^.addControl(_name);
+    panel^.addControl(_nameField);
+    _nameField^.release;
 
     { edit grid }  
     _editGrid := new(PEditGrid, init);
     with _editGrid^, getFrame^, point do
     begin
-      x := 160;
+      x := 5;
       y := 40;
     end;
     panel^.addControl(_editGrid);
+    _editGrid^.release;
 
     createControl := panel;
   end;
