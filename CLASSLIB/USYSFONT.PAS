@@ -13,7 +13,14 @@ interface
   uses
     utfont;
 
+  var
+    SystemFont: PTinyFont;
+
+implementation
+
   const
+    C_SYSTEM_FONT_NAME = 'Catus';
+
     C_SYSTEM_FONT_CHARS: array [0..127] of longint = (
       $02811700, $0280E880, $0281F000, $239C4010,
       $04544544, $00476E20, $010DF310, $0119F610,
@@ -49,13 +56,7 @@ interface
       $21084210, $E0822170, $026B3000, $00000000
     );
 
-    C_SYSTEM_FONT_DATA: TTinyFontData = (
-      name: 'System';
-      fromChar: #0;
-      toChar: #127;
-      symbols: @C_SYSTEM_FONT_CHARS
-    );
-
-implementation
-
+begin
+  SystemFont := new(PTinyFont, initWithData(#0, #127, @C_SYSTEM_FONT_CHARS));
+  SystemFont^.setName(C_SYSTEM_FONT_NAME);
 end.

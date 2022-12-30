@@ -13,6 +13,8 @@ interface
     consts, utils, uexc, uclasses, types, locale, uobject, ucanvas;
 
   type
+    TFontName = string32;
+
     PFont = ^TFont;
     TFont = object (TObject)
     public
@@ -20,10 +22,12 @@ interface
       destructor done; virtual;
       procedure getCharSize(ch: char; scale: byte; var width, height: word); virtual;
       procedure drawChar(ch: char; scale: byte; x, y: word; canvas: PCanvas); virtual;
-      function getName: string; virtual;
+      procedure setName(name: TFontName);
+      function getName: TFontName;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
+      _name: TFontName;
     end;
 
 implementation
@@ -33,6 +37,7 @@ implementation
   constructor TFont.init;
   begin
     inherited init;
+    _name := '';
   end;
 
   destructor TFont.done;
@@ -50,9 +55,14 @@ implementation
   begin
   end;
 
-  function TFont.getName: string;
+  procedure TFont.setName(name: TFontName);
   begin
-    getName := '';
+    _name := name;
+  end;
+
+  function TFont.getName: TFontName;
+  begin
+    getName := _name;
   end;
 
   function TFont.getClassName: string;

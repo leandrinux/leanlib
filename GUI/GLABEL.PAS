@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, types, locale,
-    uclasses, uobject, uexc, utrender, 
+    uclasses, uobject, uexc, utrender, ufont, usysfont,
     gclasses, gtypes, gcontrol, gcolors;
 
   type
@@ -31,7 +31,10 @@ interface
       function getTextAlignment: EAlignment;
       procedure setTextAlignment(textAlign: EAlignment);
       procedure adjustSizeToText;
+      procedure setFont(font: PFont);
+      function getFont: PFont;
     private
+      _font: PFont;
       _text: string;
       _textColor: TColor;
       _textAlign: EAlignment;
@@ -58,6 +61,7 @@ implementation
       width := C_DEFAULT_LABEL_WIDTH;
       height := C_DEFAULT_LABEL_HEIGHT;
     end;
+    _font := SystemFont;
   end;
 
   destructor TLabel.done;
@@ -114,9 +118,20 @@ implementation
     tr: PTextRenderer;
   begin
     tr := new(PTextRenderer, init);
+    tr^.setFont(_font);
     tr^.getTextSize(_text, @(getFrame^.size));
     getFrame^.size.height := C_DEFAULT_LABEL_HEIGHT;
     tr^.release;
+  end;
+
+  procedure TLabel.setFont(font: PFont);
+  begin
+    _font := font;
+  end;
+
+  function TLabel.getFont: PFont;
+  begin
+    getFont := _font;
   end;
 
   { TLabel private }

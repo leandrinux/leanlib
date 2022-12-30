@@ -68,7 +68,7 @@ implementation
   var
     p, position: TPoint;
     i: byte;
-    symbol: plong;
+
 
   begin
     getAbsolutePosition(position);
@@ -84,13 +84,11 @@ implementation
       setPattern(ESolid, getStrokeBrush);
       if _font <> nil then
       begin
-        symbol := _font^.getFontData^.symbols;
         for i := 0 to 255 do
         begin
           p.x := position.x + 2 + (i mod C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
           p.y := position.y + 2 + (i div C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
           _font^.drawChar(chr(i), 1, p.x, p.y, getCanvas);
-          inc(symbol);
         end;
       end;
       getStrokeBrush^.color := C_GRID_selected_COLOR;
@@ -161,9 +159,7 @@ implementation
         _selectedIndex := y * C_GRID_CELL_SIDE_COUNT + x;
         if _font <> nil then
         begin
-          symbol := _font^.getFontData^.symbols;
-          inc(symbol, _selectedIndex);
-          _selectedSymbol := symbol^;
+          _selectedSymbol := _font^.getGlyph(chr(_selectedIndex));
         end else
           _selectedSymbol := 0;
       end;

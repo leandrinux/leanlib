@@ -9,7 +9,7 @@ interface
 
   uses
     ascii, consts, utils, uclasses, types, locale,
-    uobject, uexc, umsgs, 
+    uobject, uexc, umsgs, ufont, usysfont,
     gclasses, gtypes, gcontrol, gmsgs;
 
   type
@@ -33,11 +33,14 @@ interface
       function getText: TTextValue;
       procedure setPlaceholder(placeholder: TPlaceholderText);
       function getPlaceholder: TPlaceholderText;
+      procedure setFont(font: PFont);
+      function getFont: PFont;
     private
       _isFocused: boolean;
       _text: TTextValue;
       _previousText: TTextValue;
       _placeholder: TPlaceholderText;
+      _font: PFont;
     end;
 
 implementation
@@ -59,6 +62,7 @@ implementation
       width := C_DEFAULT_TEXTFIELD_WIDTH;
       height := C_DEFAULT_TEXTFIELD_HEIGHT;
     end;
+    _font := SystemFont;
   end;
 
   destructor TTextField.done;
@@ -169,6 +173,16 @@ implementation
   function TTextField.getPlaceholder: TPlaceholderText;
   begin
     getPlaceholder := _placeholder;
+  end;
+
+  procedure TTextField.setFont(font: PFont);
+  begin
+    _font := font;
+  end;
+
+  function TTextField.getFont: PFont;
+  begin
+    getFont := _font;
   end;
 
   { TTextField private }

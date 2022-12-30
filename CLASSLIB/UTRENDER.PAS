@@ -21,7 +21,6 @@ interface
       destructor done; virtual;
       procedure write(str: string);
       procedure writeln(str: string);
-      procedure setDefaultFont;
       procedure setFont(font: PFont);
       procedure setScale(scale: byte);
       procedure setCanvas(canvas: PCanvas);
@@ -69,7 +68,6 @@ implementation
     _cursor.y := 0;
     _charSpacing := 1;
     _lineSpacing := 1;
-    setDefaultFont;
   end;
 
   destructor TTextRenderer.done;
@@ -118,20 +116,11 @@ implementation
     write(C_CR);
   end;
 
-  procedure TTextRenderer.setDefaultFont;
-  var
-    font: PFont;
-  begin
-    font := new(PTinyFont, initWithData(@C_SYSTEM_FONT_DATA));
-    setFont(font);
-    font^.release;
-  end;
-
   procedure TTextRenderer.setFont(font: PFont);
   begin
     if _font <> nil then _font^.release;
     _font := font;
-    font^.retain;
+    _font^.retain;
     updateLineHeight;
   end;
 
@@ -195,6 +184,7 @@ implementation
     i: byte;
     c: char;
   begin
+    iassert(_font <> nil, @self, 0, S_ERR_FONT_NOT_SET);
     { warning! does not support multiline texts }
     w := 0;
     h := 0;

@@ -23,10 +23,7 @@ interface
         _nameField: PTextField;
         _quitButton: PButton;
         _editGrid: PEditGrid;
-        _symbolGrid: PSymbolGrid;
-        
-        _fontSymbols: TTinyFontSymbols;
-        _fontData: TTinyFontData;
+        _symbolGrid: PSymbolGrid;        
         _font: PTinyFont;
         procedure onSymbolChanged;
     end;
@@ -45,12 +42,13 @@ implementation
 
   constructor TMainForm.init;
   begin
+    _font := nil;
     inherited init;
   end;
 
   destructor TMainForm.done;
   begin
-    _font^.release;
+    if _font <> nil then _font^.release;
     inherited done;
   end;
 
@@ -65,6 +63,8 @@ implementation
     panel: PPanel;
     lbl: PLabel;
   begin
+    _font := new(PTinyFont, init);
+
     { container panel }
     panel := new(PPanel, init);
     with panel^.getFrame^, size do
@@ -99,7 +99,7 @@ implementation
     panel^.addControl(_quitButton);
     _quitButton^.release;
 
-    { load button}
+    { load button }
     _loadButton := new(PButton, init);
     with _loadButton^, getFrame^, point, size do
     begin
@@ -111,7 +111,7 @@ implementation
     panel^.addControl(_loadButton);
     _loadButton^.release;
 
-    { save button}
+    { save button }
     _saveButton := new(PButton, init);
     with _saveButton^, getFrame^, point, size do
     begin
@@ -131,16 +131,6 @@ implementation
       y := 40;
     end;
 
-    with _fontData do
-    begin
-      fillChar(_fontSymbols, sizeof(TTinyFontSymbols), 0);
-      name := '';
-      fromChar := #0;
-      toChar := #$FF;
-      symbols := @_fontSymbols;
-    end;
-
-    _font := new(PTinyFont, initWithData(@_fontData));
     _symbolGrid^.setFont(_font);
     _symbolGrid^.setDelegate(@self);
     panel^.addControl(_symbolGrid);
@@ -154,7 +144,7 @@ implementation
       y := 24; 
       width := _symbolGrid^.getFrame^.size.width;
       setPlaceholder(C_NAME_TEXTFIELD_PLACEHOLDER);
-      setText(_symbolGrid^.getFont^.getName);
+      setText(_font^.getName);
     end;
     panel^.addControl(_nameField);
     _nameField^.release;

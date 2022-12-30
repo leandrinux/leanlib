@@ -9,7 +9,7 @@ interface
 
   uses
     xcrt, consts, utils, types, locale,
-    uclasses, uobject, uexc, umsgs, utrender,
+    uclasses, uobject, uexc, umsgs, utrender, ufont, usysfont,
     gclasses, gtypes, gcontrol, gmsgs;
 
   type
@@ -36,9 +36,12 @@ interface
       function getCaption: TButtonCaption;
       procedure setCaption(caption: TButtonCaption);
       procedure adjustSizeToText;
+      procedure setFont(font: PFont);
+      function getFont: PFont;
     private
       _state: EButtonState;
       _caption: TButtonCaption;
+      _font: PFont;
     end;
 
 implementation
@@ -62,6 +65,7 @@ implementation
       width := C_DEFAULT_BUTTON_WIDTH;
       height := C_DEFAULT_BUTTON_HEIGHT;
     end;
+    _font := SystemFont;
   end;
 
   destructor TButton.done;
@@ -133,6 +137,7 @@ implementation
     tr: PTextRenderer;
   begin
     tr := new(PTextRenderer, init);
+    tr^.setFont(_font);
     tr^.getTextSize(_caption, @(getFrame^.size));
     with getFrame^.size do
     begin
@@ -140,6 +145,16 @@ implementation
       height := C_DEFAULT_BUTTON_HEIGHT;
     end;
     tr^.release;
+  end;
+
+  procedure TButton.setFont(font: PFont);
+  begin
+    _font := font;
+  end;
+
+  function TButton.getFont: PFont;
+  begin
+    getFont := _font;
   end;
 
   { TButton private }

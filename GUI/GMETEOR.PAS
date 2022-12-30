@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, palette,
-    uobject, uexc, ucanvas, utrender, 
+    uobject, uexc, ucanvas, utrender,
     gclasses, gtypes, grender, gmsgs, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
@@ -139,6 +139,7 @@ implementation
     lbl^.getAbsolutePosition(absolutePosition);
     getCanvas^.getStrokeBrush^.color := lbl^.getTextColor;
     tr := new(PTextRenderer, init);
+    tr^.setFont(lbl^.getFont);
     tr^.setCanvas(getCanvas);
     tr^.getTextSize(lbl^.getText, @textSize);
     x := absolutePosition.x;
@@ -197,6 +198,7 @@ implementation
 
     tr := new(PTextRenderer, init);
     tr^.setCanvas(getCanvas);
+    tr^.setFont(button^.getFont);
     tr^.getTextSize(button^.getCaption, @textSize);
     inc(x, (button^.getFrame^.size.width div 2) - (textSize.width div 2));
     inc(y, (button^.getFrame^.size.height div 2) - (textSize.height div 2));
@@ -256,6 +258,7 @@ implementation
 
       { text } 
       tr := new(PTextRenderer, init);
+      tr^.setFont(textField^.getFont);      
       tr^.setCanvas(getCanvas);
       textValue := textField^.getText;
       if not isFocused and (length(textValue) = 0) then 

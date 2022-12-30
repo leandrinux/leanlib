@@ -10,7 +10,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, udict, ulist, 
+    uobject, uexc, udict, ulist,
     gclasses, gtypes, gattribs, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type

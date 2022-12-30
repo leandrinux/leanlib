@@ -14,30 +14,26 @@ interface
     uobject, ufont, ucanvas;
 
   type
-    PTinyFontData = ^TTinyFontData;
-    TTinyFontData = packed record
-      name: string32;
-      fromChar, toChar: char;
-      symbols: plong;
-    end;
-
-    TTinyFontSymbols = array[0..255] of longint;
+    PSymbolArray = ^TSymbolArray;
+    TSymbolArray = array[0..255] of longint;
 
   type
     PTinyFont = ^TTinyFont;
     TTinyFont = object (TFont)
     public
-      constructor initWithData(fontData: PTinyFontData);
+      constructor init;
+      constructor initWithData(fromChar, toChar: char; symbolArray: PSymbolArray);
       destructor done; virtual;
       procedure getCharSize(ch: char; scale: byte; var width, height: word); virtual;
       procedure drawChar(ch: char; scale: byte; x, y: word; canvas: PCanvas); virtual;
-      function getName: string; virtual;
+      function getGlyph(ch: char): longint;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      function getFontData: PTinyFontData;
     private
+      _name: string32;
+      _fromChar, _toChar: char;
       _mustFreeMem: boolean;
-      _fontData: PTinyFontData;
+      _symbolArray: PSymbolArray;
     end;
 
 implementation
@@ -48,22 +44,36 @@ implementation
 
   { TTinyFont public }
 
-  constructor TTinyFont.initWithData(fontData: PTinyFontData);
+  constructor TTinyFont.init;
   begin
     inherited init;
+    _name := '';
+    _fromChar := #0;
+    _toChar := #255;
+    _mustFreeMem := true;
+    getMem(_symbolArray, sizeof(TSymbolArray));
+    fillChar(_symbolArray^, sizeof(TSymbolArray), 0);
+  end;
+
+  constructor TTinyFont.initWithData(fromChar, toChar: char; symbolArray: PSymbolArray);
+  begin
+    inherited init;
+    _name := '';
+    _fromChar := fromChar;
+    _toChar := toChar;
     _mustFreeMem := false;
-    _fontData := fontData;
+    _symbolArray := symbolArray;
   end;
 
   destructor TTinyFont.done;
   begin
-    if _mustFreeMem then FreeMem(_fontData, sizeOf(TTinyFontData));
+    if _mustFreeMem then freeMem(_symbolArray, sizeOf(TSymbolArray));
     inherited done;
   end;
 
   procedure TTinyFont.getCharSize(ch: char; scale: byte; var width, height: word);
   begin
-    if ch in [_fontData^.fromChar.._fontData^.toChar] then
+    if (ch >= _fromChar) and (ch <= _toChar) then
     begin
       width := C_CHAR_WIDTH * scale;
       height := C_CHAR_HEIGHT * scale;
@@ -75,42 +85,35 @@ implementation
 
   procedure TTinyFont.drawChar(ch: char; scale: byte; x, y: word; canvas: PCanvas);
   var
-    symbol: longint;
     cx, cy: word;
-    p: plong;
+    glyph: longint;
     brush: PBrush;
     previousFillColor: TColor;
   begin
-    with _fontData^ do
+    if (ch < _fromChar) or (ch > _toChar) then exit;
+    glyph := _symbolArray^[ord(ch) - ord(_fromChar)] shr 2;
+    if glyph <> 0 then
     begin
-      if not (ch in [fromChar..toChar]) then exit;
-      p := symbols;
-      inc(p, ord(ch)- ord(fromChar));
-    end;
-    previousFillColor := canvas^.getFillBrush^.color;
-    brush := canvas^.getStrokeBrush;
-    canvas^.getFillBrush^.color := brush^.color;
-    symbol := p^ shr 2;
-    if symbol <> 0 then 
+      previousFillColor := canvas^.getFillBrush^.color;
+      brush := canvas^.getStrokeBrush;
+      canvas^.getFillBrush^.color := brush^.color;
       for cy := C_CHAR_HEIGHT - 1 downto 0 do
         for cx := C_CHAR_WIDTH - 1 downto 0 do
         begin
-          if (symbol and 1) <> 0 then
+          if (glyph and 1) <> 0 then
             if scale = 1 then
               canvas^.setPixel(cx + x, cy + y, brush)
             else
               canvas^.frect(x+(cx*scale), y+(cy*scale), scale, scale);
-          symbol := symbol shr 1;
+          glyph := glyph shr 1;
         end;
-    canvas^.getFillBrush^.color := previousFillColor;
+      canvas^.getFillBrush^.color := previousFillColor;
+    end;
   end;
 
-  function TTinyFont.getName: string;
+  function TTinyFont.getGlyph(ch: char): longint;
   begin
-    if _fontData <> nil then
-      getName := _fontData^.name
-    else
-      getName := '';
+    getGlyph := _symbolArray^[ord(ch)];
   end;
 
   function TTinyFont.getClassName: string;
@@ -121,11 +124,6 @@ implementation
   function TTinyFont.getClassId: word;
   begin
     getClassId := C_CLASS_ID_TinyFont;
-  end;
-
-  function TTinyFont.getFontData: PTinyFontData;
-  begin
-    getFontData := _fontData;
   end;
   
   { TTinyFont private }
