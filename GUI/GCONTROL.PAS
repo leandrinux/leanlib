@@ -45,6 +45,7 @@ interface
       procedure setCanvas(canvas: PCanvas);
       function getCanvas: PCanvas;
       procedure defaultDraw; virtual;
+      procedure requestRedraw;
     private
       _id: TControlID;
       _bus: PMessageBus;
@@ -187,7 +188,7 @@ implementation
   procedure TControl.setEnabled(enabled: boolean);
   begin
     _isEnabled := enabled;
-    sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus); 
+    requestRedraw;
   end;
 
   function TControl.isEnabled: boolean;
@@ -225,6 +226,11 @@ implementation
 
   procedure TControl.defaultDraw;
   begin
+  end;
+
+  procedure TControl.requestRedraw;
+  begin
+    sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _bus);
   end;
   { TControl private }
 

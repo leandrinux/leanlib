@@ -115,7 +115,7 @@ implementation
             _text[length(_text)] := PChar(msg^.payload)^;
           end;
         end; 
-        sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+        requestRedraw;
       end;
 
       C_MSG_MOUSE_LEFT_DOWN:  
@@ -126,7 +126,7 @@ implementation
         begin
           _isFocused := true;
           _previousText := _text;
-          sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+          requestRedraw;
           sendMessage(C_MSG_CONTROL_FOCUS_CHANGED, getBus);
         end;
       end;
@@ -136,7 +136,7 @@ implementation
         if _isFocused and (msg^.sender <> @self) then
         begin
           _isFocused := false;
-          sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+          requestRedraw;
         end;
       end;
 
@@ -157,7 +157,7 @@ implementation
   procedure TTextField.setText(text: TTextValue);
   begin
     _text := text;
-    sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+    requestRedraw;
   end;
 
   function TTextField.getText: TTextValue;

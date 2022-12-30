@@ -79,7 +79,7 @@ implementation
       if isPointInFrame(mousePosition, @frame) then
       begin
         _checked := not _checked;
-        sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+        requestRedraw;
         sendMessage(C_MSG_CONTROL_CLICKED, getBus);
       end;
     end;

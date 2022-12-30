@@ -99,12 +99,12 @@ implementation
            and isPointInFrame(mousePosition, @frame) then 
         begin
           _state := EButtonStateDown;
-          sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+          requestRedraw;
         end else
           if (_state = EButtonStateDown) and (msg^.opcode = C_MSG_MOUSE_LEFT_UP) then
           begin
             _state := EButtonStateUp;
-            sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, getBus);
+            requestRedraw;
             if isPointInFrame(mousePosition, @frame) then
               sendMessage(C_MSG_CONTROL_CLICKED, getBus);
           end;

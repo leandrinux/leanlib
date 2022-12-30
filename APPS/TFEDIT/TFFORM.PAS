@@ -192,9 +192,9 @@ implementation
   procedure TMainForm.onSymbolChanged;
   begin
     _editGrid^.setSymbol(_symbolGrid^.getSelectedSymbol);
-    _editGrid^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _editGrid^.getBus);
+    _editGrid^.requestRedraw;
     _indexLabel^.setText('#' + inttostr(ord(_symbolGrid^.getSelectedChar)));
-    _indexLabel^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _indexLabel^.getBus);
+    _indexLabel^.requestRedraw;
   end;
 
   procedure TMainForm.updateModifiedSymbol;
