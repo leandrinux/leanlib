@@ -185,7 +185,7 @@ implementation
   procedure TMainForm.updateModifiedSymbol;
   begin
     _font^.setSymbol(_symbolGrid^.getSelectedChar, _editGrid^.getSymbol);
-    _symbolGrid^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _symbolGrid^.getBus);
+    _symbolGrid^.redrawCharCell(_symbolGrid^.getSelectedChar);
   end;
 
 end.

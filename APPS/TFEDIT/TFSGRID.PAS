@@ -16,6 +16,7 @@ interface
       constructor init;
       destructor done; virtual;
       procedure defaultDraw; virtual;
+      procedure redrawCharCell(ch: char);
       procedure receiveMessage(msg: PObjectMessage); virtual;
       procedure setFont(font: PTinyFont);
       function getFont: PTinyFont;
@@ -34,7 +35,7 @@ implementation
   const
     C_GRID_BACKGROUND_COLOR = ord(ELightGray);
     C_GRID_BORDER_COLOR = ord(EDarkGray);
-    C_GRID_selected_COLOR = ord(ELightBlue);
+    C_GRID_SELECTED_COLOR = ord(ELightBlue);
     C_GRID_CELL_SIDE_COUNT = 16;
     C_GRID_CELL_SIZE = 8;
     C_GRID_SIZE = 1 + C_GRID_CELL_SIDE_COUNT * C_GRID_CELL_SIZE + C_GRID_CELL_SIDE_COUNT;
@@ -68,7 +69,7 @@ implementation
   procedure TSymbolGrid.defaultDraw;
   var
     p, position: TPoint;
-    i: byte;
+    ch: char;
   begin
     getAbsolutePosition(position);
     with getCanvas^ do
@@ -82,14 +83,7 @@ implementation
       end;
       setPattern(ESolid, getStrokeBrush);
       if _font <> nil then
-      begin
-        for i := 0 to 255 do
-        begin
-          p.x := position.x + 2 + (i mod C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
-          p.y := position.y + 2 + (i div C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
-          _font^.drawChar(chr(i), 1, p.x, p.y, getCanvas);
-        end;
-      end;
+        for ch := #0 to #255 do redrawCharCell(ch);
       getStrokeBrush^.color := C_GRID_selected_COLOR;
       with _selectedPoint do
         rect(
@@ -98,6 +92,18 @@ implementation
           C_GRID_CELL_SIZE + 2, C_GRID_CELL_SIZE + 2
         );
     end;
+  end;
+
+  procedure TSymbolGrid.redrawCharCell(ch: char);
+  var
+    position, p: TPoint;
+  begin
+    getAbsolutePosition(position);
+    p.x := position.x + 2 + (ord(ch) mod C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
+    p.y := position.y + 2 + (ord(ch) div C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
+    with getCanvas^.getBitmap^, p do 
+      setPixelBlock(x, y, x + C_GRID_CELL_SIZE - 2, y + C_GRID_CELL_SIZE - 2, C_GRID_BACKGROUND_COLOR);
+    _font^.drawChar(ch, 1, p.x, p.y, getCanvas);
   end;
 
   procedure TSymbolGrid.receiveMessage(msg: PObjectMessage);
