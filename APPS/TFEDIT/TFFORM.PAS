@@ -26,6 +26,7 @@ interface
         _symbolGrid: PSymbolGrid;        
         _font: PTinyFont;
         procedure onSymbolChanged;
+        procedure updateModifiedSymbol;
     end;
 
 implementation
@@ -167,7 +168,9 @@ implementation
     case opcode of
         C_MSG_CONTROL_CLICKED:
         if sender = PControl(_quitButton) then 
-            sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate)
+          sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate)
+        else if sender = PControl(_saveButton) then 
+          updateModifiedSymbol;
     end;
   end;
 
@@ -177,6 +180,12 @@ implementation
   begin
     _editGrid^.setSymbol(_symbolGrid^.getSelectedSymbol);
     _editGrid^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _editGrid^.getBus);
+  end;
+
+  procedure TMainForm.updateModifiedSymbol;
+  begin
+    _font^.setSymbol(_symbolGrid^.getSelectedChar, _editGrid^.getSymbol);
+    _symbolGrid^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _symbolGrid^.getBus);
   end;
 
 end.

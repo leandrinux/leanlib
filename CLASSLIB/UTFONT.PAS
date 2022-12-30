@@ -26,7 +26,8 @@ interface
       destructor done; virtual;
       procedure getCharSize(ch: char; scale: byte; var width, height: word); virtual;
       procedure drawChar(ch: char; scale: byte; x, y: word; canvas: PCanvas); virtual;
-      function getGlyph(ch: char): longint;
+      function getSymbol(ch: char): longint;
+      procedure setSymbol(ch: char; symbol: longint);
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -111,9 +112,14 @@ implementation
     end;
   end;
 
-  function TTinyFont.getGlyph(ch: char): longint;
+  procedure TTinyFont.setSymbol(ch: char; symbol: longint);
   begin
-    getGlyph := _symbolArray^[ord(ch)];
+    _symbolArray^[ord(ch)] := symbol;
+  end;
+
+  function TTinyFont.getSymbol(ch: char): longint;
+  begin
+    getSymbol := _symbolArray^[ord(ch)];
   end;
 
   function TTinyFont.getClassName: string;

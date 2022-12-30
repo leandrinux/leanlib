@@ -20,6 +20,7 @@ interface
       procedure setFont(font: PTinyFont);
       function getFont: PTinyFont;
       function getSelectedSymbol: longint;
+      function getSelectedChar: char;
     private
       _font: PTinyFont;
       _selectedIndex: byte;
@@ -68,8 +69,6 @@ implementation
   var
     p, position: TPoint;
     i: byte;
-
-
   begin
     getAbsolutePosition(position);
     with getCanvas^ do
@@ -122,6 +121,11 @@ implementation
     getSelectedSymbol := _selectedSymbol;
   end;
 
+  function TSymbolGrid.getSelectedChar: char;
+  begin
+    getSelectedChar := chr(_selectedIndex);
+  end;
+
   { Private }
 
   procedure TSymbolGrid.onClick(mousePosition: PPoint);
@@ -159,7 +163,7 @@ implementation
         _selectedIndex := y * C_GRID_CELL_SIDE_COUNT + x;
         if _font <> nil then
         begin
-          _selectedSymbol := _font^.getGlyph(chr(_selectedIndex));
+          _selectedSymbol := _font^.getSymbol(chr(_selectedIndex));
         end else
           _selectedSymbol := 0;
       end;
