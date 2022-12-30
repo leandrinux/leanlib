@@ -114,12 +114,16 @@ implementation
 
   procedure TTinyFont.setSymbol(ch: char; symbol: longint);
   begin
-    _symbolArray^[ord(ch)] := symbol;
+    if (ch >= _fromChar) or (ch <= _toChar) then
+      _symbolArray^[ord(ch)] := symbol;
   end;
 
   function TTinyFont.getSymbol(ch: char): longint;
   begin
-    getSymbol := _symbolArray^[ord(ch)];
+    if (ch < _fromChar) or (ch > _toChar) then
+      getSymbol := 0
+    else
+      getSymbol := _symbolArray^[ord(ch)];
   end;
 
   function TTinyFont.getClassName: string;
