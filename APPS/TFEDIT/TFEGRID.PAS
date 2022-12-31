@@ -52,9 +52,13 @@ implementation
     getSymbol := _symbol;
   end;
 
-  procedure TEditGrid.setSymbol(Symbol: longint);
+  procedure TEditGrid.setSymbol(symbol: longint);
+  var
+    redraw: boolean;
   begin
+    redraw := _symbol <> symbol;
     _symbol := Symbol;
+    if redraw then requestRedraw;
   end;
 
   procedure TEditGrid.defaultDraw;
