@@ -89,8 +89,12 @@ implementation
   end;
 
   procedure TLabel.setText(text: string);
+  var
+    redraw: boolean;
   begin
+    redraw := _text <> text;
     _text := text;
+    if redraw then requestRedraw;
   end;
 
   function TLabel.getTextColor: TColor;

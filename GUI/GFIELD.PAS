@@ -155,9 +155,12 @@ implementation
   end;
 
   procedure TTextField.setText(text: TTextValue);
+  var
+    redraw: boolean;
   begin
+    redraw := _text <> text;
     _text := text;
-    requestRedraw;
+    if redraw then requestRedraw;
   end;
 
   function TTextField.getText: TTextValue;
