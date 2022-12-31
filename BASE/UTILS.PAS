@@ -43,6 +43,8 @@ interface
   function frameToStr(frame: PFrame): string;
   function isPointInFrame(p: PPoint; f: PFrame): boolean;
 
+  function lowcase(ch: char): char;
+
 implementation
 
   const
@@ -185,6 +187,14 @@ implementation
   begin
     with f^, point, size do
       isPointInFrame := (p^.x >= x) and (p^.x <= (x+width)) and (p^.y >= y) and (p^.y <= (y+height));
+  end;
+
+  function lowcase(ch: char): char;
+  begin
+    if ch in ['A'..'Z'] then 
+      lowcase := chr(ord(ch) + 32)
+    else
+      lowcase := ch;
   end;
 
 end.
