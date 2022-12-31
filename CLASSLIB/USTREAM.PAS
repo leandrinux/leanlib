@@ -9,7 +9,8 @@ unit
 interface
 
   uses
-    uobject, math, uclasses, uexc, locale, utils, ascii, umsgs;
+    ascii, math, locale, utils,
+    uobject, uclasses, uexc, umsgs;
 
   type
     PCopyProgressData = ^TCopyProgressData;
@@ -28,7 +29,10 @@ interface
       procedure copyAllTo(stream: PStream);
       procedure writeln(line: string);
       procedure writestr(str: string);
+      procedure writepchar(str: string);
+      function readUntilChar(c: char): string;
       function readln: string;
+      function readpchar: string;
       function getPosition: longint; virtual;
       function isEOF: boolean; virtual;
       function getSize: longint; virtual;
@@ -95,7 +99,15 @@ implementation
     write(incptr(@str, 1), length(str));
   end;
 
-  function TStream.readln: string;
+  procedure TStream.writepchar(str: string);
+  const C_ZERO: byte = 0;
+  begin
+    if length(str) > 0 then 
+      write(incptr(@str, 1), length(str));
+    write(@C_ZERO, 1);
+  end;
+
+  function TStream.readUntilChar(c: char): string;
   var
     character: char;
     output: string;
@@ -103,12 +115,22 @@ implementation
   begin
     output := '';
     read(@character, 1, result);
-    while (byte(output[0])<255) and (result>0) and (character<>chr(10))  do
+    while (length(output)<255) and (result>0) and (character<>c)  do
     begin
       output := output + character;
       read(@character, 1, result);
     end;
-    readln := output;
+    readUntilChar := output;
+  end;
+
+  function TStream.readln: string;
+  begin
+    readln := readUntilChar(C_LF);
+  end;
+
+  function TStream.readpchar: string;
+  begin
+    readpchar := readUntilChar(#0);
   end;
 
   function TStream.getPosition: longint;
