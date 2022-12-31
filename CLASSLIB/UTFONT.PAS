@@ -11,7 +11,7 @@ interface
 
   uses
     consts, utils, uexc, uclasses, types, locale,
-    uobject, ufont, ucanvas;
+    uobject, ufont, ucanvas, ustream;
 
   type
     PSymbolArray = ^TSymbolArray;
@@ -28,6 +28,8 @@ interface
       procedure drawChar(ch: char; scale: byte; x, y: word; canvas: PCanvas); virtual;
       function getSymbol(ch: char): longint;
       procedure setSymbol(ch: char; symbol: longint);
+      procedure save(stream: PStream); virtual;
+      procedure load(stream: PStream); virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
@@ -39,9 +41,15 @@ interface
 
 implementation
 
+  type
+    TFontFileSignature = array[0..1] of char;
+    TFontFileType = word;
+
   const
     C_CHAR_WIDTH  = 5;
     C_CHAR_HEIGHT = 6;
+    C_FONT_FILE_SIGNATURE: TFontFileSignature = 'FN';
+    C_FONT_FILE_TYPE: TFontFileType = 1;
 
   { TTinyFont public }
 
@@ -126,6 +134,38 @@ implementation
       getSymbol := _symbolArray^[ord(ch)];
   end;
 
+  procedure TTinyFont.save(stream: PStream);
+  begin
+    with stream^ do
+    begin
+      write(@C_FONT_FILE_SIGNATURE, sizeof(TFontFileSignature));
+      write(@C_FONT_FILE_TYPE, 2);
+      write(@_fromChar, sizeof(_fromChar));
+      write(@_toChar, sizeof(_toChar));
+      writepchar(_name);
+      write(_symbolArray, sizeof(TSymbolArray));
+    end;
+  end;
+
+  procedure TTinyFont.load(stream: PStream); 
+  var
+    signature: TFontFileSignature;
+    fileType: TFontFileType;
+    c: word;
+  begin
+    with stream^ do
+    begin
+      read(@signature, sizeof(TFontFileSignature), c);
+      if signature <> C_FONT_FILE_SIGNATURE then exit;
+      read(@fileType, sizeof(TFontFileType), c);
+      if fileType <> C_FONT_FILE_TYPE then exit;
+      read(@_fromChar, 1, c);
+      read(@_toChar, 1, c);
+      _name := readpchar;
+      read(_symbolArray, sizeof(TSymbolArray), c);
+    end;
+  end;
+
   function TTinyFont.getClassName: string;
   begin
     getClassName := 'TTinyFont';
@@ -135,7 +175,7 @@ implementation
   begin
     getClassId := C_CLASS_ID_TinyFont;
   end;
-  
+
   { TTinyFont private }
 
   { Other }

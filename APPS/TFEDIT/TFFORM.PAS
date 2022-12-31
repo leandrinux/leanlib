@@ -4,7 +4,7 @@ interface
 
   uses
     xcrt, ascii, types, utils,
-    uobject, uclasses, uexc, udisplay, usysfont, utfont,
+    uobject, uclasses, uexc, udisplay, usysfont, utfont, ufstream,
     gui, gtypes, gmsgs, gform, gcontrol, gpanel, glabel, gbutton, gfield,
     tfegrid, tfsgrid, tfebase;
 
@@ -26,6 +26,7 @@ interface
         _updateButton: PButton;
         _indexLabel: PLabel;
         _filenameField: PTextField;
+        _fontnameField: PTextField;
         _editGrid: PEditGrid;
         _symbolGrid: PSymbolGrid;        
         _font: PTinyFont;
@@ -41,6 +42,7 @@ implementation
 
   const
     C_FILENAME_TEXTFIELD_PLACEHOLDER = 'File name';
+    C_FONTNAME_TEXTFIELD_PLACEHOLDER = 'Font name';
     C_LOAD_BUTTON_CAPTION = 'Load';
     C_SAVE_BUTTON_CAPTION = 'Save';
     C_CLEAR_BUTTON_CAPTION = 'Clear';
@@ -50,6 +52,7 @@ implementation
     C_QUIT_BUTTON_CAPTION = 'X';
     C_MIN_PRINTABLE_CHAR = #32;
     C_MAX_PRINTABLE_CHAR = #126;
+    C_DEFAULT_FILENAME = 'NEWFONT.FON';
 
   { Public }
 
@@ -115,9 +118,9 @@ implementation
     with _loadButton^, getFrame^, point, size do
     begin
       setCaption(C_LOAD_BUTTON_CAPTION);
-      x := 5;
-      y := 143;
-      width := 40;
+      x := 170;
+      y := 172;
+      width := 34;
     end;
     panel^.addControl(_loadButton);
     _loadButton^.release;
@@ -127,9 +130,9 @@ implementation
     with _saveButton^, getFrame^, point, size do
     begin
       setCaption(C_SAVE_BUTTON_CAPTION);
-      x := 51;
-      y := 143;
-      width := 40;
+      x := 206;
+      y := 172;
+      width := 34;
     end;
     panel^.addControl(_saveButton);
     _saveButton^.release;
@@ -140,7 +143,7 @@ implementation
     begin
       setCaption(C_CLEAR_BUTTON_CAPTION);
       x := 5;
-      y := 159;
+      y := 143;
       width := 40;
     end;
     panel^.addControl(_clearButton);
@@ -152,13 +155,12 @@ implementation
     begin
       setCaption(C_UPDATE_BUTTON_CAPTION);
       x := 51;
-      y := 159;
+      y := 143;
       width := 40;
     end;
     panel^.addControl(_updateButton);
     _updateButton^.release;
 
-    
     { index label }
     _indexLabel := new(PLabel, init);
     with _indexLabel^, getFrame^, point, size do
@@ -178,19 +180,31 @@ implementation
       x := 95;
       y := 24;
     end;
-
     _symbolGrid^.setDelegate(@self);
     panel^.addControl(_symbolGrid);
     _symbolGrid^.release;
 
-    { font name text field }
-    _filenameField := new(PTextField, init);
-    with _filenameField^, getFrame^, point, size do
+    { font name text field } 
+    _fontnameField := new(PTextField, init);
+    with _fontnameField^, getFrame^, point, size do
     begin
       x := 5;
       y := 128; 
       width := 86;
+      setPlaceholder(C_FONTNAME_TEXTFIELD_PLACEHOLDER);
+    end;
+    panel^.addControl(_fontnameField);
+    _fontnameField^.release;
+
+    { filename text field }
+    _filenameField := new(PTextField, init);
+    with _filenameField^, getFrame^, point, size do
+    begin
+      x := 95;
+      y := 172; 
+      width := 73;
       setPlaceholder(C_FILENAME_TEXTFIELD_PLACEHOLDER);
+      setText(C_DEFAULT_FILENAME);
     end;
     panel^.addControl(_filenameField);
     _filenameField^.release;
@@ -213,6 +227,7 @@ implementation
     _font := new(PTinyFont, init);
     _symbolGrid^.setFont(_font);
     loadSystemFont;
+    _editGrid^.setSymbol(_font^.getSymbol(#0));
   end;
 
   procedure TMainForm.onEvent(opcode: word; sender: PControl);
@@ -223,6 +238,8 @@ implementation
           sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate)
         else if sender = PControl(_updateButton) then 
           updateModifiedSymbol
+        else if sender = PControl(_clearButton) then 
+          clearSymbols          
         else if sender = PControl(_loadButton) then 
           loadFont
         else if sender = PControl(_saveButton) then 
@@ -253,15 +270,36 @@ implementation
   end;
 
   procedure TMainForm.clearSymbols;
+  var 
+    ch: char;
   begin
+    for ch := #0 to #255 do _font^.setSymbol(ch, 0);
+    _symbolGrid^.requestRedraw;
+    symbolSelectionChanged;
+    _filenameField^.setText('');
+    _filenameField^.requestRedraw;
   end;
 
   procedure TMainForm.loadFont;
+  var
+    fs: PFilestream;
   begin
+    fs := new(PFilestream, initWithPath(_filenameField^.getText, EFileReadOnly));
+    _font^.load(fs);
+    fs^.release;
+    _symbolGrid^.requestRedraw;
+    symbolSelectionChanged;
+    _fontnameField^.setText(_font^.getName);
+    _fontnameField^.requestRedraw;
   end;
 
   procedure TMainForm.saveFont;
+  var
+    fs: PFilestream;
   begin
+    fs := new(PFilestream, initWithPath(_filenameField^.getText, EFileCreate));
+    _font^.save(fs);
+    fs^.release;
   end;
 
   procedure TMainForm.loadSystemFont;
@@ -270,6 +308,7 @@ implementation
   begin
     for ch := #0 to #255 do 
       _font^.setSymbol(ch, SystemFont^.getSymbol(ch));
+    _fontNameField^.setText(SystemFont^.getName);
   end;
 
 end.

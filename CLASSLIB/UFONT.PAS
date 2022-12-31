@@ -10,7 +10,8 @@ unit
 interface
 
   uses
-    consts, utils, uexc, uclasses, types, locale, uobject, ucanvas;
+    consts, utils, types, locale,
+    uexc, uclasses, uobject, ucanvas, ustream;
 
   type
     TFontName = string32;
@@ -26,6 +27,8 @@ interface
       function getName: TFontName;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure save(stream: PStream); virtual;
+      procedure load(stream: PStream); virtual;
     private
       _name: TFontName;
     end;
@@ -63,6 +66,14 @@ implementation
   function TFont.getName: TFontName;
   begin
     getName := _name;
+  end;
+
+  procedure TFont.save(stream: PStream);
+  begin
+  end;
+
+  procedure TFont.load(stream: PStream);  
+  begin
   end;
 
   function TFont.getClassName: string;
