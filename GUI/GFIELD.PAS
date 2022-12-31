@@ -14,7 +14,14 @@ interface
 
   type
     TTextValue = string32;
+
     TPlaceholderText = string32;
+
+    ETextFieldMode = (
+      ETextFieldModeNormal,
+      ETextFieldModeUppercase,
+      ETextFieldModeLowercase
+    );
 
     PTextField = ^TTextField;
     TTextField = object (TControl)
@@ -37,6 +44,8 @@ interface
       function getFont: PFont;
       procedure setLengthLimit(lengthLimit: byte);
       function getLengthLimit: byte;
+      procedure setMode(mode: ETextFieldMode);
+      function getMode: ETextFieldMode;
     private
       _isFocused: boolean;
       _text: TTextValue;
@@ -44,6 +53,7 @@ interface
       _placeholder: TPlaceholderText;
       _font: PFont;
       _lengthLimit: byte;
+      _mode: ETextFieldMode;
     end;
 
 implementation
@@ -61,6 +71,7 @@ implementation
     _text := '';
     _placeholder := '';
     _lengthLimit := 0;
+    _mode := ETextFieldModeNormal;
     with getFrame^, point, size do
     begin
       width := C_DEFAULT_TEXTFIELD_WIDTH;
@@ -88,6 +99,7 @@ implementation
   var
     mousePosition: PPoint;
     frame: TFrame;
+    ch: char;
   begin
     frame := getFrame^;
     getAbsolutePosition(frame.point);
@@ -123,7 +135,15 @@ implementation
             if (_lengthLimit <> 0) and (length(_text) < _lengthLimit) then
             begin
               inc(_text[0]);
-              _text[length(_text)] := PChar(msg^.payload)^;
+              ch := PChar(msg^.payload)^;
+              case _mode of
+                ETextFieldModeNormal: 
+                  _text[length(_text)] := ch;
+                ETextFieldModeUppercase: 
+                  _text[length(_text)] := upcase(ch);
+                ETextFieldModeLowercase: 
+                  _text[length(_text)] := lowcase(ch);
+              end;
               requestRedraw;
             end;
           end;
@@ -209,6 +229,16 @@ implementation
   function TTextField.getLengthLimit: byte;
   begin
     getLengthLimit := _lengthLimit;
+  end;
+
+  procedure TTextField.setMode(mode: ETextFieldMode);
+  begin
+    _mode := mode;
+  end;
+
+  function TTextField.getMode: ETextFieldMode;
+  begin
+    getMode := _mode;
   end;
 
   { TTextField private }
