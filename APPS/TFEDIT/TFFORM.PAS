@@ -220,6 +220,7 @@ implementation
       setPlaceholder(C_FILENAME_TEXTFIELD_PLACEHOLDER);
       setText(C_DEFAULT_FILENAME);
       setLengthLimit(11);
+      setMode(ETextFieldModeUppercase);
     end;
     panel^.addControl(_filenameField);
     _filenameField^.release;
