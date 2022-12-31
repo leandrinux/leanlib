@@ -25,6 +25,7 @@ interface
         _clearButton: PButton;
         _updateButton: PButton;
         _indexLabel: PLabel;
+        _statusLabel: PLabel;
         _filenameField: PTextField;
         _fontnameField: PTextField;
         _editGrid: PEditGrid;
@@ -50,9 +51,11 @@ implementation
     C_TITLE_TEXT = 'TinyFont Editor';
     C_TITLE_HMARGIN = 40;
     C_QUIT_BUTTON_CAPTION = 'X';
-    C_MIN_PRINTABLE_CHAR = #32;
-    C_MAX_PRINTABLE_CHAR = #126;
     C_DEFAULT_FILENAME = 'NEWFONT.FON';
+    C_STATUS_CLEAR = 'Clearing...';
+    C_STATUS_LOAD = 'Loading...';
+    C_STATUS_SAVE = 'Saving...';
+    C_STATUS_NONE = '';
 
   { Public }
 
@@ -167,11 +170,22 @@ implementation
     begin
       setText('#0');
       x := 5;
-      y := 174;
-      width := 34;
+      y := 160;
+      width := 40;
     end;
     panel^.addControl(_indexLabel);
     _indexLabel^.release;
+
+    { status label }
+    _statusLabel := new(PLabel, init);
+    with _statusLabel^, getFrame^, point, size do
+    begin
+      x := 5;
+      y := 174;
+      width := 70;
+    end;
+    panel^.addControl(_statusLabel);
+    _statusLabel^.release;
 
     { symbol edit grid }  
     _symbolGrid := new(PSymbolGrid, init);
@@ -254,13 +268,11 @@ implementation
     ch: char;
   begin
     _editGrid^.setSymbol(_symbolGrid^.getSelectedSymbol);
-    _editGrid^.requestRedraw;
     ch := _symbolGrid^.getSelectedChar;
-    if (ch >= C_MIN_PRINTABLE_CHAR) and (ch <= C_MAX_PRINTABLE_CHAR) then
+    if (ch >= C_PRINTABLE_FROM) and (ch <= C_PRINTABLE_TO) then
       _indexLabel^.setText('#' + inttostr(ord(ch)) + '(' + ch + ')')
     else
       _indexLabel^.setText('#' + inttostr(ord(ch)));
-    _indexLabel^.requestRedraw;
   end;
 
   procedure TMainForm.updateModifiedSymbol;
@@ -273,33 +285,38 @@ implementation
   var 
     ch: char;
   begin
+    _statusLabel^.setText(C_STATUS_CLEAR);
     for ch := #0 to #255 do _font^.setSymbol(ch, 0);
     _symbolGrid^.requestRedraw;
     symbolSelectionChanged;
     _filenameField^.setText('');
-    _filenameField^.requestRedraw;
+    _fontnameField^.setText('');
+    _statusLabel^.setText(C_STATUS_NONE);
   end;
 
   procedure TMainForm.loadFont;
   var
     fs: PFilestream;
   begin
+    _statusLabel^.setText(C_STATUS_LOAD);
     fs := new(PFilestream, initWithPath(_filenameField^.getText, EFileReadOnly));
     _font^.load(fs);
     fs^.release;
     _symbolGrid^.requestRedraw;
     symbolSelectionChanged;
     _fontnameField^.setText(_font^.getName);
-    _fontnameField^.requestRedraw;
+    _statusLabel^.setText(C_STATUS_NONE);
   end;
 
   procedure TMainForm.saveFont;
   var
     fs: PFilestream;
   begin
+    _statusLabel^.setText(C_STATUS_SAVE);
     fs := new(PFilestream, initWithPath(_filenameField^.getText, EFileCreate));
     _font^.save(fs);
     fs^.release;
+    _statusLabel^.setText(C_STATUS_NONE);
   end;
 
   procedure TMainForm.loadSystemFont;
