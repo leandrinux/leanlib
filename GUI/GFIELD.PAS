@@ -35,12 +35,15 @@ interface
       function getPlaceholder: TPlaceholderText;
       procedure setFont(font: PFont);
       function getFont: PFont;
+      procedure setLengthLimit(lengthLimit: byte);
+      function getLengthLimit: byte;
     private
       _isFocused: boolean;
       _text: TTextValue;
       _previousText: TTextValue;
       _placeholder: TPlaceholderText;
       _font: PFont;
+      _lengthLimit: byte;
     end;
 
 implementation
@@ -57,6 +60,7 @@ implementation
     _isFocused := false;
     _text := '';
     _placeholder := '';
+    _lengthLimit := 0;
     with getFrame^, point, size do
     begin
       width := C_DEFAULT_TEXTFIELD_WIDTH;
@@ -96,26 +100,35 @@ implementation
         if not _isFocused then exit;
         case PChar(msg^.payload)^ of
 
-          C_BACKSPACE: 
+          C_BACKSPACE:
+          begin
             if length(_text) > 0 then dec(_text[0]);
+            requestRedraw;
+          end;
 
           C_ESC:
           begin
             _isFocused := false;
             _text := _previousText;
+            requestRedraw;
           end;
           
           C_CR:
           begin
             _isFocused := false;
+            requestRedraw;
           end;
 
           else begin
-            inc(_text[0]);
-            _text[length(_text)] := PChar(msg^.payload)^;
+            if (_lengthLimit <> 0) and (length(_text) < _lengthLimit) then
+            begin
+              inc(_text[0]);
+              _text[length(_text)] := PChar(msg^.payload)^;
+              requestRedraw;
+            end;
           end;
         end; 
-        requestRedraw;
+        
       end;
 
       C_MSG_MOUSE_LEFT_DOWN:  
@@ -186,6 +199,16 @@ implementation
   function TTextField.getFont: PFont;
   begin
     getFont := _font;
+  end;
+
+  procedure TTextField.setLengthLimit(lengthLimit: byte);
+  begin
+    _lengthLimit := lengthLimit;
+  end;
+
+  function TTextField.getLengthLimit: byte;
+  begin
+    getLengthLimit := _lengthLimit;
   end;
 
   { TTextField private }
