@@ -219,6 +219,7 @@ implementation
       width := 73;
       setPlaceholder(C_FILENAME_TEXTFIELD_PLACEHOLDER);
       setText(C_DEFAULT_FILENAME);
+      setLengthLimit(11);
     end;
     panel^.addControl(_filenameField);
     _filenameField^.release;
@@ -313,6 +314,7 @@ implementation
     fs: PFilestream;
   begin
     _statusLabel^.setText(C_STATUS_SAVE);
+    _font^.setName(_fontNameField^.getText);
     fs := new(PFilestream, initWithPath(_filenameField^.getText, EFileCreate));
     _font^.save(fs);
     fs^.release;
