@@ -90,21 +90,21 @@ implementation
     for i := 1 to length(str) do
     begin
       ch := str[i];
-      case ch of
-        C_CR: { Carry Return }
-        begin
-          inc(y, _lineHeight);
-          inc(y, _lineSpacing);
-          x := _bounds.point.x;
-        end;
 
-        C_PRINTABLE_FROM..C_PRINTABLE_TO: { printable characters }
+      if ch = C_CR then { Carry Return }
+      begin
+        inc(y, _lineHeight);
+        inc(y, _lineSpacing);
+        x := _bounds.point.x;
+      end else begin { other characters }
+        _font^.getCharSize(ch, _scale, w, h);
+        if (w > 0) then
         begin
-          _font^.getCharSize(ch, _scale, w, h);
           _font^.drawChar(ch, _scale, x, y, _canvas);
           inc(x, w + 1);
         end;
       end;
+
     end;
     _cursor.x := x;
     _cursor.y := y;

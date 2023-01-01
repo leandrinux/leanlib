@@ -82,13 +82,14 @@ implementation
 
   procedure TTinyFont.getCharSize(ch: char; scale: byte; var width, height: word);
   begin
-    if (ch >= _fromChar) and (ch <= _toChar) then
+    if (ch < _fromChar) or (ch > _toChar)  { out of bounds }
+       or ( (ch <> ' ') and  (_symbolArray^[ord(ch)] = 0)) then { it's an empty char and it's not space }
     begin
-      width := C_CHAR_WIDTH * scale;
-      height := C_CHAR_HEIGHT * scale;
-    end else begin
       width := 0;
       height := 0;
+    end else begin
+      width := C_CHAR_WIDTH * scale;
+      height := C_CHAR_HEIGHT * scale;
     end;
   end;
 
