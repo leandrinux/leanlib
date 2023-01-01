@@ -46,6 +46,8 @@ interface
       function getCanvas: PCanvas;
       procedure defaultDraw; virtual;
       procedure requestRedraw;
+      procedure setHidden(hidden: boolean);
+      function isHidden: boolean;
     private
       _id: TControlID;
       _bus: PMessageBus;
@@ -56,6 +58,7 @@ interface
       _isEnabled: boolean;
       _alignment: EAlignment;
       _canvas: PCanvas;
+      _isHidden: boolean;
     end;
 
 implementation
@@ -80,6 +83,7 @@ implementation
       width := 75;
       height := 50;
     end;
+    _isHidden := false;
   end;
 
   destructor TControl.done;
@@ -232,6 +236,20 @@ implementation
   begin
     sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, _bus);
   end;
+
+  procedure TControl.setHidden(hidden: boolean);
+  var redraw: boolean;
+  begin
+    redraw := _isHidden = hidden;
+    _isHidden := hidden;
+    if redraw then requestRedraw;
+  end;
+
+  function TControl.isHidden: boolean;
+  begin
+    isHidden := _isHidden;
+  end;
+
   { TControl private }
 
   { Other }

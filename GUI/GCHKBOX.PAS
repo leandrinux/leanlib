@@ -71,6 +71,7 @@ implementation
     mousePosition: PPoint;
     frame: TFrame;
   begin
+    if isHidden then exit;
     if msg^.opcode = C_MSG_MOUSE_LEFT_DOWN then
     begin
       mousePosition := msg^.payload;

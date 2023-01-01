@@ -101,6 +101,7 @@ implementation
     frame: TFrame;
     ch: char;
   begin
+    if isHidden then exit;
     frame := getFrame^;
     getAbsolutePosition(frame.point);
     mousePosition := msg^.payload;

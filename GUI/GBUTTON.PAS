@@ -88,6 +88,7 @@ implementation
     mousePosition: PPoint;
     frame: TFrame;
   begin
+    if isHidden then exit;
     case msg^.opcode of
       C_MSG_MOUSE_LEFT_UP, C_MSG_MOUSE_LEFT_DOWN: 
       begin
