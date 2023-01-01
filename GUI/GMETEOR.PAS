@@ -66,7 +66,7 @@ implementation
   var
     absolutePosition: TPoint;
   begin
-    if isHidden then exit;
+    if control^.isHidden then exit;
     inherited renderControl(control);
     with getCanvas^, control^, getFrame^.size, absolutePosition do
     begin      
@@ -86,7 +86,7 @@ implementation
     colorTL, colorBR: TColor;
     control: PControl;
   begin
-    if isHidden then exit;
+    if panel^.isHidden then exit;
     renderControl(panel);
     panel^.getAbsolutePosition(absolutePosition);
     with getCanvas^, panel^, getFrame^.size, absolutePosition, DefaultColorScheme^  do
@@ -137,7 +137,7 @@ implementation
     x, y: word;
     textSize: TSize;
   begin
-    if isHidden then exit;
+    if lbl^.isHidden then exit;
     renderControl(lbl);
     lbl^.getAbsolutePosition(absolutePosition);
     getCanvas^.getStrokeBrush^.color := lbl^.getTextColor;
@@ -172,7 +172,7 @@ implementation
     x, y: word;
     textSize: TSize;
   begin
-    if isHidden then exit;
+    if button^.isHidden then exit;
     renderControl(button);
     button^.getAbsolutePosition(absolutePosition);
     x := absolutePosition.x;
@@ -216,7 +216,7 @@ implementation
   var
     absolutePosition: TPoint;
   begin
-    if isHidden then exit;
+    if checkbox^.isHidden then exit;
     renderControl(checkbox);
     checkbox^.getAbsolutePosition(absolutePosition);
     with checkbox^, getCanvas^, getFrame^, absolutePosition, size do
@@ -249,7 +249,7 @@ implementation
     textSize: TSize;
     textValue: TTextValue;
   begin
-    if isHidden then exit;
+    if textField^.isHidden then exit;
     renderControl(textField);
     textField^.getAbsolutePosition(absolutePosition);
     with textField^, getCanvas^, getFrame^, absolutePosition, size do
