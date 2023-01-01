@@ -132,7 +132,7 @@ implementation
           end;
 
           else begin
-            if (_lengthLimit <> 0) and (length(_text) < _lengthLimit) then
+            if (_lengthLimit = 0) or (length(_text) < _lengthLimit) then
             begin
               inc(_text[0]);
               ch := PChar(msg^.payload)^;
