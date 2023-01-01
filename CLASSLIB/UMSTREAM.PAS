@@ -32,7 +32,7 @@ interface
       constructor initWithSize(memorySize: longint);
       constructor initWithBuffer(buffer: pointer; bufferSize: word);
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(pos: longint); virtual;
       function getPosition: longint; virtual;
@@ -106,7 +106,7 @@ implementation
     inherited done;
   end;
 
-  procedure TMemoryStream.read(buffer: pointer; count: word; var result: word);
+  function TMemoryStream.read(buffer: pointer; count: word): word;
   var
     remaining: longint;
     block: byte;
@@ -115,11 +115,11 @@ implementation
   begin
     if isEOF then
     begin
-      result := 0;
+      read := 0;
       exit;
     end;
     if (_memorySize - _position) < count then count := _memorySize - _position;
-    result := count;
+    read := count;
     block := _position div C_BLOCK_SIZE;
     offset := _position mod C_BLOCK_SIZE;
     c := minword(count, C_BLOCK_SIZE - offset);

@@ -18,7 +18,7 @@ interface
     public
       constructor initWithSize(memorySize: longint);
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(pos: longint); virtual;
       function getPosition: longint; virtual;
@@ -70,7 +70,7 @@ implementation
     inherited done;
   end;
 
-  procedure TEMSStream.read(buffer: pointer; count: word; var result: word);
+  function TEMSStream.read(buffer: pointer; count: word): word;
   var
     currentPage: word;
     currentPageOfs: word;
@@ -95,7 +95,7 @@ implementation
       _maxPosition := maxlong(_position, _maxPosition);
       currentPage := _position div C_EMM_PAGE_SIZE;
     end;
-    result := count - remainingBytes;
+    read := count - remainingBytes;
   end;
 
   procedure TEMSStream.write(buffer: pointer; count: word);

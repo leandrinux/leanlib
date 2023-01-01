@@ -109,12 +109,12 @@ implementation
     { search for the last page }
     lastPageAddr := _header.firstPageAddr;
     _stream^.seek(lastPageAddr);
-    _stream^.read(@page, sizeOf(TPKGIndexPage), result);
+    result := _stream^.read(@page, sizeOf(TPKGIndexPage));
     while (not _stream^.isEOF) and (page.next <> 0) do
     begin
       lastPageAddr := page.next;
       _stream^.seek(lastPageAddr);
-      _stream^.read(@page, sizeOf(TPKGIndexPage), result);
+      result := _stream^.read(@page, sizeOf(TPKGIndexPage));
     end;
     iassert(page.next = 0, @self, 0, S_ERR_PACKAGE_CORRUPT);
 
@@ -128,7 +128,7 @@ implementation
       { we reload the last page }
       lastPageAddr := page.next;
       _stream^.seek(lastPageAddr);
-      _stream^.read(@page, sizeOf(TPKGIndexPage), result);
+      result := _stream^.read(@page, sizeOf(TPKGIndexPage));
     end;
     { we increment the page resource counter and save it }
     inc(page.count);
@@ -165,7 +165,7 @@ implementation
   begin
     pageAddr := _header.firstPageAddr;
     _stream^.seek(pageAddr);
-    _stream^.read(@page, sizeOf(TPKGIndexPage), result);
+    result := _stream^.read(@page, sizeOf(TPKGIndexPage));
     resourceIndex := 0;
     while ((resourceIndex<page.count) or (page.next <> 0)) and (resource.id<>id) do
     begin
@@ -173,12 +173,12 @@ implementation
       begin
         pageAddr := page.next;
         _stream^.seek(pageAddr);
-        _stream^.read(@page, sizeOf(TPKGIndexPage), result);
+        result := _stream^.read(@page, sizeOf(TPKGIndexPage));
         resourceIndex := 0;
       end;
       resourceAddr := pageAddr + sizeOf(TPKGIndexPage) + resourceIndex * sizeOf(TPKGResource);
       _stream^.seek(resourceAddr);
-      _stream^.read(@resource, sizeOf(TPKGResource), result);
+      result := _stream^.read(@resource, sizeOf(TPKGResource));
       inc(resourceIndex);
     end;
     if resource.id = id then
@@ -198,10 +198,10 @@ implementation
     findFirst := false;
     pageAddr := _header.firstPageAddr;
     _stream^.seek(pageAddr);
-    _stream^.read(@page, sizeOf(TPKGIndexPage), res);
+    res := _stream^.read(@page, sizeOf(TPKGIndexPage));
     if page.count = 0 then exit;
     _stream^.seek(pageAddr + sizeOf(TPKGIndexPage));
-    _stream^.read(@resourceInfo, sizeof(TPKGResource), res);
+    res := _stream^.read(@resourceInfo, sizeof(TPKGResource));
     resourceInfo.index := 0;
     resourceInfo.pageAddr := pageAddr;
     findFirst := true;
@@ -215,7 +215,7 @@ implementation
   begin
     findNext := false;
     _stream^.seek(resourceInfo.pageAddr);
-    _stream^.read(@page, sizeOf(TPKGIndexPage), result);
+    result := _stream^.read(@page, sizeOf(TPKGIndexPage));
     inc(resourceInfo.index);
     if (resourceInfo.index = _header.pageSize) then
     begin
@@ -223,13 +223,13 @@ implementation
       resourceInfo.pageAddr := page.next;
       resourceInfo.index := 0;
       _stream^.seek(page.next);
-      _stream^.read(@page, sizeOf(TPKGIndexPage), result);
+      result := _stream^.read(@page, sizeOf(TPKGIndexPage));
     end;
     if resourceInfo.index = page.count then exit;
     with resourceInfo do
       resourceAddr := pageAddr + sizeOf(TPKGIndexPage) + index * sizeOf(TPKGResource);
     _stream^.seek(resourceAddr);
-    _stream^.read(@resourceInfo, sizeOf(TPKGResource), result);
+    result := _stream^.read(@resourceInfo, sizeOf(TPKGResource));
     findNext := true;
   end;
 
@@ -265,11 +265,9 @@ implementation
   end;
 
   procedure TPackage.load;
-  var
-    result: word;
   begin
     _stream^.seek(0);
-    _stream^.read(@_header, sizeOf(TPKGHeader), result);
+    _stream^.read(@_header, sizeOf(TPKGHeader));
     iassert(isValid, @self, 0, S_ERR_PACKAGE_CORRUPT);
   end;
 

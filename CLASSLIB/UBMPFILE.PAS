@@ -196,16 +196,15 @@ implementation
   { TBMPFile private }
 
   procedure TBMPFile.loadHeaders;
-  var res: word;
   begin
-    _stream^.read(@_CoreHeader, sizeof(TBMPCoreHeader), res);
-    _stream^.read(@_infoHeader, sizeof(TBMPInfoHeader), res);
+    _stream^.read(@_CoreHeader, sizeof(TBMPCoreHeader));
+    _stream^.read(@_infoHeader, sizeof(TBMPInfoHeader));
   end;
 
   procedure TBMPFile.loadBitmap;
   var
     src, dst, a, b: pbyte;
-    res, w, h, line: word;
+    w, h, line: word;
     tempBitmapSize: word;
     linePadding: byte;
   begin
@@ -218,7 +217,7 @@ implementation
     tempBitmapSize := (w + linePadding) * h;
     getMem(src, tempBitmapSize);
     _stream^.seek(_CoreHeader.pixelDataOffset);
-    _stream^.read(src, tempBitmapSize, res);
+    _stream^.read(src, tempBitmapSize);
     dst := _bitmap^.getRawPixels;
     a := src;
     b := dst; 
@@ -246,7 +245,7 @@ implementation
     colorTableSize := _infoHeader.colorsUsed * sizeof(TRGBQuad);
     getMem(colorTable, colorTableSize);
     _stream^.seek(tablePosition);
-    _stream^.read(colorTable, colorTableSize, i);
+    i := _stream^.read(colorTable, colorTableSize);
     palette := new(PColorPalette, initWithCount(_infoHeader.colorsUsed));
     p := colorTable;
     for i := 0 to _infoHeader.colorsUsed-1 do

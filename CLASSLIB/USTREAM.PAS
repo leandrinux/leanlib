@@ -22,7 +22,7 @@ interface
     PStream = ^TStream;
     TStream = object (TObject)
     public
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(pos: longint); virtual;
       procedure copyTo(stream: PStream; count: longint);
@@ -52,7 +52,10 @@ implementation
 
   { TStream public }
 
-  procedure TStream.read(buffer: pointer; count: word; var result: word); begin end;
+  function TStream.read(buffer: pointer; count: word): word;
+  begin
+    read := 0;
+  end;
 
   procedure TStream.write(buffer: pointer; count: word); begin end;
 
@@ -71,7 +74,7 @@ implementation
     while remaining > 0 do
     begin
       count := minlong(C_COPY_BUFFER_SIZE, remaining);
-      read(buffer, count, result);
+      result := read(buffer, count);
       stream^.write(buffer, result);
       inc(copied, result);
       dec(remaining, count);
@@ -114,11 +117,11 @@ implementation
     result: word;
   begin
     output := '';
-    read(@character, 1, result);
+    result := read(@character, 1);
     while (length(output)<255) and (result>0) and (character<>c)  do
     begin
       output := output + character;
-      read(@character, 1, result);
+      result := read(@character, 1);
     end;
     readUntilChar := output;
   end;
@@ -155,7 +158,7 @@ implementation
     GetMem(buffer, C_CHECKSUM_BUFFER_SIZE);
     while not isEOF do
     begin
-      read(buffer, C_CHECKSUM_BUFFER_SIZE, totalRead);
+      totalRead := read(buffer, C_CHECKSUM_BUFFER_SIZE);
       p := buffer;
       for i:= totalRead-1 downto 0 do
       begin

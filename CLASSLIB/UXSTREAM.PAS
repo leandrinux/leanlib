@@ -19,7 +19,7 @@ interface
       constructor initWithPassword(password: string; stream: PStream);
       constructor initWithBufferPassword(buffer: pointer; size: word; stream: PStream);
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(position: longint); virtual;
       function getPosition: longint; virtual;
@@ -66,13 +66,15 @@ implementation
     inherited done;
   end;
 
-  procedure TXorStream.read(buffer: pointer; count: word; var result: word);
+  function TXorStream.read(buffer: pointer; count: word): word;
   var
     passoffset: word;
+    result: word;
   begin
     passoffset := _stream^.getPosition mod _passlength;
-    _stream^.read(buffer, count, result);
+    result := _stream^.read(buffer, count);
     doXOR(buffer, buffer, result, passoffset);
+    read := result;
   end;
 
   procedure TXorStream.write(buffer: pointer; count: word);

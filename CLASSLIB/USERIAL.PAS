@@ -18,7 +18,7 @@ interface
     public
       constructor initWithPort(port: ESerialPort);
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(pos: longint); virtual;
       function getPosition: longint; virtual;
@@ -48,7 +48,7 @@ implementation
     inherited done;
   end;
 
-  procedure TSerial.read(buffer: pointer; count: word; var result: word);
+  function TSerial.read(buffer: pointer; count: word): word;
   begin
     iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;

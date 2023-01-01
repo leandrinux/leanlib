@@ -17,7 +17,7 @@ interface
     public
       constructor init;
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(pos: longint); virtual;
       function getPosition: longint; virtual;
@@ -47,7 +47,7 @@ implementation
     inherited done;
   end;
 
-  procedure TStdOutput.read(buffer: pointer; count: word; var result: word);
+  function TStdOutput.read(buffer: pointer; count: word): word;
   begin
     iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;

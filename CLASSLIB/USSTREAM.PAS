@@ -17,7 +17,7 @@ interface
     public
       constructor initWithStream(stream: PStream; fromPos, size: longint);
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(pos: longint); virtual;
       function getPosition: longint; virtual;
@@ -53,11 +53,13 @@ implementation
     inherited done;
   end;
 
-  procedure TSubstream.read(buffer: pointer; count: word; var result: word);
+  function TSubstream.read(buffer: pointer; count: word): word;
+  var result: word;
   begin
     _stream^.seek(_fromPos + _position);
-    _stream^.read(buffer, minword(count, _size - _position), result);
+    result := _stream^.read(buffer, minword(count, _size - _position));
     inc(_position, result);
+    read := result;
   end;
 
   procedure TSubstream.write(buffer: pointer; count: word);

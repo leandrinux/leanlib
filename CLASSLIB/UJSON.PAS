@@ -66,7 +66,7 @@ implementation
   begin
     ch := #0;
     while not _stream^.isEOF and (ch in C_SKIPPABLE_CHARS) do
-      _stream^.read(@ch, 1, result);
+      result := _stream^.read(@ch, 1);
     if result = 1 then readNext := ch else readNext := #0;
   end;
 
@@ -97,16 +97,16 @@ implementation
     number: PNumber;
   begin
     str := '';
-    _stream^.read(@ch, 1, result);
+    result := _stream^.read(@ch, 1);
     if ch in ['-', '0'..'9'] then
     begin
       str := str + ch;
-      _stream^.read(@ch, 1, result);
+      result := _stream^.read(@ch, 1);
     end;
     while not _stream^.isEOF and (ch in ['0'..'9']) do
     begin
       str := str + ch;
-      _stream^.read(@ch, 1, result);
+      result := _stream^.read(@ch, 1);
     end;
     iassert(length(str)>0, @self, _stream^.getPosition, exceptionStr);
     _stream^.seek(_stream^.getPosition-1);
@@ -148,12 +148,12 @@ implementation
   begin
     ch := readNext;
     iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
-    _stream^.read(@ch, 1, result);
+    result := _stream^.read(@ch, 1);
     str := '';
     while not _stream^.isEOF and (ch <> '"') do
     begin
       str := str + ch;
-      _stream^.read(@ch, 1, result);
+      result := _stream^.read(@ch, 1);
     end;
     iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
     pStr := new(PString, init);
@@ -175,16 +175,16 @@ implementation
       keyStr := '';
       ch := #0;
       while not _stream^.isEOF and (ch in C_SKIPPABLE_CHARS) do
-        _stream^.read(@ch, 1, result);
+        result := _stream^.read(@ch, 1);
       iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
-      _stream^.read(@ch, 1, result);
+      result := _stream^.read(@ch, 1);
       while not _stream^.isEOF and (ch in C_DICTIONARY_KEY_CHARACTERS) do
       begin
         keyStr := keyStr + ch;
-        _stream^.read(@ch, 1, result);
+        result := _stream^.read(@ch, 1);
       end;
       iassert(ch = '"', @self, _stream^.getPosition, exceptionStr);
-      _stream^.read(@ch, 1, result);
+      result := _stream^.read(@ch, 1);
       iassert(length(keyStr) > 0, @self, _stream^.getPosition, exceptionStr);
       iassert(ch = ':', @self, _stream^.getPosition, exceptionStr);
       obj := createObject;

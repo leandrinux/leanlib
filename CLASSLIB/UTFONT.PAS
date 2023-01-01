@@ -152,18 +152,17 @@ implementation
   var
     signature: TFontFileSignature;
     fileType: TFontFileType;
-    c: word;
   begin
     with stream^ do
     begin
-      read(@signature, sizeof(TFontFileSignature), c);
+      read(@signature, sizeof(TFontFileSignature));
       if signature <> C_FONT_FILE_SIGNATURE then exit;
-      read(@fileType, sizeof(TFontFileType), c);
+      read(@fileType, sizeof(TFontFileType));
       if fileType <> C_FONT_FILE_TYPE then exit;
-      read(@_fromChar, 1, c);
-      read(@_toChar, 1, c);
+      read(@_fromChar, 1);
+      read(@_toChar, 1);
       _name := readpchar;
-      read(_symbolArray, sizeof(TSymbolArray), c);
+      read(_symbolArray, sizeof(TSymbolArray));
     end;
   end;
 

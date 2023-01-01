@@ -18,7 +18,7 @@ interface
     public
       constructor initWithStream(stream: PStream; cacheSize: word);
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(position: longint); virtual;
       function getPosition: longint; virtual;
@@ -60,7 +60,7 @@ implementation
     inherited done;
   end;
 
-  procedure TCachedStream.read(buffer: pointer; count: word; var result: word);
+  function TCachedStream.read(buffer: pointer; count: word): word;
   var 
     remaining: word;
     src, dst: pbyte;
@@ -79,7 +79,7 @@ implementation
       dec(remaining, chunkSize);
       inc(_relativePos, chunkSize);
     end;
-    result := count - remaining;
+    read := count - remaining;
   end;
 
   procedure TCachedStream.write(buffer: pointer; count: word); 
@@ -95,7 +95,7 @@ implementation
     end else
     begin
       _stream^.seek(position);
-      _stream^.read(_cache, _cacheSize, _count);
+      _count := _stream^.read(_cache, _cacheSize);
       _from := position;
       _relativePos := 0;
     end; 

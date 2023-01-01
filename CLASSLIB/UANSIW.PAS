@@ -45,7 +45,7 @@ interface
     public
       constructor initWithStream(stream: PStream);
       destructor done; virtual;
-      procedure read(buffer: pointer; count: word; var result: word); virtual;
+      function read(buffer: pointer; count: word): word; virtual;
       procedure write(buffer: pointer; count: word); virtual;
       procedure seek(pos: longint); virtual;
       procedure clear;
@@ -95,7 +95,7 @@ implementation
     inherited done;
   end;
 
-  procedure TAnsiWriter.read(buffer: pointer; count: word; var result: word);
+  function TAnsiWriter.read(buffer: pointer; count: word): word;
   begin
     iassert(false, @self, 0, S_ERR_UNSUPPORTED_ACTION);
   end;
