@@ -49,6 +49,18 @@ interface
     C_PRINTABLE_FROM = #32;
     C_PRINTABLE_TO = #126;
 
+    { special symbols }
+    C_CHR_FACE_HAPPY  = #0;
+    C_CHR_FACE_SAD    = #1;
+    C_CHR_FACE        = #2;
+    C_CHR_EXCLAMATION = #3;
+    C_CHR_ERROR       = #4;
+    C_CHR_TICK        = #5;
+    C_CHR_ARROW_RIGHT = #6;
+    C_CHR_ARROW_LEFT  = #7;
+    C_CHR_ARROW_UP    = #8;
+    C_CHR_ARROW_DOWN  = #9;
+
 implementation
 
 end.
