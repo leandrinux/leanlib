@@ -6,9 +6,6 @@ uses
 const
   C_GUI_FILE = 'RES\DEMO.3';
 
-var
-  runFlag: boolean;
-
 type
   PMyForm = ^TMyForm;
   TMyForm = object (TForm)
