@@ -1,7 +1,7 @@
 uses
   ascii, xcrt, types, utils,
   uobject, uclasses, uexc, udisplay, umouse,
-  gui, gtypes, gmsgs, gform, gcontrol;
+  gui, gtypes, gmsgs, gapp, gform, gcontrol;
 
 const
   C_GUI_FILE = 'RES\DEMO.2';
@@ -20,35 +20,21 @@ end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);
 begin
-  { log('onEvent from ' + sender^.getId); } 
+  case opcode of
+    C_MSG_CONTROL_CLICKED:
+      if PControl(sender)^.getId = 'buttonC' then
+        sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate)
+  end;
 end;
 
 var
-  ui: PUserInterface;
-  form: PForm;
-  key: char;
+  app: PGUIApp;
+  form: PMyForm;
 
 begin
-  createDefaultDisplayAdapter;         { open default graphics mode }
-  Mouse^.reset;                        { prepare the mouse after changing video mode }
-  Mouse^.show;                         { show the mouse cursor }
-  Mouse^.selectCursor(ECursorWait);    { use wait cursor until load is complete }
-  form := new(PMyForm, init);          { create form instance }
-  ui := new(PUserInterface, init);     { create user interface }
-  ui^.addForm(form);                   { add the form to our user interface }
-  Mouse^.setDelegate(ui^.getBus);      { send mouse messages to the user interface }
-  ui^.render;                          { render the user interface }
-  Mouse^.selectCursor(ECursorDefault); { use default cursor now that everything is loaded }
-
-  key := #0;
-  while key <> C_ESC do                { stay in this loop until the ESC key is pressed }
-  begin
-    if keypressed then key := readkey;
-    Mouse^.update;                     { update mouse status }
-  end;
-
-  Mouse^.hide;                         { hide the mouse cursor }
-  ui^.release;                         { destroy objects }
+  app := new(PGUIApp, init);
+  form := new(PMyForm, init);
+  app^.run(form);
   form^.release;
-  DisplayAdapter^.setTextMode;         { return to text mode }
+  app^.release;
 end.
