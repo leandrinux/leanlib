@@ -41,7 +41,7 @@ implementation
   begin
     inherited init;
     _renderer := new(PMeteor, initWithCanvas(DisplayAdapter^.getCanvas));
-    _forms := new(PList, initWithClassId(C_CLASS_ID_FORM));
+    _forms := new(PList, initWithClassFamily(C_CLASS_ID_FORM_FROM, C_CLASS_ID_FORM_TO));
     _bus := new(PMessageBus, init);
     _bus^.subscribe(@self);
   end;
