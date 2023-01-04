@@ -1,6 +1,7 @@
 uses
   ascii,
-  gapp, gmsgs, gform, gcontrol, gbutton;
+  gapp, gmsgs, gform, gcontrol, gbutton, galert;
+
 
 const
   C_FORM_JSON = 'RES\DEMO.4';
@@ -8,45 +9,37 @@ const
 type
   PMainForm = ^TMainForm;
   TMainForm = object (TForm)
-    _quitButton: PButton;
-    _button1: PButton;
-    _button2: PButton;
-    function createControl: PControl; virtual;
-    procedure onStart; virtual;
-    procedure onEvent(opcode: word; sender: PControl); virtual;
+    public
+      constructor init;
+    private
+      _button1: PButton;
+      _button2: PButton;
   end;
 
-function TMainForm.createControl: PControl;
+constructor TMainForm.init;
 begin
-  createControl := createControlFromFile(C_FORM_JSON);
-end;
-
-procedure TMainForm.onStart;
-begin
-  with getRootControl^ do
+  inherited init;
+  loadFromFile(C_FORM_JSON);
+  with getPanel^ do
   begin
-    _quitButton := PButton(findControl('quit'));
     _button1 := PButton(findControl('button1'));
     _button2 := PButton(findControl('button2'));
   end;
   _button1^.setCaption(C_CHR_TICK + ' OK');
-  _button2^.setCaption(C_CHR_ERROR + ' Cancel');
-end;
-
-procedure TMainForm.onEvent(opcode: word; sender: PControl);
-begin
-  if (opcode = C_MSG_CONTROL_CLICKED) and (sender^.getId = 'quit') then
-    sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate);
+  _button2^.setCaption(C_CHR_CLOSE + ' Cancel');
 end;
 
 var
   app: PGUIApp;
-  form: PMainForm;
+  form: PMainForm; 
+{  alert: PAlertForm; }
 
 begin
   app := new(PGUIApp, init);
-  form := new(PMainForm, init);
+  form := new(PMainForm, init); 
+  { alert := new(PAlertForm, initWithTitle('Title', 'Hello world!', 0)); }
   app^.run(form);
+  { alert^.release; }
   form^.release;
   app^.release;
 end.

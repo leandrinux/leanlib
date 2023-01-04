@@ -9,22 +9,13 @@ const
 type
   PMyForm = ^TMyForm;
   TMyForm = object (TForm)
-    procedure onEvent(opcode: word; sender: PControl); virtual;
-    function createControl: PControl; virtual;
+    constructor init;
   end;
 
-function TMyForm.createControl: PControl;
+constructor TMyForm.init;
 begin
-  createControl := createControlFromFile(C_GUI_FILE);
-end;
-
-procedure TMyForm.onEvent(opcode: word; sender: PControl);
-begin
-  case opcode of
-    C_MSG_CONTROL_CLICKED:
-      if PControl(sender)^.getId = 'buttonC' then
-        sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate)
-  end;
+  inherited init;
+  loadFromFile(C_GUI_FILE);  
 end;
 
 var

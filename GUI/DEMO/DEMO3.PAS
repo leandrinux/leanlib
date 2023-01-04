@@ -9,30 +9,26 @@ const
 type
   PMyForm = ^TMyForm;
   TMyForm = object (TForm)
-    field1: PTextField;
-    procedure onStart; virtual;
-    procedure onEvent(opcode: word; sender: PControl); virtual;
-    function createControl: PControl; virtual;
+    public
+      constructor init;
+      procedure onEvent(opcode: word; sender: PControl); virtual;
+    private
+      field1: PTextField;
   end;
 
-function TMyForm.createControl: PControl;
+constructor TMyForm.init;
 begin
-  createControl := createControlFromFile(C_GUI_FILE);
-end;
-
-procedure TMyForm.onStart;
-begin
-  field1 := PTextField(getRootControl^.findControl('field1'));
+  inherited init;
+  loadFromFile(C_GUI_FILE);
+  field1 := PTextField(getPanel^.findControl('field1'));
 end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);
 begin
+  inherited onEvent(opcode, sender);
   if (opcode = C_MSG_CONTROL_CLICKED) then
   begin
-    if (sender^.getId = 'quitBtn') then
-    begin
-      sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate);
-    end else if (sender^.getId = 'beepBtn') then
+    if (sender^.getId = 'beepBtn') then
     begin
       beep;
     end else if (sender^.getId = 'chkbox1') then
