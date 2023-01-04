@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale, palette,
     uobject, uexc, udisplay, ucanvas, ubitmap, ulist, udict, umsgbus,
-    gclasses, gtypes, grender, gmeteor, gcontrol, gmsgs, gform;
+    gclasses, gtypes, grender, gmeteor, gcontrol, gpanel, gmsgs, gform;
 
   type
     PUserInterface = ^TUserInterface;
@@ -74,7 +74,7 @@ implementation
 
   procedure TUserInterface.addForm(form: PForm);
   begin
-    form^.getRootControl^.setBus(_bus);
+    form^.getPanel^.setBus(_bus);
     _forms^.addObject(form);
   end;
 
@@ -86,7 +86,7 @@ implementation
     form := PForm(_forms^.getObjectAtCursor);
     while form <> nil do
     begin
-      _renderer^.render(form^.getRootControl);
+      _renderer^.render(form^.getPanel);
       _forms^.moveForward;
       form := PForm(_forms^.getObjectAtCursor);
     end;
@@ -110,7 +110,7 @@ implementation
     { find the form that has that root control}
     _forms^.moveToStart;
     form := PForm(_forms^.getObjectAtCursor);
-    while (form <> nil) and (form^.getRootControl <> control) do
+    while (form <> nil) and (PControl(form^.getPanel) <> control) do
     begin
       _forms^.moveForward;
       form := PForm(_forms^.getObjectAtCursor);

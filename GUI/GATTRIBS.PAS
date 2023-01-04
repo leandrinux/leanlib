@@ -44,6 +44,8 @@ interface
 
     C_ATTR_CHECKED              = 'checked';
 
+    C_ATTR_TITLE                = 'title';
+
     C_PATH_FRAME_X              = 'frame.x';
     C_PATH_FRAME_Y              = 'frame.y';
     C_PATH_FRAME_WIDTH          = 'frame.width';

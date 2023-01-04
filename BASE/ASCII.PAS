@@ -54,7 +54,7 @@ interface
     C_CHR_FACE_SAD    = #1;
     C_CHR_FACE        = #2;
     C_CHR_EXCLAMATION = #3;
-    C_CHR_ERROR       = #4;
+    C_CHR_CLOSE       = #4;
     C_CHR_TICK        = #5;
     C_CHR_ARROW_RIGHT = #6;
     C_CHR_ARROW_LEFT  = #7;

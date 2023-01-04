@@ -9,9 +9,9 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
+    ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, ustream, udict, ujson, ufstream, ucstream,
-    gclasses, gtypes, gcontrol, gfactory;
+    gclasses, gattribs, gtypes, gmsgs, gcontrol, gfactory, gpanel, glabel, gbutton;
 
   type
     PForm = ^TForm;
@@ -24,33 +24,81 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       { methods }
-      function createControlFromDictionary(data: PDictionary): PControl;
-      function createControlFromJson(stream: PStream): PControl;
-      function createControlFromFile(filename: string): PControl;
-      function createControl: PControl; virtual;
-      function getRootControl: PControl;
-      procedure onStart; virtual;
+      procedure loadFromDictionary(data: PDictionary);
+      procedure loadFromJson(stream: PStream);
+      procedure loadFromFile(filename: string);
+      function getPanel: PPanel;
+      procedure setTitle(title: string);
+      function getTitle: string;
       procedure onEvent(opcode: word; sender: PControl); virtual;
     private
-      _rootControl: PControl;
+      _rootPanel: PPanel;
+      _titleLabel: PLabel;
+      _closeButton: PButton;
     end;
 
 implementation
+
+  const
+    C_DEFAULT_PANEL_WIDTH = 250;
+    C_DEFAULT_PANEL_HEIGHT = 100;
+    C_DEFAULT_TITLE = '';
+    C_DEFAULT_TITLE_BACKGROUND_COLOR = ord(ELightBlue);
+    C_DEFAULT_TITLE_TEXT_COLOR = ord(EWhite);
+    C_DEFAULT_TITLE_HORIZONTAL_MARGIN = 13;
+    C_DEFAULT_CLOSE_BUTTON_TEXT = C_CHR_CLOSE;
+    C_DEFAULT_TITLE_BAR_HEIGHT = 13;
+    C_DEFAULT_CLOSE_BUTTON_WIDTH = 13;
 
   { TForm public }
 
   constructor TForm.init;
   begin
     inherited init;
-    _rootControl := createControl;
-    _rootControl^.setDelegate(@self);
-    onStart;
+
+    { root panel }
+    _rootPanel := new(PPanel, init);
+    with _rootPanel^, getFrame^, size do
+    begin
+      width := C_DEFAULT_PANEL_WIDTH;
+      height := C_DEFAULT_PANEL_HEIGHT;
+      setDelegate(@self);
+    end;
+
+    { title label }
+    _titleLabel := new(PLabel, init);
+    with _titleLabel^, getFrame^, size do
+    begin
+      setText(C_DEFAULT_TITLE);
+      setBackgroundColor(C_DEFAULT_TITLE_BACKGROUND_COLOR);
+      setAlignment(EAlignTopLeft);
+      setTextColor(C_DEFAULT_TITLE_TEXT_COLOR);
+      setTextAlignment(EAlignCenter);
+      width := C_DEFAULT_PANEL_WIDTH - C_DEFAULT_TITLE_HORIZONTAL_MARGIN;
+      height := C_DEFAULT_TITLE_BAR_HEIGHT;
+    end;
+    _rootPanel^.addControl(_titleLabel);
+    _titleLabel^.release;
+
+    { close button }
+    _closeButton := new(PButton, init);
+    with _closeButton^, getFrame^, size do
+    begin
+      setCaption(C_DEFAULT_CLOSE_BUTTON_TEXT);
+      setAlignment(EAlignTopRight);
+      width := C_DEFAULT_CLOSE_BUTTON_WIDTH;
+      height := C_DEFAULT_TITLE_BAR_HEIGHT;
+    end;
+    _rootPanel^.addControl(_closeButton);
+    _closeButton^.release;
+
   end;
 
   destructor TForm.done;
   begin
     inherited done;
-    _rootControl^.release;
+    _titleLabel^.release;
+    _rootPanel^.release;
   end;
 
   function TForm.getClassName: string;
@@ -63,16 +111,18 @@ implementation
     getClassId := C_CLASS_ID_Form;
   end;
 
-  function TForm.createControlFromDictionary(data: PDictionary): PControl;
+  procedure TForm.loadFromDictionary(data: PDictionary);
   var
     cf: PControlFactory;
   begin
+    setTitle(data^.getString(C_ATTR_TITLE, ''));
     cf := new(PControlFactory, init);
-    createControlFromDictionary := cf^.create(data);
+    cf^.initPanel(_rootPanel, data);
     cf^.release;    
+    _titleLabel^.getFrame^.size.width := _rootPanel^.getFrame^.size.width - C_DEFAULT_TITLE_HORIZONTAL_MARGIN;
   end;
 
-  function TForm.createControlFromJson(stream: PStream): PControl;
+  procedure TForm.loadFromJson(stream: PStream);
   var
     json: PJsonReader;
     control: PControl;
@@ -81,38 +131,42 @@ implementation
     json := new(PJsonReader, init);
     obj := json^.createFromStream(stream);
     xassert(obj^.getClassId = C_CLASS_ID_DICTIONARY, 0, 'Root object in GUI file not a dictionary!');
-    createControlFromJson := createControlFromDictionary(PDictionary(obj));
+    loadFromDictionary(PDictionary(obj));
+    obj^.release;
     json^.release;
   end;
 
-  function TForm.createControlFromFile(filename: string): PControl;
+  procedure TForm.loadFromFile(filename: string);
   var
     fs: PFileStream;
     cs: PCachedStream;
   begin
     fs := new(PFileStream, initWithPath(filename, EFileReadOnly));
     cs := new(PCachedStream, initWithStream(fs, 2048));
-    createControlFromFile := createControlFromJson(cs);
-    fs^.release;
+    loadFromJson(cs);
     cs^.release;
+    fs^.release;
   end;
 
-  function TForm.createControl: PControl;
+  function TForm.getPanel: PPanel;
   begin
-    createControl := new(PControl, init);
+    getPanel := _rootPanel;
   end;
 
-  function TForm.getRootControl: PControl;
+  procedure TForm.setTitle(title: string);
   begin
-    getRootControl := _rootControl;
+    _titleLabel^.setText(title);
   end;
 
-  procedure TForm.onStart;
+  function TForm.getTitle: string;
   begin
+    getTitle := _titleLabel^.getText;
   end;
 
   procedure TForm.onEvent(opcode: word; sender: PControl);
   begin
+    if (opcode = C_MSG_CONTROL_CLICKED) and (sender = PControl(_closeButton)) then
+      sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate);
   end;
 
   { TForm private }

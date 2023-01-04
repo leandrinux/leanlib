@@ -1,4 +1,5 @@
 uses
+  GAlert,
   GApp,
   GAttribs,
   GButton,

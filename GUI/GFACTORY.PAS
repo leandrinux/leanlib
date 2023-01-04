@@ -25,14 +25,12 @@ interface
       function getClassId: word; virtual;
       { methods }
       function create(data: PDictionary): PControl;
-    private
       function createControl(data: PDictionary): PControl;
       function createPanel(data: PDictionary): PPanel;
       function createLabel(data: PDictionary): PLabel;
       function createButton(data: PDictionary): PButton;
       function createCheckbox(data: PDictionary): PCheckbox;
       function createTextField(data: PDictionary): PTextField;
-
       procedure initControl(control: PControl; data: PDictionary);
       procedure initPanel(panel: PPanel; data: PDictionary);
       procedure initLabel(lbl: PLabel; data: PDictionary);
@@ -86,7 +84,6 @@ implementation
       raise(@self, 0, S_ERR_UNEXPECTED_TYPE);
   end;
 
-  { TControlFactory private }
   function TControlFactory.createControl(data: PDictionary): PControl;
   var
     control: PControl;
@@ -192,7 +189,7 @@ implementation
     str := data^.getString(C_ATTR_BORDER_STYLE, '');
     if str = C_ATTR_BORDER_STYLE_RAISED then panel^.setBorderStyle(EBorderStyleRaised)
       else if str = C_ATTR_BORDER_STYLE_LOWERED then panel^.setBorderStyle(EBorderStyleLowered)
-      else panel^.setBorderStyle(EBorderStyleNone);
+      else panel^.setBorderStyle(C_DEFAULT_PANEL_BORDER_STYLE);
 
     list := PList(data^.getObject(C_ATTR_CONTROLS));
     if list <> nil then

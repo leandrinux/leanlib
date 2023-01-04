@@ -131,6 +131,7 @@ implementation
   procedure TButton.setCaption(caption: TButtonCaption);
   begin
     _caption := caption;
+    requestRedraw;
   end;
 
   procedure TButton.adjustSizeToText;
