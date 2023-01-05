@@ -13,7 +13,14 @@ interface
     uobject, uexc, ustream, udict, ujson, ufstream, ucstream,
     gclasses, gattribs, gtypes, gmsgs, gcontrol, gfactory, gpanel, glabel, gbutton;
 
+  const
+    C_FORM_CONTROLS_TITLE = 1;
+    C_FORM_CONTROLS_CLOSE = 2;
+    C_FORM_CONTROLS_DEFAULT = C_FORM_CONTROLS_TITLE + C_FORM_CONTROLS_CLOSE;
+    
   type
+    TFormControlsMask = byte;
+     
     PForm = ^TForm;
     TForm = object (TObject)
     public
@@ -28,10 +35,11 @@ interface
       procedure loadFromJson(stream: PStream);
       procedure loadFromFile(filename: string);
       function getPanel: PPanel;
-      procedure setTitle(title: string);
-      function getTitle: string;
+      function getTitleLabel: PLabel;
       procedure onEvent(opcode: word; sender: PControl); virtual;
+      procedure setControls(controls: TFormControlsMask);
     private
+      _controls: TFormControlsMask;
       _rootPanel: PPanel;
       _titleLabel: PLabel;
       _closeButton: PButton;
@@ -45,7 +53,6 @@ implementation
     C_DEFAULT_TITLE = '';
     C_DEFAULT_TITLE_BACKGROUND_COLOR = ord(ELightBlue);
     C_DEFAULT_TITLE_TEXT_COLOR = ord(EWhite);
-    C_DEFAULT_TITLE_HORIZONTAL_MARGIN = 13;
     C_DEFAULT_CLOSE_BUTTON_TEXT = C_CHR_CLOSE;
     C_DEFAULT_TITLE_BAR_HEIGHT = 13;
     C_DEFAULT_CLOSE_BUTTON_WIDTH = 13;
@@ -55,6 +62,7 @@ implementation
   constructor TForm.init;
   begin
     inherited init;
+    _controls := C_FORM_CONTROLS_DEFAULT;
 
     { root panel }
     _rootPanel := new(PPanel, init);
@@ -66,31 +74,41 @@ implementation
     end;
 
     { title label }
-    _titleLabel := new(PLabel, init);
-    with _titleLabel^, getFrame^, size do
+    if (_controls and C_FORM_CONTROLS_TITLE) <> 0 then
     begin
-      setText(C_DEFAULT_TITLE);
-      setBackgroundColor(C_DEFAULT_TITLE_BACKGROUND_COLOR);
-      setAlignment(EAlignTopLeft);
-      setTextColor(C_DEFAULT_TITLE_TEXT_COLOR);
-      setTextAlignment(EAlignCenter);
-      width := C_DEFAULT_PANEL_WIDTH - C_DEFAULT_TITLE_HORIZONTAL_MARGIN;
-      height := C_DEFAULT_TITLE_BAR_HEIGHT;
-    end;
-    _rootPanel^.addControl(_titleLabel);
-    _titleLabel^.release;
+      _titleLabel := new(PLabel, init);
+      with _titleLabel^, getFrame^, size do
+      begin
+        setText(C_DEFAULT_TITLE);
+        setBackgroundColor(C_DEFAULT_TITLE_BACKGROUND_COLOR);
+        setAlignment(EAlignNone);
+        setTextColor(C_DEFAULT_TITLE_TEXT_COLOR);
+        setTextAlignment(EAlignCenter);
+        width := C_DEFAULT_PANEL_WIDTH;
+        height := C_DEFAULT_TITLE_BAR_HEIGHT;
+      end;
+      _rootPanel^.addControl(_titleLabel);
+      _titleLabel^.release;
+    end else
+      _titleLabel := nil;
 
     { close button }
-    _closeButton := new(PButton, init);
-    with _closeButton^, getFrame^, size do
+    if (_controls and C_FORM_CONTROLS_CLOSE) <> 0 then
     begin
-      setCaption(C_DEFAULT_CLOSE_BUTTON_TEXT);
-      setAlignment(EAlignTopRight);
-      width := C_DEFAULT_CLOSE_BUTTON_WIDTH;
-      height := C_DEFAULT_TITLE_BAR_HEIGHT;
+      _closeButton := new(PButton, init);
+      with _closeButton^, getFrame^, size do
+      begin
+        setCaption(C_DEFAULT_CLOSE_BUTTON_TEXT);
+        setAlignment(EAlignTopRight);
+        width := C_DEFAULT_CLOSE_BUTTON_WIDTH;
+        height := C_DEFAULT_TITLE_BAR_HEIGHT;
+      end;
+      _rootPanel^.addControl(_closeButton);
+      _closeButton^.release;
+    end else
+    begin
+      _closeButton := nil;      
     end;
-    _rootPanel^.addControl(_closeButton);
-    _closeButton^.release;
 
   end;
 
@@ -115,11 +133,11 @@ implementation
   var
     cf: PControlFactory;
   begin
-    setTitle(data^.getString(C_ATTR_TITLE, ''));
+    getTitleLabel^.setText(data^.getString(C_ATTR_TITLE, ''));
     cf := new(PControlFactory, init);
     cf^.initPanel(_rootPanel, data);
     cf^.release;    
-    _titleLabel^.getFrame^.size.width := _rootPanel^.getFrame^.size.width - C_DEFAULT_TITLE_HORIZONTAL_MARGIN;
+    
   end;
 
   procedure TForm.loadFromJson(stream: PStream);
@@ -153,20 +171,20 @@ implementation
     getPanel := _rootPanel;
   end;
 
-  procedure TForm.setTitle(title: string);
+  function TForm.getTitleLabel: PLabel;
   begin
-    _titleLabel^.setText(title);
-  end;
-
-  function TForm.getTitle: string;
-  begin
-    getTitle := _titleLabel^.getText;
+    getTitleLabel := _titleLabel;
   end;
 
   procedure TForm.onEvent(opcode: word; sender: PControl);
   begin
     if (opcode = C_MSG_CONTROL_CLICKED) and (sender = PControl(_closeButton)) then
       sendMessage(C_MSG_CLOSE_SIGNAL, getDelegate);
+  end;
+
+  procedure TForm.setControls(controls: TFormControlsMask);
+  begin
+    _controls := controls;
   end;
 
   { TForm private }

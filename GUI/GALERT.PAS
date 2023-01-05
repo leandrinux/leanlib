@@ -59,7 +59,7 @@ implementation
     _tr^.setFont(SystemFont);
     _tr^.getTextSize(title, @_titleSize);
     _tr^.getTextSize(_message, @_messageSize);
-    setTitle(title);
+    getTitleLabel^.setText(title);
 
     with getPanel^, getFrame^, size do
     begin

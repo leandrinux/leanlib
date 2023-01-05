@@ -63,7 +63,9 @@ implementation
     inherited init;
     _font := new(PTinyFont, init);
     panel := getPanel;
-    setTitle(C_TITLE_TEXT);
+
+    getTitleLabel^.setText(C_TITLE_TEXT);
+    getTitleLabel^.getFrame^.size.width := 246;
 
     with panel^.getFrame^, size do
     begin
