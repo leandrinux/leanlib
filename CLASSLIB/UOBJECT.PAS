@@ -24,6 +24,7 @@ interface
         destructor done; virtual;
         procedure retain;
         procedure release;
+        function autorelease: PObject;
         procedure receiveMessage(msg: PObjectMessage); virtual;
         procedure sendMessage(opcode: word; target: PObject);
         procedure sendMessageWithData(opcode: word; target: PObject; payload: pointer; size: word);
@@ -68,12 +69,18 @@ implementation
   var
     this: PObject;
   begin
-    dec(_retainCount);
+    if _retainCount > 0 then dec(_retainCount);
     if _retainCount = 0 then
     begin
       this := @self;
       dispose(this, done);
     end;
+  end;
+
+  function TObject.autorelease: PObject;
+  begin
+    if _retainCount > 0 then dec(_retainCount);
+    autorelease := @self;
   end;
 
   procedure TObject.receiveMessage(msg: PObjectMessage); begin end;
