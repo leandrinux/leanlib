@@ -12,6 +12,9 @@ interface
     consts, utils, uclasses, types, locale, math,
     uobject, uexc;
 
+  const
+    C_DEFAULT_HASHMAP_SIZE = 5;
+
   type
     THashValue = longint;
 
@@ -24,12 +27,15 @@ interface
     PHashMap = ^THashMap;
     THashMap = object (TObject)
     public
+      constructor init;
       constructor initWithSize(size: word);
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure add(id: THashValue; obj: PObject);
       function get(id: THashValue): PObject;
+      function getCount: word;
+      function getSize: word;
       procedure clear;
     private
       _size: word;
@@ -41,6 +47,10 @@ interface
 implementation
 
   { THashMap public }
+  constructor THashMap.init;
+  begin
+    initWithSize(C_DEFAULT_HASHMAP_SIZE);
+  end;
 
   constructor THashMap.initWithSize(size: word);
   begin
@@ -114,6 +124,16 @@ implementation
     end;
   end;
 
+  function THashMap.getCount: word;
+  begin
+    getCount := _count;
+  end;
+
+  function THashMap.getSize: word;
+  begin
+    getSize := _size;
+  end;
+  
   { THashMap private }
 
   { Other }
