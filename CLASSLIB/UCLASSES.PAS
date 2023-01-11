@@ -59,6 +59,7 @@ interface
     C_CLASS_ID_LIST           = 402;
     C_CLASS_ID_DICTIONARY     = 403;
     C_CLASS_ID_PATH           = 404;
+    C_CLASS_ID_HASHMAP        = 405;
 
     { parsing file formats }
     C_CLASS_ID_INIFILE        = 500;
