@@ -16,11 +16,13 @@ interface
     TString = object (TObject)
     public
       constructor init;
+      constructor initWithValue(value: string);
       destructor done; virtual;
       procedure setValue(value: string);
       function getValue: string;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      function getHumanReadableString: string; virtual;
     private
       _value: ^string;
     end;
@@ -33,7 +35,14 @@ implementation
   begin
     inherited init;
     _value := nil;
- end;
+  end;
+
+  constructor TString.initWithValue(value: string);
+  begin
+    inherited init;
+    _value := nil;
+    setValue(value);
+  end;
 
   destructor TString.done;
   begin
@@ -61,6 +70,11 @@ implementation
   function TString.getClassId: word;
   begin
     getClassId := C_CLASS_ID_String;
+  end;
+
+  function TString.getHumanReadableString: string;
+  begin
+    getHumanReadableString := _value^;
   end;
 
   { TString private }

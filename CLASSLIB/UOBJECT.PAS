@@ -34,6 +34,7 @@ interface
         function getClassName: string; virtual;
         function getClassId: word; virtual;
         function getRetainCount: word;
+        function getHumanReadableString: string; virtual;
       private
         _retainCount: word;
         _delegate: PObject;
@@ -49,6 +50,9 @@ interface
     end;
 
 implementation
+
+  const
+    C_DEFAULT_STRING_VALUE = 'Object';
 
   constructor TObject.init;
   begin
@@ -137,6 +141,11 @@ implementation
   function TObject.getRetainCount: word;
   begin
     getRetainCount := _retainCount;
+  end;
+
+  function TObject.getHumanReadableString: string;
+  begin
+    getHumanReadableString := C_DEFAULT_STRING_VALUE;
   end;
 
 end.
