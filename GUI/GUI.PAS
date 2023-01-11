@@ -25,7 +25,7 @@ interface
       procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       procedure addForm(form: PForm);
-      procedure render;
+      procedure renderForms;
       function getBus: PMessageBus;
     private
       _engine: PRenderEngine;
@@ -80,7 +80,7 @@ implementation
     _forms^.addObject(form);
   end;
 
-  procedure TUserInterface.render;
+  procedure TUserInterface.renderForms;
   var
     form: PForm;
   begin

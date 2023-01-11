@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, ucanvas, 
+    uobject, uexc, ucanvas,
     gclasses, gtypes, gcontrol;
 
   type
@@ -72,7 +72,6 @@ implementation
     parent: PControl;
     parentSize: TSize;
   begin
-    control^.findAbsolutePosition(_absolutePosition);
     { update control frame point when alignment <> EAlignNone }
     if control^.getAlignment <> EAlignNone then
     begin
@@ -104,6 +103,7 @@ implementation
         end;
       end;
     end;  
+    control^.findAbsolutePosition(_absolutePosition);
   end;
 
   function TControlRenderer.getAbsolutePosition: PPoint;

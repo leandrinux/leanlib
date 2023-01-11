@@ -58,7 +58,7 @@ implementation
     ui^.addForm(form);                   { add the form to our user interface }
     Mouse^.setDelegate(ui^.getBus);      { send mouse messages to the user interface }
     Keyboard^.setDelegate(ui^.getBus);   { send keyboard messages to the user interface }
-    ui^.render;                          { render the user interface }
+    ui^.renderForms;                     { render the user interface }
     Mouse^.selectCursor(ECursorDefault); { use default cursor now that everything is loaded }
 
     _runFlag := true;

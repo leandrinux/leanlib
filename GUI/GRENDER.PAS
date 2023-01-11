@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, uhashmap, ucanvas,
+    uobject, uexc, uhashmap, ucanvas, umouse,
     gclasses, gtypes, gcrender, gcontrol, gmsgs;
 
   const
@@ -93,7 +93,9 @@ implementation
     cr := PControlRenderer(_hashmap^.get(control^.getClassId));
     if cr = nil then exit;
     cr^.setCanvas(_canvas);
+    Mouse^.hide;
     cr^.render(control);
+    Mouse^.show;
   end;
 
   { TRenderEngine private }

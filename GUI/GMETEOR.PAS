@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, ucanvas, utrender, 
+    uobject, uexc, ucanvas, utrender,
     gclasses, gtypes, gcontrol, gmsgs, grender, gcrender, gcolors, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
@@ -79,7 +79,7 @@ implementation
     colorTL, colorBR: TColor;
   begin
     inherited render(control);
-    with getAbsolutePosition^, getCanvas^, PPanel(control)^, getFrame^.size, DefaultColorScheme^  do
+    with getAbsolutePosition^, getCanvas^, PPanel(control)^, getFrame^.size, DefaultColorScheme^ do
     begin
       case getBorderStyle of        
         EBorderStyleRaised:
@@ -111,7 +111,6 @@ implementation
         control := PControl(getObjectAtCursor);
         while control<>nil do
         begin
-          {render(control);}
           control^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, self.getDelegate);
           moveForward;
           control := PControl(getObjectAtCursor);
