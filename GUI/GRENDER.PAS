@@ -10,7 +10,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, uhashmap, ucanvas,
-    gclasses, gtypes, gcrender, gcontrol;
+    gclasses, gtypes, gcrender, gcontrol, gmsgs;
 
   const
     C_MAX_CONTROL_RENDERER_COUNT = 10;
@@ -25,6 +25,7 @@ interface
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure receiveMessage(msg: PObjectMessage); virtual;
       { methods }
       procedure setCanvas(canvas: PCanvas);
       function getCanvas: PCanvas;
@@ -62,6 +63,11 @@ implementation
     getClassId := C_CLASS_ID_RenderEngine;
   end;
 
+  procedure TRenderEngine.receiveMessage(msg: PObjectMessage);
+  begin
+    if msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW then render(PControl(msg^.sender))
+  end;
+
   procedure TRenderEngine.setCanvas(canvas: PCanvas);
   begin
     _canvas := canvas;
@@ -75,6 +81,7 @@ implementation
   procedure TRenderEngine.register(controlClassId: word; renderer: PControlRenderer);
   begin
     _hashmap^.add(controlClassId, renderer);
+    renderer^.setDelegate(@self);
   end;
 
   procedure TRenderEngine.render(control: PControl);

@@ -9,8 +9,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, ucanvas, utrender,
-    gclasses, gtypes, gcontrol, grender, gcrender, gcolors, gpanel, glabel, gbutton, gchkbox, gfield;
+    uobject, uexc, ucanvas, utrender, 
+    gclasses, gtypes, gcontrol, gmsgs, grender, gcrender, gcolors, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
     PBaseRenderer = ^TBaseRenderer; 
@@ -111,7 +111,8 @@ implementation
         control := PControl(getObjectAtCursor);
         while control<>nil do
         begin
-          render(control);
+          {render(control);}
+          control^.sendMessage(C_MSG_CONTROL_REQUEST_REDRAW, self.getDelegate);
           moveForward;
           control := PControl(getObjectAtCursor);
         end;
@@ -291,6 +292,7 @@ implementation
   constructor TMeteor.init;
   begin
     inherited init;
+    register(C_CLASS_ID_CONTROL, PBaseRenderer(new(PBaseRenderer, init)^.autorelease));
     register(C_CLASS_ID_PANEL, PPanelRenderer(new(PPanelRenderer, init)^.autorelease));
     register(C_CLASS_ID_LABEL, PLabelRenderer(new(PLabelRenderer, init)^.autorelease));
     register(C_CLASS_ID_BUTTON, PButtonRenderer(new(PButtonRenderer, init)^.autorelease));

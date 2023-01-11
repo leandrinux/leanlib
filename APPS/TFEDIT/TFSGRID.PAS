@@ -71,7 +71,7 @@ implementation
     p, position: TPoint;
     ch: char;
   begin
-    getAbsolutePosition(position);
+    findAbsolutePosition(position);
     with getCanvas^ do
     begin
       getStrokeBrush^.color := C_GRID_BORDER_COLOR;
@@ -98,7 +98,7 @@ implementation
   var
     position, p: TPoint;
   begin
-    getAbsolutePosition(position);
+    findAbsolutePosition(position);
     p.x := position.x + 2 + (ord(ch) mod C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
     p.y := position.y + 2 + (ord(ch) div C_GRID_CELL_SIDE_COUNT) * (C_GRID_CELL_SIZE + 1);
     with getCanvas^.getBitmap^, p do 
@@ -140,7 +140,7 @@ implementation
     symbol: plong;
   begin
     frame := getFrame^;
-    getAbsolutePosition(frame.point);
+    findAbsolutePosition(frame.point);
     if isPointInFrame(mousePosition, @frame) then
     begin
       Mouse^.hide;

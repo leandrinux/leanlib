@@ -81,7 +81,7 @@ implementation
     frame: TFrame;  
   begin
     frame := getFrame^;
-    getAbsolutePosition(frame.point);
+    findAbsolutePosition(frame.point);
     if isPointInFrame(mousePosition, @frame) then
     begin
       cellPosition.x := (mousePosition^.x - frame.point.x) div (C_GRID_CELL_SIZE + 1);
@@ -95,7 +95,7 @@ implementation
   var
     p: TPoint;
   begin
-    getAbsolutePosition(p);
+    findAbsolutePosition(p);
     setBackgroundStyle(EBackgroundStyleTransparent);
     with getCanvas^, getFrame^ do
     begin
@@ -113,7 +113,7 @@ implementation
     absolutePosition: TPoint;
     x, y: word;
   begin
-    getAbsolutePosition(absolutePosition);
+    findAbsolutePosition(absolutePosition);
     v := _symbol shr 2;
     for i:= 29 downto 0 do
     begin

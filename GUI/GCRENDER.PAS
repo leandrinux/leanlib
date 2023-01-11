@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, ucanvas,
+    uobject, uexc, ucanvas, 
     gclasses, gtypes, gcontrol;
 
   type

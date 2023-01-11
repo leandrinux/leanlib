@@ -28,7 +28,7 @@ interface
       procedure render;
       function getBus: PMessageBus;
     private
-      _renderer: PRenderEngine;
+      _engine: PRenderEngine;
       _forms: PList;
       _bus: PMessageBus;
       procedure notifyFormAboutEvent(msg: PObjectMessage);
@@ -40,8 +40,8 @@ implementation
   constructor TUserInterface.init;
   begin
     inherited init;
-    _renderer := new(PMeteor, init);
-    _renderer^.setCanvas(DisplayAdapter^.getCanvas);
+    _engine := new(PMeteor, init);
+    _engine^.setCanvas(DisplayAdapter^.getCanvas);
     _forms := new(PList, initWithClassFamily(C_CLASS_ID_FORM_FROM, C_CLASS_ID_FORM_TO));
     _bus := new(PMessageBus, init);
     _bus^.subscribe(@self);
@@ -49,7 +49,7 @@ implementation
 
   destructor TUserInterface.done;
   begin
-    _renderer^.release;
+    _engine^.release;
     _forms^.release;
     _bus^.release;
     inherited done;
@@ -68,7 +68,7 @@ implementation
   procedure TUserInterface.receiveMessage(msg: PObjectMessage);
   begin
     if msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW then
-      _renderer^.render(PControl(msg^.sender))
+      _engine^.render(PControl(msg^.sender))
     else 
     if (msg^.opcode and C_MSG_CONTROL_EVENT_MASK) = C_MSG_CONTROL_EVENT_MASK then
       notifyFormAboutEvent(msg);
@@ -88,7 +88,7 @@ implementation
     form := PForm(_forms^.getObjectAtCursor);
     while form <> nil do
     begin
-      _renderer^.render(form^.getPanel);
+      _engine^.render(form^.getPanel);
       _forms^.moveForward;
       form := PForm(_forms^.getObjectAtCursor);
     end;
