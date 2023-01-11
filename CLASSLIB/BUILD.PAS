@@ -43,7 +43,8 @@ uses
   ULOG,
   UMBITMAP,
   UMSTREAM,
-  UXSTREAM;
+  UXSTREAM,
+  UHASHMAP;
 
 begin
 end.

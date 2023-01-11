@@ -8,64 +8,70 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
+    consts, utils, uclasses, types, locale, palette,
     uobject, uexc, ucanvas, utrender,
-    gclasses, gtypes, gcontrol, grender, gcrender, gcolors, gpanel, glabel, gbutton, gchkbox, gfield;
+    gclasses, gtypes, grender, gmsgs, gcolors, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
 
   type
-    PBaseRenderer = ^TBaseRenderer; 
-    TBaseRenderer = object(TControlRenderer)
-      procedure render(control: PControl); virtual;
-    end;
-
-    PPanelRenderer = ^TPanelRenderer;
-    TPanelRenderer = object(TBaseRenderer)
-      procedure render(control: PControl); virtual;
-    end;
-
-    PLabelRenderer = ^TLabelRenderer;
-    TLabelRenderer = object(TBaseRenderer)
-      procedure render(control: PControl); virtual;
-    end;
-
-    PButtonRenderer = ^TButtonRenderer;
-    TButtonRenderer = object(TBaseRenderer)
-      procedure render(control: PControl); virtual;
-    end;
-
-    PCheckboxRenderer = ^TCheckboxRenderer;
-    TCheckboxRenderer = object(TBaseRenderer)
-      procedure render(control: PControl); virtual;
-    end;
-
-    PTextFieldRenderer = ^TTextFieldRenderer;
-    TTextFieldRenderer = object(TBaseRenderer)
-      procedure render(control: PControl); virtual;
-    end;
-
     PMeteor = ^TMeteor;
-    TMeteor = object (TRenderEngine)
+    TMeteor = object (TRenderer)
     public
       { constructors and destructors}
-      constructor init;
+      constructor initWithCanvas(canvas: PCanvas);
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       { methods }
+      function getRendererName: string16; virtual;
+      procedure renderControl(control: PControl); virtual;
+      procedure renderPanel(panel: PPanel); virtual;
+      procedure renderLabel(lbl: PLabel); virtual;
+      procedure renderButton(button: PButton); virtual;
+      procedure renderCheckbox(checkbox: PCheckbox); virtual;
+      procedure renderTextField(textField: PTextField); virtual;
     private
     end;
 
 implementation
 
-  { Control renderers }
+  { TMeteor public }
 
-  procedure TBaseRenderer.render(control: PControl);
+  constructor TMeteor.initWithCanvas(canvas: PCanvas);
   begin
-    inherited render(control);
-    with getAbsolutePosition^, getCanvas^, control^, getFrame^.size do
+    inherited initWithCanvas(canvas);
+  end;
+
+  destructor TMeteor.done;
+  begin
+    inherited done;
+  end;
+
+  function TMeteor.getClassName: string;
+  begin
+    getClassName := 'TMeteor';
+  end;
+
+  function TMeteor.getClassId: word;
+  begin
+    getClassId := C_CLASS_ID_Meteor;
+  end;
+  
+  function TMeteor.getRendererName: string16;
+  begin
+    getRendererName := 'Meteor';
+  end;
+
+  procedure TMeteor.renderControl(control: PControl);
+  var
+    absolutePosition: TPoint;
+  begin
+    if control^.isHidden then exit;
+    inherited renderControl(control);
+    with getCanvas^, control^, getFrame^.size, absolutePosition do
     begin      
       control^.defaultDraw;
+      getAbsolutePosition(absolutePosition);
       setPattern(ESolid, getStrokeBrush);
       if control^.getBackgroundStyle = EBackgroundStyleSolid then
       begin
@@ -74,12 +80,16 @@ implementation
     end;
   end;
 
-  procedure TPanelRenderer.render(control: PControl);
+  procedure TMeteor.renderPanel(panel: PPanel);
   var
+    absolutePosition: TPoint;
     colorTL, colorBR: TColor;
+    control: PControl;
   begin
-    inherited render(control);
-    with getAbsolutePosition^, getCanvas^, PPanel(control)^, getFrame^.size, DefaultColorScheme^  do
+    if panel^.isHidden then exit;
+    renderControl(panel);
+    panel^.getAbsolutePosition(absolutePosition);
+    with getCanvas^, panel^, getFrame^.size, absolutePosition, DefaultColorScheme^  do
     begin
       case getBorderStyle of        
         EBorderStyleRaised:
@@ -116,25 +126,27 @@ implementation
           control := PControl(getObjectAtCursor);
         end;
       end;
+      
     end;
   end;
 
-  procedure TLabelRenderer.render(control: PControl);
+  procedure TMeteor.renderLabel(lbl: PLabel);
   var
+    absolutePosition: TPoint;
     tr: PTextRenderer;
     x, y: word;
     textSize: TSize;
-    lbl: PLabel;
   begin
-    inherited render(control);
-    lbl := PLabel(control);
+    if lbl^.isHidden then exit;
+    renderControl(lbl);
+    lbl^.getAbsolutePosition(absolutePosition);
     getCanvas^.getStrokeBrush^.color := lbl^.getTextColor;
     tr := new(PTextRenderer, init);
     tr^.setFont(lbl^.getFont);
     tr^.setCanvas(getCanvas);
     tr^.getTextSize(lbl^.getText, @textSize);
-    x := getAbsolutePosition^.x;
-    y := getAbsolutePosition^.y;
+    x := absolutePosition.x;
+    y := absolutePosition.y;
     case lbl^.getTextAlignment of
       EAlignTop, EAlignCenter, EAlignBottom:
         inc(x, (lbl^.getFrame^.size.width div 2) - (textSize.width div 2));
@@ -152,18 +164,19 @@ implementation
     tr^.release;
   end;
 
-  procedure TButtonRenderer.render(control: PControl);
+  procedure TMeteor.renderButton(button: PButton);
   var
+    absolutePosition: TPoint;
     colorTL, colorBR: TColor;
-    button: PButton;
     tr: PTextRenderer;
     x, y: word;
     textSize: TSize;
   begin
-    inherited render(control);
-    x := getAbsolutePosition^.x;
-    y := getAbsolutePosition^.y;
-    button := PButton(control);
+    if button^.isHidden then exit;
+    renderControl(button);
+    button^.getAbsolutePosition(absolutePosition);
+    x := absolutePosition.x;
+    y := absolutePosition.y;
     case button^.getState of
       EButtonStateUp:
       begin
@@ -197,16 +210,16 @@ implementation
     tr^.setCursor(x, y);
     tr^.write(button^.getCaption);
     tr^.release; 
-
   end;
 
-  procedure TCheckboxRenderer.render(control: PControl);
+  procedure TMeteor.renderCheckbox(checkbox: PCheckbox);
   var
-    checkbox: PCheckbox;
+    absolutePosition: TPoint;
   begin
-    inherited render(control);
-    checkbox := PCheckbox(control);
-    with checkbox^, getCanvas^, getFrame^, getAbsolutePosition^, size do
+    if checkbox^.isHidden then exit;
+    renderControl(checkbox);
+    checkbox^.getAbsolutePosition(absolutePosition);
+    with checkbox^, getCanvas^, getFrame^, absolutePosition, size do
     begin
       getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderLowered);
       hline(x, x + width - 1, y);
@@ -222,23 +235,24 @@ implementation
           x + size.width - 5, y + size.height - 5
         );
         line(
-          x + size.width - 5, y + 4,
-          x + 4, y + size.height - 5
+          absolutePosition.x + size.width - 5, absolutePosition.y + 4,
+          absolutePosition.x + 4, absolutePosition.y + size.height - 5
         );
       end;
     end;
   end;
 
-  procedure TTextFieldRenderer.render(control: PControl);
+  procedure TMeteor.renderTextField(textField: PTextField);
   var
+    absolutePosition: TPoint;
     tr: PTextRenderer;
     textSize: TSize;
     textValue: TTextValue;
-    textField: PTextField;
   begin
-    inherited render(control);
-    textField := PTextField(control);
-    with textField^, getCanvas^, getFrame^, getAbsolutePosition^, size do
+    if textField^.isHidden then exit;
+    renderControl(textField);
+    textField^.getAbsolutePosition(absolutePosition);
+    with textField^, getCanvas^, getFrame^, absolutePosition, size do
     begin
       { draw borders }
       getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKPanelBorderLowered);
@@ -283,36 +297,10 @@ implementation
         getStrokeBrush^.color := DefaultColorScheme^.getColor(ECKTextCursor);
         vline(y+4, y + height - 5, x + 6 + textSize.width);
       end;
+      
     end;
   end;
-
-  { TMeteor public }
-
-  constructor TMeteor.init;
-  begin
-    inherited init;
-    register(C_CLASS_ID_PANEL, PPanelRenderer(new(PPanelRenderer, init)^.autorelease));
-    register(C_CLASS_ID_LABEL, PLabelRenderer(new(PLabelRenderer, init)^.autorelease));
-    register(C_CLASS_ID_BUTTON, PButtonRenderer(new(PButtonRenderer, init)^.autorelease));
-    register(C_CLASS_ID_CHECKBOX, PCheckboxRenderer(new(PCheckboxRenderer, init)^.autorelease));
-    register(C_CLASS_ID_TEXTFIELD, PTextFieldRenderer(new(PTextFieldRenderer, init)^.autorelease));
-  end;
-
-  destructor TMeteor.done;
-  begin
-    inherited done;
-  end;
-
-  function TMeteor.getClassName: string;
-  begin
-    getClassName := 'TMeteor';
-  end;
-
-  function TMeteor.getClassId: word;
-  begin
-    getClassId := C_CLASS_ID_Meteor;
-  end;
-
+  
   { TMeteor private }
 
   { Other }

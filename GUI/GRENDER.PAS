@@ -1,6 +1,5 @@
 {
   GRender Unit
-
   2022 LRT
 }
 unit
@@ -10,144 +9,87 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, ucanvas, umouse, udisplay, 
-    gclasses, gtypes, gcontrol, gpanel, glabel, gbutton, gchkbox, gfield;
+    uobject, uexc, uhashmap, ucanvas,
+    gclasses, gtypes, gcrender, gcontrol;
+
+  const
+    C_MAX_CONTROL_RENDERER_COUNT = 10;
 
   type
-    PRenderer = ^TRenderer;
-    TRenderer = object (TObject)
+    PRenderEngine = ^TRenderEngine;
+    TRenderEngine = object (TObject)
     public
       { constructors and destructors}
-      constructor initWithCanvas(canvas: PCanvas);
+      constructor init;
       destructor done; virtual;
       { extended methods }
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       { methods }
-      function getRendererName: string16; virtual;
+      procedure setCanvas(canvas: PCanvas);
       function getCanvas: PCanvas;
+      procedure register(controlClassId: word; renderer: PControlRenderer);
       procedure render(control: PControl);
-      procedure renderControl(control: PControl); virtual;
-      procedure renderPanel(panel: PPanel); virtual;
-      procedure renderLabel(lbl: PLabel); virtual;
-      procedure renderButton(button: PButton); virtual;
-      procedure renderCheckbox(checkbox: PCheckbox); virtual;
-      procedure renderTextField(textField: PTextField); virtual;
     private
+      _hashmap: PHashMap;
       _canvas: PCanvas;
     end;
 
 implementation
 
-  { TRenderer public }
+  { TRenderEngine public }
 
-  constructor TRenderer.initWithCanvas(canvas: PCanvas);
+  constructor TRenderEngine.init;
   begin
     inherited init;
-    _canvas := canvas;
-    _canvas^.retain;
+    _hashmap := new (PHashMap, initWithSize(C_MAX_CONTROL_RENDERER_COUNT));
+    _canvas := nil;
   end;
 
-  destructor TRenderer.done;
+  destructor TRenderEngine.done;
   begin
-    _canvas^.release;
+    _hashmap^.release;
     inherited done;
   end;
 
-  function TRenderer.getClassName: string;
+  function TRenderEngine.getClassName: string;
   begin
-    getClassName := 'TRenderer';
+    getClassName := 'TRenderEngine';
   end;
 
-  function TRenderer.getClassId: word;
+  function TRenderEngine.getClassId: word;
   begin
-    getClassId := C_CLASS_ID_Renderer;
+    getClassId := C_CLASS_ID_RenderEngine;
   end;
 
-  function TRenderer.getRendererName: string16;
+  procedure TRenderEngine.setCanvas(canvas: PCanvas);
   begin
-    getRendererName := getClassName;
+    _canvas := canvas;
   end;
 
-  function TRenderer.getCanvas: PCanvas;
+  function TRenderEngine.getCanvas: PCanvas;
   begin
     getCanvas := _canvas;
   end;
 
-  procedure TRenderer.render(control: PControl);
+  procedure TRenderEngine.register(controlClassId: word; renderer: PControlRenderer);
   begin
-    Mouse^.hide;
-    control^.setCanvas(getCanvas);
-    case control^.getClassId of
-      C_CLASS_ID_CONTROL: renderControl(control);
-      C_CLASS_ID_PANEL: renderPanel(PPanel(control));
-      C_CLASS_ID_LABEL: renderLabel(PLabel(control));
-      C_CLASS_ID_BUTTON: renderButton(PButton(control));
-      C_CLASS_ID_CHECKBOX: renderCheckbox(PCheckbox(control));
-      C_CLASS_ID_TEXTFIELD: renderTextField(PTextField(control));
-    end;
-    Mouse^.show;
+    _hashmap^.add(controlClassId, renderer);
   end;
 
-  { TRenderer private }
-
-  procedure TRenderer.renderControl(control: PControl);
+  procedure TRenderEngine.render(control: PControl);
   var
-    parent: PControl;
-    parentSize: TSize;
+    cr: PControlRenderer;
   begin
-    { update control frame point when alignment <> EAlignNone }
-    if control^.getAlignment <> EAlignNone then
-    begin
-      parent := control^.getParent;
-      if parent <> nil then
-      begin
-        parentSize := parent^.getFrame^.size; 
-      end else begin
-        parentSize.width := DisplayAdapter^.getCurrentVideoMode^.resX;
-        parentSize.height := DisplayAdapter^.getCurrentVideoMode^.resY;
-      end;
-      with control^.getFrame^ do
-      begin
-        case control^.getAlignment of
-          EAlignTop, EAlignCenter, EAlignBottom:
-            point.x := (parentSize.width div 2) - (size.width div 2);
-          EAlignTopRight, EAlignRight, EAlignBottomRight:
-            point.x := parentSize.width - size.width;
-          EAlignTopLeft, EAlignLeft, EAlignBottomLeft:
-            point.x := 0;
-        end;
-        case control^.getAlignment of
-          EAlignLeft, EAlignCenter, EAlignRight:
-            point.y := (parentSize.height div 2) - (size.height div 2);
-          EAlignBottomLeft, EAlignBottom, EAlignBottomRight:
-            point.y := parentSize.height - size.height;
-          EAlignTopLeft, EAlignTop, EAlignTopRight:
-            point.y := 0;
-        end;
-      end;
-    end;  
-  end;
-  
-  procedure TRenderer.renderPanel(panel: PPanel);
-  begin
+    if _canvas = nil then exit;
+    if control^.isHidden then exit;
+    cr := PControlRenderer(_hashmap^.get(control^.getClassId));
+    if cr = nil then exit;
+    cr^.setCanvas(_canvas);
+    cr^.render(control);
   end;
 
-  procedure TRenderer.renderLabel(lbl: PLabel);
-  begin
-  end;
-
-  procedure TRenderer.renderButton(button: PButton);
-  begin
-  end;
-
-  procedure TRenderer.renderCheckbox(checkbox: PCheckbox);
-  begin
-  end;
-
-  procedure TRenderer.renderTextField(textField: PTextField);
-  begin
-  end;
+  { TRenderEngine private }
 
   { Other }
 

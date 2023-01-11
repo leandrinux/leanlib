@@ -11,9 +11,10 @@ interface
   const
     C_CLASS_ID_GUI             = 2000;
     C_CLASS_ID_CONTROLFACTORY  = 2001;
-    C_CLASS_ID_RENDERER        = 2002;
-    C_CLASS_ID_METEOR          = 2003;
-    C_CLASS_ID_COLORSCHEME     = 2004;
+    C_CLASS_ID_RENDERENGINE    = 2002;
+    C_CLASS_ID_CONTROLRENDERER = 2003;
+    C_CLASS_ID_METEOR          = 2004;
+    C_CLASS_ID_COLORSCHEME     = 2005;
     C_CLASS_ID_GUIAPP          = 2007;
 
     C_CLASS_ID_FORM_FROM       = 2100;

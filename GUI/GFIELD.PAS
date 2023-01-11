@@ -103,7 +103,7 @@ implementation
   begin
     if isHidden then exit;
     frame := getFrame^;
-    getAbsolutePosition(frame.point);
+    findAbsolutePosition(frame.point);
     mousePosition := msg^.payload;
     case msg^.opcode of 
 

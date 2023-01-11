@@ -76,7 +76,7 @@ implementation
     begin
       mousePosition := msg^.payload;
       frame := getFrame^;
-      getAbsolutePosition(frame.point);
+      findAbsolutePosition(frame.point);
       if isPointInFrame(mousePosition, @frame) then
       begin
         _checked := not _checked;

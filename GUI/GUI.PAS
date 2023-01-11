@@ -28,7 +28,7 @@ interface
       procedure render;
       function getBus: PMessageBus;
     private
-      _renderer: PRenderer;
+      _renderer: PRenderEngine;
       _forms: PList;
       _bus: PMessageBus;
       procedure notifyFormAboutEvent(msg: PObjectMessage);
@@ -40,7 +40,8 @@ implementation
   constructor TUserInterface.init;
   begin
     inherited init;
-    _renderer := new(PMeteor, initWithCanvas(DisplayAdapter^.getCanvas));
+    _renderer := new(PMeteor, init);
+    _renderer^.setCanvas(DisplayAdapter^.getCanvas);
     _forms := new(PList, initWithClassFamily(C_CLASS_ID_FORM_FROM, C_CLASS_ID_FORM_TO));
     _bus := new(PMessageBus, init);
     _bus^.subscribe(@self);
@@ -68,7 +69,8 @@ implementation
   begin
     if msg^.opcode = C_MSG_CONTROL_REQUEST_REDRAW then
       _renderer^.render(PControl(msg^.sender))
-    else if (msg^.opcode and C_MSG_CONTROL_EVENT_MASK) = C_MSG_CONTROL_EVENT_MASK then
+    else 
+    if (msg^.opcode and C_MSG_CONTROL_EVENT_MASK) = C_MSG_CONTROL_EVENT_MASK then
       notifyFormAboutEvent(msg);
   end;
 

@@ -32,7 +32,7 @@ interface
       function getId: TControlId;
       function getParent: PControl;
       procedure setParent(parent: PControl);
-      procedure getAbsolutePosition(var point: TPoint);
+      procedure findAbsolutePosition(var point: TPoint);
       procedure setBackgroundColor(backgroundColor: TColor);
       function getBackgroundColor: TColor;     
       procedure setBackgroundStyle(backgroundStyle: EBackgroundStyle);
@@ -110,7 +110,7 @@ implementation
       C_MSG_MOUSE_LEFT_DOWN:
       begin
         frame := getFrame^;
-        getAbsolutePosition(frame.point);
+        findAbsolutePosition(frame.point);
         mousePosition := msg^.payload;
         if isPointInFrame(mousePosition, @frame) then
           sendMessage(C_MSG_CONTROL_CLICKED, getBus);
@@ -155,7 +155,7 @@ implementation
     _parent := parent;
   end;
 
-  procedure TControl.getAbsolutePosition(var point: TPoint);
+  procedure TControl.findAbsolutePosition(var point: TPoint);
   begin
     with point do
       if _parent = nil then
@@ -163,7 +163,7 @@ implementation
         x := _frame.point.x;
         y := _frame.point.y;
       end else begin
-        _parent^.getAbsolutePosition(point);
+        _parent^.findAbsolutePosition(point);
         x := x + _frame.point.x;
         y := y + _frame.point.y;
       end;

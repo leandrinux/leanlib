@@ -93,7 +93,7 @@ implementation
       C_MSG_MOUSE_LEFT_UP, C_MSG_MOUSE_LEFT_DOWN: 
       begin
         frame := getFrame^;
-        getAbsolutePosition(frame.point);
+        findAbsolutePosition(frame.point);
         mousePosition := msg^.payload;
         if (_state = EButtonStateUp) 
            and (msg^.opcode = C_MSG_MOUSE_LEFT_DOWN) 
