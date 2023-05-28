@@ -20,12 +20,14 @@ constructor TMyForm.init;
 begin
   inherited init;
   loadFromFile(C_GUI_FILE);
+  getTitleLabel^.getFrame^.size.width := getPanel^.getFrame^.size.width;  
   field1 := PTextField(getPanel^.findControl('field1'));
 end;
 
 procedure TMyForm.onEvent(opcode: word; sender: PControl);
 begin
   inherited onEvent(opcode, sender);
+  (*
   if (opcode = C_MSG_CONTROL_CLICKED) then
   begin
     if (sender^.getId = 'beepBtn') then
@@ -36,6 +38,7 @@ begin
       field1^.setEnabled(not field1^.isEnabled);
     end;
   end;
+  *)
 end;
 
 var
@@ -46,6 +49,8 @@ begin
   app := new(PGUIApp, init);
   form := new(PMyForm, init);
   app^.run(form);
+  writeln('Releasing form');
   form^.release;
+  writeln('Releasing app');
   app^.release;
 end.

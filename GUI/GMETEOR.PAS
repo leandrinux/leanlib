@@ -197,7 +197,6 @@ implementation
     tr^.setCursor(x, y);
     tr^.write(button^.getCaption);
     tr^.release; 
-
   end;
 
   procedure TCheckboxRenderer.render(control: PControl);
@@ -205,6 +204,7 @@ implementation
     checkbox: PCheckbox;
   begin
     inherited render(control);
+    (*
     checkbox := PCheckbox(control);
     with checkbox^, getCanvas^, getFrame^, getAbsolutePosition^, size do
     begin
@@ -227,6 +227,7 @@ implementation
         );
       end;
     end;
+    *)
   end;
 
   procedure TTextFieldRenderer.render(control: PControl);
@@ -237,6 +238,7 @@ implementation
     textField: PTextField;
   begin
     inherited render(control);
+    (*
     textField := PTextField(control);
     with textField^, getCanvas^, getFrame^, getAbsolutePosition^, size do
     begin
@@ -284,6 +286,7 @@ implementation
         vline(y+4, y + height - 5, x + 6 + textSize.width);
       end;
     end;
+    *)
   end;
 
   { TMeteor public }

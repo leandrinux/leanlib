@@ -115,7 +115,9 @@ implementation
   destructor TForm.done;
   begin
     inherited done;
+    writeln('Releasing title label');
     _titleLabel^.release;
+    writeln('Releasing root panel');
     _rootPanel^.release;
   end;
 
@@ -137,7 +139,6 @@ implementation
     cf := new(PControlFactory, init);
     cf^.initPanel(_rootPanel, data);
     cf^.release;    
-    
   end;
 
   procedure TForm.loadFromJson(stream: PStream);

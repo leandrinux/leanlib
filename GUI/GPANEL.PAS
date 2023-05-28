@@ -52,6 +52,7 @@ implementation
 
   destructor TPanel.done;
   begin
+    writeln('Releasing controls');
     _controls^.release;
     inherited done;
   end;

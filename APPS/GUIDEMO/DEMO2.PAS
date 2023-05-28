@@ -15,7 +15,8 @@ type
 constructor TMyForm.init;
 begin
   inherited init;
-  loadFromFile(C_GUI_FILE);  
+  loadFromFile(C_GUI_FILE);
+  getTitleLabel^.getFrame^.size.width := getPanel^.getFrame^.size.width;  
 end;
 
 var
