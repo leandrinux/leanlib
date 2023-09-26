@@ -1,5 +1,6 @@
 uses
   ASCII,
+  DEBUG,
   CONSTS,
   DATETIME,
   INT10,
