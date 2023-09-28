@@ -31,5 +31,6 @@ call build classlib
 call build sys
 call build gui
 call build vm
+call build lsystem
 
 :end
