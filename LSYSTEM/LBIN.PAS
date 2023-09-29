@@ -408,151 +408,135 @@ implementation
    end;
   end;
 
+{ gets an open text file, symbol list and system state }
+{ returns an error code }
+  function readHeader(var textFile: Text; var symbolList: PSymbolNode; var systemState: TSystemState): EErrorCode;
+  var
+    line, lineCopy, token:string;
+    b: byte;
+    errorCode: EErrorCode;
+  begin
+    errorCode := EErrorNone;
+    readln(textFile, lineCopy);
+    line := lineCopy;
+    extractToken(line, token);
+    while (errorCode <> EErrorFatal) and (token[1] <> '\') do
+    begin
+      if token[1] = '*' then
+        writeln(lineCopy)
+      else begin
+        strUpper(line);
+        if (line <> '') and ( pos('EQU', line) <> 0) then
+        begin
+          strUpper(token);
+          { we'll include a constant into the symbols list }
+          if findSymbolNodeWithId(symbolList, token) <> nil then
+          begin
+            errorCode := EErrorWarning;
+            writeln('> WARNING: Constant identifier redefined');
+          end else begin
+            while not (line[1] in ['@','#','$']) do delete(line, 1, 1);
+            addToSymbolList(symbolList, token, strToInt(line));
+          end;
+        end;
+      end;
+      readln(textFile, lineCopy);
+      if not seekEOF(textFile) then
+      begin
+        line := lineCopy;
+        extractToken(line, token);
+      end else
+        errorCode := EErrorFatal;
+    end;
+    if errorCode <> EErrorFatal then
+    begin
+      {now we'll process the \\asm line }
+      while (line<>'') and not (line[1] in ['0'..'9']) do delete(line, 1, 1);
+      with systemState do
+      begin
+        if line = '' then
+        begin
+          registers[6] := 200;
+          ss := 1800;
+        end else begin
+          registers[6] := decToInt(line);
+          ss := 2000 - registers[6];
+        end;
+      end;
+    end;
+    readHeader := errorCode;
+  end;
+
+  { gets a symbol list and returns true if all symbols are defined, otherwise false }
+  function listAndCleanSymbols(var symbolList: PSymbolNode): boolean;
+  var
+    symbolNode: PSymbolNode; 
+    pendingNode: PPendingSymbolNode;
+  begin
+    writeln; 
+    writeln(' > Symbols list:');
+    listAndCleanSymbols := true;
+    while symbolList <> nil do
+    begin
+      if symbolList^.pendingList = nil then
+        writeln('   ', symbolList^.id, ' = ', symbolList^.value)
+      else begin
+        listAndCleanSymbols := false;
+        writeln(' > ERROR: Symbol "', symbolList^.id, '" is undefined.');
+        while symbolList^.pendingList <> nil do
+        begin
+          pendingNode := symbolList^.pendingList^.next;
+          dispose(symbolList^.pendingList);
+          symbolList^.pendingList := pendingNode;
+        end;
+      end;
+      symbolNode := symbolList^.next;
+      dispose(symbolList);
+      symbolList := symbolNode;
+    end;
+  end;
+
+  { gets a source code file name and a binary file name }
+  { returns true if build was successful, false if failed }
   function build(const sourceFilename, binaryFilename: string): boolean;
+  var
+    systemState: TSystemState; 
+    symbolList: PSymbolNode;
+    textFile: Text;
+    line: string;
+    lineNumber: word;
+    flag: boolean;
+    errorCode: EErrorCode;
   begin
-  end;
-
-end.
-
-{RECIBE  : archivo de texto abierto, estructura de memoria y lista de
- simbolos
- DEVUELVE:
- ERR_NULL si la compilacion fue satisfactoria
- ERR_WARN si ocurrio un error leve y la compilacion puede continuar
- ERR_FATAL si ocurrio un error grave y la compilacion debe detenerse
-}
-Function LeeCabeza(var arch:Text; var lsimb:PTSimNodo; var m:TMem):byte;
-var
- ln,cln,t:string;
- b,AuxByte:byte;
-begin
- AuxByte:=ERR_NULL;
- readln(arch,cln);
- ln:=cln;
- token(ln,t);
- while (AuxByte<>ERR_FATAL) and (t[1]<>'\') do
- begin
-  if t[1]='*' then
-   writeln(cln)
-  else
-  begin
-   strupper(ln);
-   if (ln<>'') and (pos('EQU',ln)<>0) then
-   begin
-    strupper(t);
-    {Vamos a incluir una constante en la lista de simbolos}
-    if findSymbolNodeWithId(lsimb,t)<>nil then
+    assign(textFile, sourceFilename);
+    {$I-} reset(textFile); {$I+}
+    if IOResult = 0 then
     begin
-     AuxByte:=ERR_WARN;
-     writeln('> ADVERTENCIA: Identificador duplicado de constante');
-    end else
-    begin
-     while not (ln[1] in ['@','#','$']) do
-      delete(ln,1,1);
-     addToSymbolList(lsimb,t,ToInt(ln));
+      fillchar(systemState, sizeof(TSystemState), 0);
+      symbolList := nil; 
+      lineNumber := 0;
+      errorCode := readHeader(textFile, symbolList, systemState);
+      if errorCode <> EErrorFatal then
+      begin
+        flag := true;
+        while not seekeof(textFile) do
+        begin
+          readln(textFile, line);
+          if line <> '' then
+            flag := compileInstruction(line, systemState, symbolList, lineNumber) and flag;
+        end;
+        flag := listAndCleanSymbols(symbolList) and flag;
+        saveState(systemState, binaryFilename);
+      end else begin
+        writeln('> ERROR: Code lacks the \\ASM signature');
+        flag := false;
+      end;
+      close(textFile);
+    end else begin
+      flag := false;
+      writeln('> ERROR: File "', sourceFilename, '" not found');
     end;
-   end;
+    build := flag;
   end;
-  readln(arch,cln);
-  if not seekeof(arch) then
-  begin
-   ln:=cln;
-   token(ln,t);
-  end else
-   AuxByte:=ERR_FATAL;
- end;
- if AuxByte<>ERR_FATAL then
- begin
-  {ahora procesamos la linea \\asm}
-  while (ln<>'') and not (ln[1] in ['0'..'9']) do
-   delete(ln,1,1);
-  with m do
-  begin
-   if ln='' then
-   begin
-    regs[6]:=200;
-    ss:=1800;
-   end else
-   begin
-    regs[6]:=dec2int(ln);
-    ss:=2000-regs[6];
-   end;
-  end;
- end;
- LeeCabeza:=AuxByte;
-end;
-
-{RECIBE  : lista de simbolos
- DEVUELVE: TRUE si no hubo simbolos indefinidos, FALSE en caso contrario}
-Function ListayLimpiaSimb(var lsimb:PTSimNodo):boolean;
-var
- sn:PTSimNodo; pn:PTPenNodo;
-begin
- writeln; writeln(' > Lista de s�mbolos:');
- ListayLimpiaSimb:=true;
- while lsimb<>nil do
- begin
-  if lsimb^.pend=nil then
-   writeln('   ',lsimb^.id,' = ',lsimb^.int)
-  else
-  begin
-   ListayLimpiaSimb:=false;
-   writeln(' > ERROR: S�mbolo "',lsimb^.id,'" no definido.');
-   while lsimb^.pend<>nil do
-   begin
-    pn:=lsimb^.pend^.sig;
-    dispose(lsimb^.pend);
-    lsimb^.pend:=pn;
-   end;
-  end;
-  sn:=lsimb^.sig;
-  dispose(lsimb);
-  lsimb:=sn;
- end;
-end;
-
-{RECIBE  : archivo de codigo fuente (sin), archivo de salida de objeto (sout)
- DEVUELVE: TRUE si no hubo errores en la compilacion, FALSE en caso contrario}
-Function Compilar(const sin,sout:string):boolean;
-Var
-  Mem   :TMem;   {memoria utilizada}
-  LSimb :PTSimNodo;
-  Arch  :Text;   {archivo asm}
-  lin   :string; {linea leida}
-  nrolin:word;   {nro de linea leida}
-  band :boolean;
-  res  :byte;
-Begin
-  assign(Arch,sin);            {Abro archivo}
-  {$I-} Reset(arch); {$I+}
-  if IOResult=0 then
-  begin
-   fillchar(mem,sizeof(mem),0); {inicializo memoria con 0}
-   lsimb:=nil; nrolin:=0;
-   res:=LeeCabeza(arch,lsimb,mem);
-   if res<>ERR_FATAL then {Solo continuamos si no hubo error al leer la cabeza}
-   begin
-    band:=true;
-    while not seekeof(arch) do
-    begin
-     readln(arch,lin);
-     if (lin<>'') then
-      band:=IntSent(lin,mem,lsimb,nrolin) and band;
-    end;
-    band:=ListayLimpiaSimb(lsimb) and band;
-    Guardamem(mem,sout);
-   end else
-   begin
-    writeln('> ERROR: El codigo no tiene la firma \\ASM');
-    band:=false;
-   end;
-   close(arch);
-  end else
-  begin
-   band:=false;
-   writeln('> ERROR: El archivo "',sin,'" no existe.');
-  end;
-  Compilar:=band;
-end;
 
 end.

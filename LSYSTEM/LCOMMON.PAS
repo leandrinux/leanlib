@@ -34,7 +34,7 @@ interface
       memory: array[TMemoryRange] of integer;
     end;
 
-    EError = (
+    EErrorCode = (
       EErrorNone,
       EErrorWarning,
       EErrorFatal
