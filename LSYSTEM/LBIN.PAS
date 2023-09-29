@@ -398,7 +398,7 @@ implementation
      with systemState, instruction do
      begin
        writeln('[', wordToHex(DS), ']  ', wordToHex(opcode), ' ',
-         wordToHex(param1),' ', wordToHex(param2), lineNumber:5, ':', lineNumber
+         wordToHex(param1),' ', wordToHex(param2), lineNumber:5, ':', line
        );
        memory[ds] := opcode;
        memory[ds+1] := param1;
