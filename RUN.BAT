@@ -9,6 +9,8 @@ if errorlevel 1 goto fail
 echo.
 config -set "cpu cycles=240"
 c:\bin\%2
+echo.
+pause
 goto end
 
 :fail
