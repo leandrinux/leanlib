@@ -34,6 +34,10 @@ fixed during execution.
 
 ## Instruction set
 
+The lsystem instruction set consists of 27 instructions divided 
+in 5 groups: jumps, math, binary algebra, stack operations and 
+extensions.
+
 ### Jumps
 
 |Instruction|Opcode|Args|Affects CC|Description|
@@ -64,8 +68,8 @@ fixed during execution.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
-|OR|0x32|2|Yes|$1 becomes $1 or $2|
 |AND|0x31|2|Yes|$1 becomes $1 and $2|
+|OR|0x32|2|Yes|$1 becomes $1 or $2|
 |NOT|0x33|1|Yes|$1 becomes not $1|
 |XOR|0x34|2|Yes|$1 becomes $1 xor $2|
 
