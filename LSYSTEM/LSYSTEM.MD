@@ -80,7 +80,7 @@ The first four bytes represent a signed 4 bit number in the range from -8 to 7. 
 
 ## Instruction set 
 
-The lsystem instruction set consists of 27 instructions divided 
+The lsystem instruction set consists of 28 instructions divided 
 in 5 groups: jumps, math, binary algebra, stack operations and 
 extensions.
 

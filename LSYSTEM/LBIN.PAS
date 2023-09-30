@@ -12,7 +12,10 @@ interface
     C_INVALID_OPCODE = $FF;    { invalid instruction code }
     C_INSTRUCTION_COUNT = 28;  { total number of supported instructions }
 
-  function getOpcode(const instruction: TString7): byte;
+  type
+    TInstructionId = string[6];
+
+  function getOpcode(const id: TInstructionId): byte;
   function build(const sourceFilename, binaryFilename: string): boolean;
 
 implementation
@@ -27,17 +30,6 @@ implementation
       EParameterTypeEmpty
     );
    
-    TTreeNode = record
-      left, right: byte;
-      id: TString7;
-      code: byte;
-    end;
-
-    TTree = record
-      root: byte;
-      nodes: array[1 .. C_INSTRUCTION_COUNT] of TTreeNode;
-    end;
-
     { Pending symbols list }
     PPendingSymbolNode = ^TPendingSymbolNode;
     TPendingSymbolNode = record
@@ -54,38 +46,43 @@ implementation
         next: PSymbolNode;
     end;
 
+    TInstructionPair = packed record
+      id: TInstructionId;
+      code: byte;      
+    end;
+
   const
-    { search binary tree balanced by identifier }   
-    C_INSTRUCTION_SET : TTree = (root:16; nodes:(
-      (left:00;  right:00;  id:'JP';      code:$26),
-      (left:27;  right:05;  id:'JE';      code:$22),
-      (left:18;  right:26;  id:'OR';      code:$32),
-      (left:00;  right:00;  id:'CMP';     code:$06),
-      (left:10;  right:13;  id:'JMP';     code:$21),
-      (left:08;  right:00;  id:'AND';     code:$31),
-      (left:04;  right:09;  id:'DIV';     code:$05),
-      (left:00;  right:00;  id:'ADD';     code:$02),
-      (left:00;  right:00;  id:'DUMP';    code:$13),
-      (left:12;  right:00;  id:'JL';      code:$24),
-      (left:00;  right:00;  id:'JN';      code:$27),
-      (left:00;  right:00;  id:'JG';      code:$23),
-      (left:11;  right:01;  id:'JNZ';     code:$28),
-      (left:15;  right:00;  id:'MOV';     code:$01),
-      (left:00;  right:00;  id:'LSHIFT';  code:$07),
-      (left:02;  right:25;  id:'JZ';      code:$25),
-      (left:14;  right:03;  id:'MUL';     code:$04),
-      (left:00;  right:00;  id:'NOT';     code:$33),
-      (left:28;  right:22;  id:'STOP';    code:$77),
-      (left:00;  right:00;  id:'RSHIFT';  code:$08),
-      (left:00;  right:00;  id:'READ';    code:$11),
-      (left:23;  right:24;  id:'WRITE';   code:$12),
-      (left:00;  right:00;  id:'SUB';     code:$03),
-      (left:00;  right:00;  id:'XOR';     code:$34),
-      (left:17;  right:19;  id:'PUSH';    code:$41),
-      (left:00;  right:00;  id:'POP';     code:$42),
-      (left:06;  right:07;  id:'CALL';    code:$43),
-      (left:21;  right:20;  id:'RET';     code:$44)
-    ));
+    { instruction set in ascending order by id }
+    C_INSTRUCTION_SET : array[0..C_INSTRUCTION_COUNT-1] of TInstructionPair = (
+      (id:'ADD';     code:$02),
+      (id:'AND';     code:$31),
+      (id:'CALL';    code:$43),
+      (id:'CMP';     code:$06),
+      (id:'DIV';     code:$05),
+      (id:'DUMP';    code:$13),
+      (id:'JE';      code:$22),
+      (id:'JG';      code:$23),
+      (id:'JL';      code:$24),
+      (id:'JMP';     code:$21),
+      (id:'JN';      code:$27),
+      (id:'JNZ';     code:$28),
+      (id:'JP';      code:$26),
+      (id:'JZ';      code:$25),
+      (id:'LSHIFT';  code:$07),
+      (id:'MOV';     code:$01),
+      (id:'MUL';     code:$04),
+      (id:'NOT';     code:$33),
+      (id:'OR';      code:$32),
+      (id:'POP';     code:$42),
+      (id:'PUSH';    code:$41),
+      (id:'READ';    code:$11),
+      (id:'RET';     code:$44),
+      (id:'RSHIFT';  code:$08),
+      (id:'STOP';    code:$77),
+      (id:'SUB';     code:$03),
+      (id:'WRITE';   code:$12),
+      (id:'XOR';     code:$34)
+    );
 
   {
     receives the list of symbols and a symbol identifier and returns pointer where a symbol is stored or nil if not found
@@ -136,23 +133,26 @@ implementation
   end;
 
   { gets a instruction identifier and returns the matching opcode }
-  function getOpcode(const instruction: TString7): byte;
+  function getOpcode(const id: TInstructionId): byte;
   var
-    b: byte;
+    min, max, i: byte;
+    current: TInstructionId;
   begin
-    with C_INSTRUCTION_SET do
+    min := 0;
+    max := C_INSTRUCTION_COUNT - 1;
+    i := (min + max) div 2;
+    current := C_INSTRUCTION_SET[i].id;
+    while (current <> id) and (min + 1 <> max) do
     begin
-      b := root;
-      while (b<>0) and (nodes[b].id <> instruction) do
-        if nodes[b].id < instruction then
-          b := nodes[b].right
-        else
-          b := nodes[b].left;
-      if b = 0 then
-        getOpcode := C_INVALID_OPCODE
-      else
-        getOpcode := nodes[b].code;
+      if current < id then min := i else max := i;
+      i := (min + max) div 2;
+      current := C_INSTRUCTION_SET[i].id;
     end;
+    if current = id then 
+      getOpcode := C_INSTRUCTION_SET[i].code 
+    else if C_INSTRUCTION_SET[max].id = id then
+      getOpcode := C_INSTRUCTION_SET[max].code 
+    else getOpcode := C_INVALID_OPCODE;
   end;
 
   { extracts a token from the input string, removing it and returning it as output }
