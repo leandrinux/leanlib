@@ -9,9 +9,7 @@ The lsystem architecture is 16-bit. All registers are 16-bit and the memory addr
 
 ## Virtual CPU Registers
 
-Registers have a parameter type of 1
-
-|Register|Value|Description|
+|Register|Code|Description|
 |--------|----|-----------|
 |SP|6|Stack pointer|
 |BP|7|Base pointer|
@@ -32,13 +30,63 @@ two meaningful bits: the zero bit and the sign bit.
 The DS and SS registers cannot be modified by code, they are
 fixed during execution.
 
-## Instruction set
+## Instructions
+
+A lsystem virtual CPU instruction is made of three components: an opcode and two arguments. Each component takes a 16-bit word, therefore the whole instruction is 6 bytes long. 
+
+     |--------------|--------------|--------------|
+     |    Opcode    |    Param0    |    Param1    |
+     |--------------|--------------|--------------|
+     0              16             32             48
+
+Instruction sizes are fixed, so instructions like `MOV` that take two arguments and others like `STOP` that take none require the same space in memory. Instructions are placed in the code segment, with starts at position 0 of the memory space. 
+
+The 16-bit opcode field is actually made of two parts: the first 8 bits which identify what operation must be performed by the CPU, and the final 8 bits which define the type of each parameter
+    
+    0                       7          12  13   14  15     
+    |------------------------|------------------------|
+    |        Opcode          |  N/A | Param0 | Param1 |
+    |------------------------|------------------------|
+
+    0 .. 7  : 8-bit operation code
+    8 .. 11 : Reserved / Not applicable
+    12 - 13 : Param0 type
+    14 - 15 : Param1 type
+
+The 2-bit parameter type values are defined as follows:
+
+|Type|Value|
+|-|-|
+|0|Inmediate / Literal|
+|1|Register|
+|2|Address|
+|3|Indirect|
+
+When a parameter is a literal, the full 16 bit of the parameter field represent the value. This means all literals must be defined in the 0 .. $FFFF range.
+
+When a parameter is a register, the value stored in the parameter field is a code representing that register. Check the registers table previously defined to see the codes for each register.
+
+When a parameter is an address, the full 16 bit value stored in the parameter field is the address. This means the VM can only access 65536 words, making the full theoretical memory size 128KB.
+
+When a parameter is indirect, the parameter value is made of two components as follows:
+
+     0   1   2   3   4   5   6   7
+    |--------------|--------------|
+    |  Constant    |   Register   |
+    |   offset     |     code     |
+    |--------------|--------------|
+
+The first four bytes represent a signed 4 bit number in the range from -8 to 7. The register code is the same value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
+
+## Instruction set 
 
 The lsystem instruction set consists of 27 instructions divided 
 in 5 groups: jumps, math, binary algebra, stack operations and 
 extensions.
 
 ### Jumps
+
+Jumps are instructions used to alter the flow of execution of the program. `JMP` is an unconditional jump, which means it will always change flow execution to the specified line. All other jumps are conditional and based on different criteria such as the sign bit, the zero bit or the result of a comparison with another value.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
@@ -53,6 +101,8 @@ extensions.
 
 ### Math
 
+The math group of instructions includes all from the basic 4 math operations to moving data and performing bit shifts, which essentially are the same as multiplying or dividing a value by 2.
+
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
 |MOV|0x01|2|No|Moves the value in $2 to $1|
@@ -66,6 +116,8 @@ extensions.
 
 ### Binary algebra
 
+The binary algebra group includes all binary-level operations.
+
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
 |AND|0x31|2|Yes|$1 becomes $1 and $2|
@@ -75,6 +127,8 @@ extensions.
 
 ### Stack operations
 
+The stack operations group allows for access to the stack, to add or remove values to it, and most importantly, enables the ability to call subroutines.
+
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
 |PUSH|0x41|1|No|Pushes a value to the stack|
@@ -83,6 +137,8 @@ extensions.
 |RET|0x44|0|No|Pops the address from the stack and resumes execution from there|
 
 ### Extensions
+
+The extensions group include operations that normally a real CPU would not have. They are convenience instructions to make it easier for programmers to enter or display data.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
@@ -155,6 +211,8 @@ There are several registers that you can use together with instructions. For a f
 Indirect values are memory references, but instead of defining them as fixed values, we can use the value stored in a register. This allows registers to function as pointers. For instance, `[AX]` represents the value stored in memory at the position pointed by the AX register. You can use any register except DS or SS.
 
 You can also add a constant that will be substracted or added to the memory location specified by that register. To do this just add it next to it. For instance `[AX]+2` is a memory reference that is 2 words ahead from the position specified by AX.
+
+Indirect values only work with registers. If you want to use the address located in a memory position you first need to load that memory position into a register, then use the register.
 
 ### Constants and labels
 
