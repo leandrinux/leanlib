@@ -393,7 +393,7 @@ implementation
            types[i] := 0;
          end
        end; { end of parameter for cycle }
-       instruction.opcode := opcode or (types[1] shl 2) or types[2];
+       instruction.opcode := (opcode shl 8) or (types[1] shl 2) or types[2];
      end;
      lineNumber := lineNumber + 1;
      with systemState, instruction do
@@ -401,7 +401,7 @@ implementation
        writeln('[', wordToHex(DS), ']  ', wordToHex(opcode), ' ',
          wordToHex(param1),' ', wordToHex(param2), lineNumber:5, ':', line
        );
-       memory[ds] := word(opcode) shl 8;
+       memory[ds] := opcode;
        memory[ds+1] := param1;
        memory[ds+2] := param2;
        ds := ds + 3;
