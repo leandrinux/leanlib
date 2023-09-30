@@ -94,19 +94,50 @@ var
 begin
   testString := 'LABEL: ' + #9 + ' MOV     AX  , $1';
   extractToken(testString, token);
-  test(token = 'LABEL', 'token must equal "LABEL"');
+  test(token = 'LABEL', 'extractToken must return "LABEL"');
   extractToken(testString, token);
-  test(token = 'MOV', 'token must equal "MOV"');
+  test(token = 'MOV', 'extractToken must return "MOV"');
   extractToken(testString, token);
-  test(token = 'AX', 'token must equal "AX"');
+  test(token = 'AX', 'extractToken must return "AX"');
   extractToken(testString, token);
-  test(token = '$1', 'token must equal "$1"');
+  test(token = '$1', 'extractToken must return "$1"');
+end;
+
+procedure testGetParameterType;
+const
+  C_REGISTERS: array [0..9] of string[2] = 
+    ( 'AX', 'BX', 'CX', 'DX', 'EX', 'FX', 'SP', 'BP', 'IP', 'CC');
+var
+  i: byte;
+begin
+  test(getParameterType('') = EParameterTypeEmpty, 'getParameterType "" must return empty');
+
+  test(getParameterType('#25') = EParameterTypeInmediate, 'getParameterType #25 must return literal');
+  test(getParameterType('@25') = EParameterTypeInmediate, 'getParameterType @25 must return literal');
+  test(getParameterType('$25') = EParameterTypeInmediate, 'getParameterType $25 must return literal');
+
+  test(getParameterType('0') = EParameterTypeAddress, 'getParameterType 0 must return address');
+  test(getParameterType('1233') = EParameterTypeAddress, 'getParameterType 1233 must return address');
+
+  for i := 0 to 9 do
+    test(getParameterType(C_REGISTERS[i]) = EParameterTypeRegister, 
+      'getParameterType ' + C_REGISTERS[i] + ' must return register'
+    );
+  test(getParameterType('AXA') = EParameterTypeSymbol, 'getParameterType AXA must return symbol');
+  test(getParameterType('SPX') = EParameterTypeSymbol, 'getParameterType SPX must return symbol');
+  test(getParameterType('IPT') = EParameterTypeSymbol, 'getParameterType IPT must return symbol');
+  test(getParameterType('DUCK') = EParameterTypeSymbol, 'getParameterType DUCK must return symbol');
+
+  test(getParameterType('[AX]') = EParameterTypeIndirect, 'getParameterType [AX] must return indirect');
+  test(getParameterType('[BP]+1') = EParameterTypeIndirect, 'getParameterType [BP]+1 must return indirect');
+  test(getParameterType('[BP]-3') = EParameterTypeIndirect, 'getParameterType [BP]-3 must return indirect');
 end;
 
 begin
   testOpcodes;
   testSymbolNodeList;
   testExtractToken;
+  testGetParameterType;
   writeln;
   writeln('TESTS SUCCEEDED');
 end.

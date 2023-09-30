@@ -20,7 +20,8 @@ interface
       EParameterTypeAddress,
       EParameterTypeRegister,
       EParameterTypeIndirect,
-      EParameterTypeEmpty
+      EParameterTypeEmpty,
+      EParameterTypeInvalid
     );
    
     { Pending symbols list }
@@ -67,6 +68,7 @@ interface
   function findSymbolNodeWithId(const symbolList: PSymbolNode; const id: TSymbolId): PSymbolNode;
   function getOpcode(const id: TInstructionId): byte;
   procedure extractToken(var input:string; var token:string);
+  function getParameterType(parameter: string): EParameterType;
   function build(const sourceFilename, binaryFilename: string): boolean;
 
 implementation
