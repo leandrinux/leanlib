@@ -20,7 +20,7 @@ interface
     TString7  = string[7];
     TString10 = string[10];
 
-    TMemoryRange = 0 .. C_DEFAULT_LSYSTEM_MEMORY_SIZE - 1;
+    TMemoryAddress = 0 .. C_DEFAULT_LSYSTEM_MEMORY_SIZE - 1;
 
     TInstruction = packed record
       opcode: integer;
@@ -30,8 +30,8 @@ interface
 
     TSystemState = record
       registers: array[6..15] of integer;
-      ss, ds: TMemoryRange;
-      memory: array[TMemoryRange] of integer;
+      ss, ds: TMemoryAddress;
+      memory: array[TMemoryAddress] of integer;
     end;
 
     EErrorCode = (

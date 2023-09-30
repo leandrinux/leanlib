@@ -1,7 +1,7 @@
 uses
   lcommon, lbin;
 
-procedure check(pass: boolean; title: string);
+procedure test(pass: boolean; title: string);
 begin
   if pass then
     writeln('[PASS] ', title)
@@ -13,7 +13,7 @@ begin
   end;
 end;
 
-procedure checkOpcodes;
+procedure testOpcodes;
 type
   TOpcodePair = packed record
     opcode: string[6];
@@ -57,13 +57,40 @@ begin
   while i < C_OPCODE_COUNT do
   begin
     with C_OPCODE_PAIRS[i] do
-      check(getOpcode(opcode) = value, 'getOpcode(' + opcode + ')');
+      test(getOpcode(opcode) = value, 'getOpcode(' + opcode + ')');
     inc(i);
   end;
+  test(getOpcode('AAA') = C_INVALID_OPCODE, 'getOpcode(AAA) must be invalid');
+  test(getOpcode('ZZZ') = C_INVALID_OPCODE, 'getOpcode(ZZZ) must be invalid');
 end;
 
+procedure testSymbolNodeList;
+var
+  symbolList, node: PSymbolNode;
 begin
-  checkOpcodes;
+  symbolList := nil;
+  addToSymbolList(symbolList, 'first', 20);
+  addToSymbolList(symbolList, 'second', 30);
+  addToSymbolList(symbolList, 'third', 40);
+  addToSymbolList(symbolList, 'fourth', 40);
+
+  test(findSymbolNodeWithId(symbolList, 'first') <> nil, 'findSymbolNodeWithId should find "first" ');
+  test(findSymbolNodeWithId(symbolList, 'second') <> nil, 'findSymbolNodeWithId should find "second" ');
+  test(findSymbolNodeWithId(symbolList, 'fourth') <> nil, 'findSymbolNodeWithId should find "fourth" ');
+  test(findSymbolNodeWithId(symbolList, 'duck') = nil, 'findSymbolNodeWithId should not find "duck" ');
+
+  { clean up }
+  while (symbolList <> nil) do 
+  begin
+    node := symbolList^.next;
+    dispose(symbolList);
+    symbolList := node;
+  end;
+end; 
+
+begin
+  testOpcodes;
+  testSymbolNodeList;
   writeln;
   writeln('TESTS SUCCEEDED');
 end.

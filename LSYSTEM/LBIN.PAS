@@ -13,14 +13,6 @@ interface
     C_INSTRUCTION_COUNT = 28;  { total number of supported instructions }
 
   type
-    TInstructionId = string[6];
-
-  function getOpcode(const id: TInstructionId): byte;
-  function build(const sourceFilename, binaryFilename: string): boolean;
-
-implementation
-
-  type
     EParameterType = (
       EParameterTypeInmediate,
       EParameterTypeSymbol,
@@ -33,18 +25,23 @@ implementation
     { Pending symbols list }
     PPendingSymbolNode = ^TPendingSymbolNode;
     TPendingSymbolNode = record
-        position: TMemoryRange;
+        position: TMemoryAddress;
         next: PPendingSymbolNode;
     end;
 
     { Symbols list }
+    TSymbolId = TString10;
+
     PSymbolNode = ^TSymbolNode;
+
     TSymbolNode = record
-        id: TString10;
+        id: TSymbolId;
         value: integer;
         pendingList: PPendingSymbolNode;
         next: PSymbolNode;
     end;
+
+    TInstructionId = string[6];
 
     TInstructionPair = packed record
       id: TInstructionId;
@@ -84,29 +81,36 @@ implementation
       (id:'XOR';     code:$34)
     );
 
+  function addToSymbolList(var list: PSymbolNode; const id: TSymbolId; value: integer): PSymbolNode;
+  function findSymbolNodeWithId(const symbolList: PSymbolNode; const id: TSymbolId): PSymbolNode;
+  function getOpcode(const id: TInstructionId): byte;
+  function build(const sourceFilename, binaryFilename: string): boolean;
+
+implementation
+
   {
     receives the list of symbols and a symbol identifier and returns pointer where a symbol is stored or nil if not found
   }
-  function findSymbolNodeWithId(const list: PSymbolNode; const nid: TString10): PSymbolNode;
+  function findSymbolNodeWithId(const symbolList: PSymbolNode; const id: TSymbolId): PSymbolNode;
   var
     node: PSymbolNode;
   begin
-    node := list;
+    node := symbolList;
     findSymbolNodeWithId := nil;
     if node <> nil then
     begin
-      while (node<>nil) and (node^.id < nid) do node := node^.next;
-      if (node<>nil) and (node^.id = nid) then findSymbolNodeWithId := node;
+      while (node<>nil) and (node^.id < id) do node := node^.next;
+      if (node<>nil) and (node^.id = id) then findSymbolNodeWithId := node;
     end;
   end;
 
   { adds an element to the symbols list }
-  function addToSymbolList(var list: PSymbolNode; const nid: TString10; value: integer): PSymbolNode;
+  function addToSymbolList(var list: PSymbolNode; const id: TSymbolId; value: integer): PSymbolNode;
   var 
     nnode, current, previous: PSymbolNode;
   begin
     new(nnode);
-    nnode^.id := nid; 
+    nnode^.id := id; 
     nnode^.value := value; 
     nnode^.pendingList := nil; 
     nnode^.next := nil; 
