@@ -11,6 +11,7 @@ interface
   const
     C_INVALID_OPCODE = $FF;    { invalid instruction code }
     C_INSTRUCTION_COUNT = 28;  { total number of supported instructions }
+    C_DELIMITERS: set of char = [' ', ',', ':', #9];
 
   type
     EParameterType = (
@@ -49,41 +50,23 @@ interface
     end;
 
   const
-    { instruction set in ascending order by id }
     C_INSTRUCTION_SET : array[0..C_INSTRUCTION_COUNT-1] of TInstructionPair = (
-      (id:'ADD';     code:$02),
-      (id:'AND';     code:$31),
-      (id:'CALL';    code:$43),
-      (id:'CMP';     code:$06),
-      (id:'DIV';     code:$05),
-      (id:'DUMP';    code:$13),
-      (id:'JE';      code:$22),
-      (id:'JG';      code:$23),
-      (id:'JL';      code:$24),
-      (id:'JMP';     code:$21),
-      (id:'JN';      code:$27),
-      (id:'JNZ';     code:$28),
-      (id:'JP';      code:$26),
-      (id:'JZ';      code:$25),
-      (id:'LSHIFT';  code:$07),
-      (id:'MOV';     code:$01),
-      (id:'MUL';     code:$04),
-      (id:'NOT';     code:$33),
-      (id:'OR';      code:$32),
-      (id:'POP';     code:$42),
-      (id:'PUSH';    code:$41),
-      (id:'READ';    code:$11),
-      (id:'RET';     code:$44),
-      (id:'RSHIFT';  code:$08),
-      (id:'STOP';    code:$77),
-      (id:'SUB';     code:$03),
-      (id:'WRITE';   code:$12),
+      (id:'ADD';     code:$02), (id:'AND';     code:$31), (id:'CALL';    code:$43),
+      (id:'CMP';     code:$06), (id:'DIV';     code:$05), (id:'DUMP';    code:$13),
+      (id:'JE';      code:$22), (id:'JG';      code:$23), (id:'JL';      code:$24),
+      (id:'JMP';     code:$21), (id:'JN';      code:$27), (id:'JNZ';     code:$28),
+      (id:'JP';      code:$26), (id:'JZ';      code:$25), (id:'LSHIFT';  code:$07),
+      (id:'MOV';     code:$01), (id:'MUL';     code:$04), (id:'NOT';     code:$33),
+      (id:'OR';      code:$32), (id:'POP';     code:$42), (id:'PUSH';    code:$41),
+      (id:'READ';    code:$11), (id:'RET';     code:$44), (id:'RSHIFT';  code:$08),
+      (id:'STOP';    code:$77), (id:'SUB';     code:$03), (id:'WRITE';   code:$12),
       (id:'XOR';     code:$34)
     );
 
   function addToSymbolList(var list: PSymbolNode; const id: TSymbolId; value: integer): PSymbolNode;
   function findSymbolNodeWithId(const symbolList: PSymbolNode; const id: TSymbolId): PSymbolNode;
   function getOpcode(const id: TInstructionId): byte;
+  procedure extractToken(var input:string; var token:string);
   function build(const sourceFilename, binaryFilename: string): boolean;
 
 implementation
@@ -161,8 +144,6 @@ implementation
 
   { extracts a token from the input string, removing it and returning it as output }
   procedure extractToken(var input:string; var token:string);
-  const
-    C_DELIMITERS: set of char = [' ', ',', ':', #9];
   var
     i, l: byte;
   begin

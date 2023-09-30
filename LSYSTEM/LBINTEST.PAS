@@ -72,11 +72,11 @@ begin
   addToSymbolList(symbolList, 'first', 20);
   addToSymbolList(symbolList, 'second', 30);
   addToSymbolList(symbolList, 'third', 40);
-  addToSymbolList(symbolList, 'fourth', 40);
+  addToSymbolList(symbolList, 'fourth', 50);
 
-  test(findSymbolNodeWithId(symbolList, 'first') <> nil, 'findSymbolNodeWithId should find "first" ');
-  test(findSymbolNodeWithId(symbolList, 'second') <> nil, 'findSymbolNodeWithId should find "second" ');
-  test(findSymbolNodeWithId(symbolList, 'fourth') <> nil, 'findSymbolNodeWithId should find "fourth" ');
+  test(findSymbolNodeWithId(symbolList, 'first')^.id = 'first', 'findSymbolNodeWithId should find "first" ');
+  test(findSymbolNodeWithId(symbolList, 'second')^.id = 'second', 'findSymbolNodeWithId should find "second" ');
+  test(findSymbolNodeWithId(symbolList, 'fourth')^.id = 'fourth', 'findSymbolNodeWithId should find "fourth" ');
   test(findSymbolNodeWithId(symbolList, 'duck') = nil, 'findSymbolNodeWithId should not find "duck" ');
 
   { clean up }
@@ -88,9 +88,25 @@ begin
   end;
 end; 
 
+procedure testExtractToken;
+var
+  testString, token: string;  
+begin
+  testString := 'LABEL: ' + #9 + ' MOV     AX  , $1';
+  extractToken(testString, token);
+  test(token = 'LABEL', 'token must equal "LABEL"');
+  extractToken(testString, token);
+  test(token = 'MOV', 'token must equal "MOV"');
+  extractToken(testString, token);
+  test(token = 'AX', 'token must equal "AX"');
+  extractToken(testString, token);
+  test(token = '$1', 'token must equal "$1"');
+end;
+
 begin
   testOpcodes;
   testSymbolNodeList;
+  testExtractToken;
   writeln;
   writeln('TESTS SUCCEEDED');
 end.
