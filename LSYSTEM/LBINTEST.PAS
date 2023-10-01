@@ -4,8 +4,9 @@ uses
 procedure test(pass: boolean; title: string);
 begin
   if pass then
-    writeln('[PASS] ', title)
-  else begin
+  begin
+    writeln('[PASS] ', title);
+  end else begin
     writeln('[FAIL] ', title);
     writeln;
     writeln('TESTS FAILED');
@@ -174,6 +175,42 @@ begin
   test((memAvail - memBefore) = 0, 'clearPendingList tests must not lose memory');
 end;
 
+procedure testCompileInstruction(
+  line: string;
+  opcode: byte;
+  paramType0: byte;
+  paramType1: byte;
+  param0: word;
+  param1: word
+);
+var
+  systemState: TSystemState;
+  symbolList: PSymbolNode;
+  lineNumber: word;
+begin
+  fillChar(systemState, sizeOf(TSystemState), 0);
+  symbolList := nil;
+  lineNumber := 0;
+  test(compileInstruction(line, systemState, symbolList, lineNumber), 'compileInstruction must return true');
+  test((systemState.memory[0] shr 8) = opcode, 'compileInstruction opcode must be correct');
+  test(((systemState.memory[0] and $000C) shr 2) = paramType0, 'compileInstruction opcode first param type must be correct');
+  test((systemState.memory[0] and $0003) = paramType1, 'compileInstruction opcode second param type must be correct');
+  test(systemState.memory[1] = param0, 'compileInstruction opcode first param must be correct');
+  test(systemState.memory[2] = param1, 'compileInstruction opcode second param must be correct');
+end;
+
+procedure testInstructions;
+var
+  memBefore: longint;
+begin
+  memBefore := memAvail;
+  testCompileInstruction('mov ax, 128', $01, 1, 2, 10, 128);
+  testCompileInstruction('and fx, $FA', $31, 1, 0, 15, $FA);
+  testCompileInstruction('cmp 120, [bp]+3', $06, 2, 3, 120, $37);
+  testCompileInstruction('stop', $77, 0, 0, 0, 0);
+  test((memAvail - memBefore) = 0, 'compileInstruction tests must not lose memory'); 
+end;
+
 begin
   testOpcodes;
   testSymbolNodeList;
@@ -181,6 +218,7 @@ begin
   testGetParameterType;
   testAddPendingValue;
   testClearPendingList;
+  testInstructions;
   writeln;
   writeln('TESTS SUCCEEDED');
 end.

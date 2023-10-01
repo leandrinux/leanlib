@@ -71,6 +71,12 @@ interface
   function getParameterType(parameter: string): EParameterType;
   procedure addPendingValue(var pendingList: PPendingSymbolNode; value: integer);
   procedure clearPendingList(var symbolNode: PSymbolNode; var systemState: TSystemState);
+  function compileInstruction( 
+    const line: string; 
+    var systemState: TSystemState;
+    var symbolList: PSymbolNode; 
+    var lineNumber: word
+  ): boolean;
   function build(const sourceFilename, binaryFilename: string): boolean;
 
 implementation
