@@ -12,7 +12,8 @@ interface
 
   const
     C_SYSTEM_VERSION = '0.0.1';
-    C_DEFAULT_LSYSTEM_MEMORY_SIZE = 2000;
+    C_DEFAULT_MEMORY_SIZE = 2000;
+    C_DEFAULT_STACK_SIZE = 200;
 
   type
     TString4  = string[4];
@@ -20,7 +21,7 @@ interface
     TString7  = string[7];
     TString10 = string[10];
 
-    TMemoryAddress = 0 .. C_DEFAULT_LSYSTEM_MEMORY_SIZE - 1;
+    TMemoryAddress = 0 .. C_DEFAULT_MEMORY_SIZE - 1;
 
     TInstruction = packed record
       opcode: integer;

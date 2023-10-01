@@ -452,12 +452,11 @@ implementation
       begin
         if line = '' then
         begin
-          registers[6] := 200;
-          ss := 1800;
+          registers[6] := C_DEFAULT_STACK_SIZE { move SP to memory position 200 (default) };
         end else begin
           registers[6] := decToInt(line);
-          ss := 2000 - registers[6];
         end;
+        ss := C_DEFAULT_MEMORY_SIZE - registers[6];
       end;
     end;
     readHeader := errorCode;
