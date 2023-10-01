@@ -69,6 +69,8 @@ interface
   function getOpcode(const id: TInstructionId): byte;
   procedure extractToken(var input:string; var token:string);
   function getParameterType(parameter: string): EParameterType;
+  procedure addPendingValue(var pendingList: PPendingSymbolNode; value: integer);
+  procedure clearPendingList(var symbolNode: PSymbolNode; var systemState: TSystemState);
   function build(const sourceFilename, binaryFilename: string): boolean;
 
 implementation

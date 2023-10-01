@@ -74,10 +74,10 @@ begin
   addToSymbolList(symbolList, 'third', 40);
   addToSymbolList(symbolList, 'fourth', 50);
 
-  test(findSymbolNodeWithId(symbolList, 'first')^.id = 'first', 'findSymbolNodeWithId should find "first" ');
-  test(findSymbolNodeWithId(symbolList, 'second')^.id = 'second', 'findSymbolNodeWithId should find "second" ');
-  test(findSymbolNodeWithId(symbolList, 'fourth')^.id = 'fourth', 'findSymbolNodeWithId should find "fourth" ');
-  test(findSymbolNodeWithId(symbolList, 'duck') = nil, 'findSymbolNodeWithId should not find "duck" ');
+  test(findSymbolNodeWithId(symbolList, 'first')^.id = 'first', 'findSymbolNodeWithId must find "first" ');
+  test(findSymbolNodeWithId(symbolList, 'second')^.id = 'second', 'findSymbolNodeWithId must find "second" ');
+  test(findSymbolNodeWithId(symbolList, 'fourth')^.id = 'fourth', 'findSymbolNodeWithId must find "fourth" ');
+  test(findSymbolNodeWithId(symbolList, 'duck') = nil, 'findSymbolNodeWithId must not find "duck" ');
 
   { clean up }
   while (symbolList <> nil) do 
@@ -133,11 +133,54 @@ begin
   test(getParameterType('[BP]-3') = EParameterTypeIndirect, 'getParameterType [BP]-3 must return indirect');
 end;
 
+procedure testAddPendingValue;
+var
+  list, node: PPendingSymbolNode;
+  memBefore: longint;
+begin
+  memBefore := memAvail;
+  list := nil;
+  addPendingValue(list, 32767);
+  test(list^.position = 32767, 'addPendingValue must add 32767 to the list');
+  addPendingValue(list, -32768);
+  test(list^.position = -32768, 'addPendingValue must add -32768 to the list');
+  { clean up list }
+  while list <> nil do
+  begin
+    node := list^.next;
+    dispose(list);
+    list := node;
+  end;  
+  test((memAvail - memBefore) = 0, 'addPendingValue tests must not lose memory');
+end;
+
+procedure testClearPendingList;
+var
+  symbolList: PSymbolNode;
+  systemState: TSystemState;
+  memBefore: longint;
+begin
+  memBefore := memAvail;
+  symbolList := nil;
+  addToSymbolList(symbolList, 'symbol', 12345);
+  addPendingValue(symbolList^.pendingList, 10);
+  addPendingValue(symbolList^.pendingList, 15);
+  fillChar(systemState, sizeOf(TSystemState), 0);
+  clearPendingList(symbolList, systemState);
+  test(symbolList^.pendingList = nil, 'clearPendingList must leave an empty pending list');
+  test(systemState.memory[10] = 12345, 'clearPendingList must write 12345 to address 10');
+  test(systemState.memory[15] = 12345, 'clearPendingList must write 12345 to address 15');
+  dispose(symbolList);
+  test((memAvail - memBefore) = 0, 'clearPendingList tests must not lose memory');
+end;
+
 begin
   testOpcodes;
   testSymbolNodeList;
   testExtractToken;
   testGetParameterType;
+  testAddPendingValue;
+  testClearPendingList;
   writeln;
   writeln('TESTS SUCCEEDED');
 end.
