@@ -32,16 +32,16 @@ fixed during execution.
 
 ## Instructions
 
-A lsystem virtual CPU instruction is made of three components: an opcode and two arguments. Each component takes a 16-bit word, therefore the whole instruction is 6 bytes long. 
+A lsystem virtual CPU instruction is made of three components: a header and two arguments. Each component takes a 16-bit word, therefore the whole instruction is 6 bytes long. 
 
      |--------------|--------------|--------------|
-     |    Opcode    |    Param0    |    Param1    |
+     |    Header    |    Param0    |    Param1    |
      |--------------|--------------|--------------|
      0              16             32             48
 
 Instruction sizes are fixed, so instructions like `MOV` that take two arguments and others like `STOP` that take none require the same space in memory. Instructions are placed in the code segment, with starts at position 0 of the memory space. 
 
-The 16-bit opcode field is actually made of two parts: the first 8 bits which identify what operation must be performed by the CPU, and the final 8 bits which define the type of each parameter
+The 16-bit header field is made of two parts: the first 8 bits which contains the opcode of the instruction that must be performed by the CPU, and the final 8 bits which contain extra information such as the type of each parameter.
     
     0                       7          12  13   14  15     
     |------------------------|------------------------|
