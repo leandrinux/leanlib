@@ -9,8 +9,6 @@ interface
   {$P+} { enables compatibility between strings of different type }
 
   const
-    C_INVALID_OPCODE = $FF;    { invalid instruction code }
-    C_INSTRUCTION_COUNT = 28;  { total number of supported instructions }
     C_DELIMITERS: set of char = [' ', ',', ':', #9];
 
   type

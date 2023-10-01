@@ -1,6 +1,8 @@
 uses
   lcommon,
-  lbin;
+  lbin,
+  lset,
+  lruntime;
   
 begin
 end.

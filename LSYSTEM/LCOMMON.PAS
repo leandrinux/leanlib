@@ -14,6 +14,8 @@ interface
     C_SYSTEM_VERSION = '0.0.1';
     C_DEFAULT_MEMORY_SIZE = 2000;
     C_DEFAULT_STACK_SIZE = 200;
+    C_INVALID_OPCODE = $FF;    { invalid instruction code }
+    C_INSTRUCTION_COUNT = 28;  { total number of supported instructions }
 
   type
     TString4  = string[4];
@@ -29,6 +31,7 @@ interface
       param2: integer;
     end;
 
+    PSystemState = ^TSystemState;
     TSystemState = record
       registers: array[6..15] of integer;
       ss, ds: TMemoryAddress;
