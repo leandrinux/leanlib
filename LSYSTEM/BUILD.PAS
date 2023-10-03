@@ -2,7 +2,7 @@ uses
   lcommon,
   lbin,
   lset,
-  lruntime;
+  lrtlib;
   
 begin
 end.
