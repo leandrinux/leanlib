@@ -160,6 +160,509 @@ implementation
       end;
   end;
 
+ procedure doJZ(var data: TOperationData);
+ begin
+  with data, systemState^ do
+   if (registers[9] and 1) = 1 then
+    case type0 of
+     C_PARAMETER_TYPE_REGISTER: registers[8]:=3*(registers[arg0]-1);
+     C_PARAMETER_TYPE_ADDRESS: registers[8]:=3*(memory[arg0]-1);
+     C_PARAMETER_TYPE_LITERAL: registers[8]:=3*(arg0-1);
+    end
+   else
+    registers[8]:=registers[8]+3;
+ end;
+
+ procedure doJP(var data: TOperationData);
+ begin
+  with data, systemState^ do
+   if registers[9] and 2=0 then
+    case type0 of
+     C_PARAMETER_TYPE_REGISTER: registers[8]:=3*(registers[arg0]-1);
+     C_PARAMETER_TYPE_ADDRESS: registers[8]:=3*(memory[arg0]-1);
+     C_PARAMETER_TYPE_LITERAL: registers[8]:=3*(arg0-1);
+    end
+   else
+    registers[8]:=registers[8]+3;
+ end;
+
+ procedure doJN(var data: TOperationData);
+ begin
+  with data, systemState^ do
+   if registers[9] and 2=2 then
+    case type0 of
+     C_PARAMETER_TYPE_REGISTER: registers[8]:=3*(registers[arg0]-1);
+     C_PARAMETER_TYPE_ADDRESS: registers[8]:=3*(memory[arg0]-1);
+     C_PARAMETER_TYPE_LITERAL: registers[8]:=3*(arg0-1);
+    end
+   else
+    registers[8]:=registers[8]+3;
+ end;
+
+ procedure doOR(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+    case type0 of
+    C_PARAMETER_TYPE_REGISTER: begin
+           case type1 of
+            C_PARAMETER_TYPE_LITERAL: registers[arg0]:=registers[arg0] or arg1;
+            C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg0] or registers[arg1];
+            C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=registers[arg0] or memory[arg1];
+           end;
+           registers[9]:=getConditionCodes(registers[arg0]);
+          end;
+    C_PARAMETER_TYPE_ADDRESS, C_PARAMETER_TYPE_LITERAL : begin
+                  if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                  case type1 of
+                   C_PARAMETER_TYPE_LITERAL: memory[arg0]:=memory[arg0] or arg1;
+                   C_PARAMETER_TYPE_REGISTER: memory[arg0]:=memory[arg0] or registers[arg1];
+                   C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg0] or memory[arg1];
+                  end;
+                  registers[9]:=getConditionCodes(memory[arg0]);
+                 end;
+    end;
+    registers[8]:=registers[8]+3;  {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doMOV(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+    case type0 of
+    C_PARAMETER_TYPE_REGISTER: case type1 of
+           C_PARAMETER_TYPE_LITERAL: registers[arg0]:=arg1;
+           C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg1];
+           C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=memory[arg1];
+          end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS: begin
+                 if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                 case type1 of
+                  C_PARAMETER_TYPE_LITERAL: memory[arg0]:=arg1;
+                  C_PARAMETER_TYPE_REGISTER: memory[arg0]:=registers[arg1];
+                  C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg1];
+                 end;
+                end;
+    end;
+   registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+   end;
+ end;
+
+ procedure doADD(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+    case type0 of
+    C_PARAMETER_TYPE_REGISTER:begin
+          case type1 of
+           C_PARAMETER_TYPE_LITERAL: registers[arg0]:=registers[arg0]+arg1;
+           C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg0]+registers[arg1];
+           C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=registers[arg0]+memory[arg1];
+          end;
+          registers[9]:=getConditionCodes(registers[arg0]);
+         end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS: begin
+                 if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                 case type1 of
+                  C_PARAMETER_TYPE_LITERAL: memory[arg0]:=memory[arg0]+arg1;
+                  C_PARAMETER_TYPE_REGISTER: memory[arg0]:=memory[arg0]+registers[arg1];
+                  C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg0]+memory[arg1];
+                 end;
+                 registers[9]:=getConditionCodes(memory[arg0]);
+                end;
+    end;
+    registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+   end;
+ end;
+
+ procedure doSUB(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+    case type0 of
+    C_PARAMETER_TYPE_REGISTER:begin
+          case type1 of
+           C_PARAMETER_TYPE_LITERAL: registers[arg0]:=registers[arg0]-arg1;
+           C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg0]-registers[arg1];
+           C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=registers[arg0]-memory[arg1];
+          end;
+          registers[9]:=getConditionCodes(registers[arg0]);
+         end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS:begin
+                if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                case type1 of
+                 C_PARAMETER_TYPE_LITERAL: memory[arg0]:=memory[arg0]-arg1;
+                 C_PARAMETER_TYPE_REGISTER: memory[arg0]:=memory[arg0]-registers[arg1];
+                 C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg0]-memory[arg1];
+                end;
+                registers[9]:=getConditionCodes(memory[arg0]);
+               end;
+    end;
+    registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+   end;
+ end;
+
+ procedure doMUL(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER:begin
+          case type1 of
+           C_PARAMETER_TYPE_LITERAL: registers[arg0]:=registers[arg0]*arg1;
+           C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg0]*registers[arg1];
+           C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=registers[arg0]*memory[arg1];
+          end;
+          registers[9]:=getConditionCodes(registers[arg0]);
+         end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS: begin
+                 if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                 case type1 of
+                  C_PARAMETER_TYPE_LITERAL: memory[arg0]:=memory[arg0]*arg1;
+                  C_PARAMETER_TYPE_REGISTER: memory[arg0]:=memory[arg0]*registers[arg1];
+                  C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg0]*memory[arg1];
+                 end;
+                 registers[9]:=getConditionCodes(memory[arg0]);
+                end;
+   end;
+  registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doDIV(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER:begin
+          case type1 of
+           C_PARAMETER_TYPE_LITERAL: registers[arg0]:=registers[arg0] div arg1;
+           C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg0] div registers[arg1];
+           C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=registers[arg0] div memory[arg1];
+          end;
+          memory[8]:=getConditionCodes(registers[arg0]);
+         end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS: begin
+                 if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                 case type1 of
+                  C_PARAMETER_TYPE_LITERAL: memory[arg0]:=memory[arg0] div arg1;
+                  C_PARAMETER_TYPE_REGISTER: memory[arg0]:=memory[arg0] div registers[arg1];
+                  C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg0] div memory[arg1];
+                 end;
+                 memory[8]:=getConditionCodes(memory[arg0]);
+                end;
+   end;
+  registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doCMP(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER: case type1 of
+           C_PARAMETER_TYPE_LITERAL: registers[9]:=getConditionCodes(registers[arg0]-arg1);
+           C_PARAMETER_TYPE_REGISTER: registers[9]:=getConditionCodes(registers[arg0]-registers[arg1]);
+           C_PARAMETER_TYPE_ADDRESS: registers[9]:=getConditionCodes(registers[arg0]-memory[arg1]);
+          end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS: begin
+                 if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                 case type1 of
+                  C_PARAMETER_TYPE_LITERAL: registers[9]:=getConditionCodes(memory[arg0]-arg1);
+                  C_PARAMETER_TYPE_REGISTER: registers[9]:=getConditionCodes(memory[arg0]-registers[arg1]);
+                  C_PARAMETER_TYPE_ADDRESS: registers[9]:=getConditionCodes(memory[arg0]-memory[arg1]);
+                 end;
+                end;
+   end;
+  registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doJMP(var data: TOperationData);
+ begin
+  with data, systemState^ do
+   case type0 of
+    C_PARAMETER_TYPE_LITERAL: registers[8]:=3*(arg0-1);
+    C_PARAMETER_TYPE_REGISTER: registers[8]:=3*(registers[arg0]-1);
+    C_PARAMETER_TYPE_ADDRESS: registers[8]:=3*(memory[arg0]-1);
+   end;
+ end;
+
+ procedure doJNZ(var data: TOperationData);
+ begin
+  with data, systemState^ do
+   if registers[9] and 1=0 then
+    case type0 of
+     C_PARAMETER_TYPE_LITERAL: registers[8]:=3*(arg0-1);
+     C_PARAMETER_TYPE_REGISTER: registers[8]:=3*(registers[arg0]-1);
+     C_PARAMETER_TYPE_ADDRESS: registers[8]:=3*(memory[arg0]-1);
+    end
+   else
+     registers[8]:=registers[8]+3;
+ end;
+
+ procedure doAND(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER: begin
+           case type1 of
+            C_PARAMETER_TYPE_LITERAL: registers[arg0]:=registers[arg0] and arg1;
+            C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg0] and registers[arg1];
+            C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=registers[arg0] and memory[arg1];
+           end;
+           registers[9]:=getConditionCodes(registers[arg0]);
+          end;
+    C_PARAMETER_TYPE_ADDRESS, C_PARAMETER_TYPE_LITERAL : begin
+                  if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                  case type1 of
+                   C_PARAMETER_TYPE_LITERAL: memory[arg0]:=memory[arg0] and arg1;
+                   C_PARAMETER_TYPE_REGISTER: memory[arg0]:=memory[arg0] and registers[arg1];
+                   C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg0] and memory[arg1];
+                  end;
+                  registers[9]:=getConditionCodes(memory[arg0]);
+                 end;
+   end;
+  registers[8]:=registers[8]+3;  {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doNOT(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER:begin
+          registers[arg0]:=not registers[arg0];
+          registers[9]:=getConditionCodes(registers[arg0]);
+         end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS: begin
+                 if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                 memory[arg0]:=not memory[arg0];
+                 registers[9]:=getConditionCodes(memory[arg0]);
+                end;
+   end;
+  registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doXOR(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER: begin
+           case type1 of
+            C_PARAMETER_TYPE_LITERAL: registers[arg0]:=registers[arg0] xor arg1;
+            C_PARAMETER_TYPE_REGISTER: registers[arg0]:=registers[arg0] xor registers[arg1];
+            C_PARAMETER_TYPE_ADDRESS: registers[arg0]:=registers[arg0] xor memory[arg1];
+           end;
+           registers[9]:=getConditionCodes(registers[arg0]);
+          end;
+    C_PARAMETER_TYPE_ADDRESS, C_PARAMETER_TYPE_LITERAL : begin
+                  if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                  case type1 of
+                   C_PARAMETER_TYPE_LITERAL: memory[arg0]:=memory[arg0] xor arg1;
+                   C_PARAMETER_TYPE_REGISTER: memory[arg0]:=memory[arg0] xor registers[arg1];
+                   C_PARAMETER_TYPE_ADDRESS: memory[arg0]:=memory[arg0] xor memory[arg1];
+                  end;
+                  registers[9]:=getConditionCodes(memory[arg0]);
+                 end;
+   end;
+  registers[8]:=registers[8]+3;  {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doSTOP(var data: TOperationData);
+ begin
+  with data.systemState^ do registers[8] := ds;
+ end;
+
+ procedure doREAD(var data: TOperationData);
+ var
+  a,b,i:word;
+ begin
+  a:=0; b:=0;
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_LITERAL     :a:=arg0+ds;
+    C_PARAMETER_TYPE_ADDRESS     :a:=arg0;
+    C_PARAMETER_TYPE_REGISTER     :a:=registers[arg0]+ds;
+   end;
+   case type1 of
+    C_PARAMETER_TYPE_LITERAL     :b:=arg1+ds;
+    C_PARAMETER_TYPE_ADDRESS     :b:=arg1;
+    C_PARAMETER_TYPE_REGISTER     :b:=registers[arg1]+ds;
+   end;
+   for i:=a to b do
+   begin
+    write('[');
+    writeDecAddress(i-ds);
+    write('] ?');
+    readln(memory[i]);
+   end;
+   registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doWRITE(var data: TOperationData);
+ var
+  a,b,i:word;
+ begin
+  a:=0; b:=0;
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_LITERAL     :a:=arg0+ds;
+    C_PARAMETER_TYPE_ADDRESS     :a:=arg0;
+    C_PARAMETER_TYPE_REGISTER     :a:=registers[arg0]+ds;
+   end;
+   case type1 of
+    C_PARAMETER_TYPE_LITERAL     :b:=arg1+ds;
+    C_PARAMETER_TYPE_ADDRESS     :b:=arg1;
+    C_PARAMETER_TYPE_REGISTER     :b:=registers[arg1]+ds;
+   end;
+   for i:=a to b do
+   begin
+    write ('[');
+    writeDecAddress(i-ds);
+    writeln('] ', memory[i], #9, wordTohex(memory[i]));
+   end;
+   registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doDUMP(var data: TOperationData);
+ var
+  i:byte;
+ begin
+  with data, systemState^ do
+  begin
+   writeln('[IP]   ', registers[8], #9, wordToHex(registers[8]));
+   writeln('[CC]   ', registers[9], #9, wordTohex(registers[9]));
+   for i:=$A to $F do
+     writeln('[', chr(55+i), 'X]   ', registers[i], #9, wordTohex(registers[i]));
+   dowrite(data);
+  end;
+ end;
+
+ procedure doLSHIFT(var data: TOperationData);
+ var a:integer;
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER:begin
+          case type1 of
+           C_PARAMETER_TYPE_LITERAL: for a:=1 to arg1 do registers[arg0]:=registers[arg0] shl 1;
+           C_PARAMETER_TYPE_REGISTER: for a:=1 to registers[arg1] do registers[arg0]:=registers[arg0] shl 1;
+           C_PARAMETER_TYPE_ADDRESS: for a:=1 to memory[arg1] do registers[arg0]:=registers[arg0] shl 1;
+          end;
+          registers[9]:=getConditionCodes(registers[arg0]);
+         end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS:begin
+                if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                case type1 of
+                 C_PARAMETER_TYPE_LITERAL: for a:=1 to arg1 do memory[arg0]:=memory[arg0] shl 1;
+                 C_PARAMETER_TYPE_REGISTER: for a:=1 to registers[arg1] do memory[arg0]:=memory[arg0] shl 1;
+                 C_PARAMETER_TYPE_ADDRESS: for a:=1 to memory[arg1] do memory[arg0]:=memory[arg0] shl 1;
+                end;
+                registers[9]:=getConditionCodes(memory[arg0]);
+               end;
+   end;
+  registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doRSHIFT(var data: TOperationData);
+ var a:integer;
+ begin
+  with data, systemState^ do
+  begin
+   case type0 of
+    C_PARAMETER_TYPE_REGISTER:begin
+          case type1 of
+           C_PARAMETER_TYPE_LITERAL: for a:=1 to arg1 do registers[arg0]:=registers[arg0] shr 1;
+           C_PARAMETER_TYPE_REGISTER: for a:=1 to registers[arg1] do registers[arg0]:=registers[arg0] shr 1;
+           C_PARAMETER_TYPE_ADDRESS: for a:=1 to memory[arg1] do registers[arg0]:=registers[arg0] shr 1;
+          end;
+          registers[9]:=getConditionCodes(registers[arg0]);
+         end;
+    C_PARAMETER_TYPE_LITERAL, C_PARAMETER_TYPE_ADDRESS:begin
+                if type0=C_PARAMETER_TYPE_LITERAL then arg0:=ds+arg0; {inmediato como direccion}
+                case type1 of
+                 C_PARAMETER_TYPE_LITERAL: for a:=1 to arg1 do memory[arg0]:=memory[arg0] shr 1;
+                 C_PARAMETER_TYPE_REGISTER: for a:=1 to registers[arg1] do memory[arg0]:=memory[arg0] shr 1;
+                 C_PARAMETER_TYPE_ADDRESS: for a:=1 to memory[arg1] do memory[arg0]:=memory[arg0] shr 1;
+                end;
+                registers[9]:=getConditionCodes(memory[arg0]);
+               end;
+   end;
+  registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+  end;
+ end;
+
+ procedure doPUSH(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   dec(registers[6]);
+   if registers[6]<0 then
+   begin
+    writeln(' > ERROR!: Desbordamiento de pila.');
+    registers[8]:=ds; {detengo la ejecuci�n}
+   end else
+   begin
+    case type0 of
+     C_PARAMETER_TYPE_LITERAL:memory[ss+registers[6]]:=arg0;
+     C_PARAMETER_TYPE_REGISTER:memory[ss+registers[6]]:=registers[arg0];
+     C_PARAMETER_TYPE_ADDRESS:memory[ss+registers[6]]:=memory[arg0];
+    end;
+    registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+   end;
+  end;
+ end;
+
+ procedure doPOP(var data: TOperationData);
+ begin
+  with data, systemState^ do
+  begin
+   if registers[6]=2000-SS then
+   begin
+    writeln(' > ERROR!: Pila vacia.');
+    registers[8]:=ds; {detengo la ejecuci�n}
+   end else
+   begin
+    case type0 of
+     C_PARAMETER_TYPE_LITERAL:memory[ds+arg0]:=memory[ss+registers[6]]; {considerado como direccion}
+     C_PARAMETER_TYPE_REGISTER:registers[arg0]:=memory[ss+registers[6]];
+     C_PARAMETER_TYPE_ADDRESS:memory[arg0]:=memory[ss+registers[6]];
+    end;
+    inc(registers[6]);
+    registers[8]:=registers[8]+3;     {incremento el instruction pointer}
+   end;
+  end;
+ end;
+
+ procedure doCALL(var data: TOperationData);
+ begin
+(*
+  doPUSH(registers[8]+3,0,C_PARAMETER_TYPE_LITERAL,0,m,scr);
+  doJMP(arg0,arg1,type0,type1,m,scr);
+*)
+ end;
+
+ procedure doRET(var data: TOperationData);
+ begin
+(*
+  doPOP(8,0,C_PARAMETER_TYPE_REGISTER,0,m,scr);
+  registers[8]:=registers[8]-3; {correcci�n del IP debido a POP}
+*)
+ end;
 
   function getOperation(opcode: byte): pointer;
   var
