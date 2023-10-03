@@ -286,9 +286,9 @@ implementation
        begin
 
          if i = 1 then 
-           parameterValue := @instruction.param1
+           parameterValue := @instruction.param0
          else
-           parameterValue := @instruction.param2;
+           parameterValue := @instruction.param1;
 
          extractToken(lineCopy, parameters[i]);
          if parameters[i] <> '' then
@@ -298,13 +298,13 @@ implementation
 
              EParameterTypeInmediate:
              begin
-               types[i] := 0;
+               types[i] := C_PARAMETER_TYPE_LITERAL;
                parameterValue^ := strToInt(aux);
              end;
       
              EParameterTypeSymbol:
              begin
-               types[i] := 0;
+               types[i] := C_PARAMETER_TYPE_LITERAL;
                node := findSymbolNodeWithId(symbolList, aux);
                if node = nil then
                begin
@@ -323,13 +323,13 @@ implementation
 
              EParameterTypeAddress: 
              begin
-               types[i] := 2;
+               types[i] := C_PARAMETER_TYPE_ADDRESS;
                parameterValue^ := decToInt(aux);
              end;
              
              EParameterTypeRegister: 
              begin
-               types[i] := 1;
+               types[i] := C_PARAMETER_TYPE_REGISTER;
                if aux[2] = 'X' then
                  parameterValue^ := hexToInt(aux[1])
                else
@@ -346,7 +346,7 @@ implementation
              
              EParameterTypeIndirect:
              begin
-               types[i] := 3;
+               types[i] := C_PARAMETER_TYPE_INDIRECT;
                { we get the code for the specified register }
                if aux[3] = 'X' then
                  parameterValue^ := hexToInt(aux[2])
@@ -392,11 +392,11 @@ implementation
      with systemState, instruction do
      begin
        writeln('[', wordToHex(DS), ']  ', wordToHex(opcode), ' ',
-         wordToHex(param1),' ', wordToHex(param2), lineNumber:5, ':', line
+         wordToHex(param0),' ', wordToHex(param1), lineNumber:5, ':', line
        );
        memory[ds] := opcode;
-       memory[ds+1] := param1;
-       memory[ds+2] := param2;
+       memory[ds+1] := param0;
+       memory[ds+2] := param1;
        ds := ds + 3;
      end;
    end;

@@ -17,18 +17,26 @@ interface
     C_INVALID_OPCODE = $FF;    { invalid instruction code }
     C_INSTRUCTION_COUNT = 28;  { total number of supported instructions }
 
+    C_PARAMETER_TYPE_LITERAL  = 0;
+    C_PARAMETER_TYPE_REGISTER = 1;
+    C_PARAMETER_TYPE_ADDRESS  = 2;
+    C_PARAMETER_TYPE_INDIRECT = 3;
+
   type
     TString4  = string[4];
     TString6  = string[6];
     TString7  = string[7];
     TString10 = string[10];
 
+    PByte = ^byte;
+
     TMemoryAddress = 0 .. C_DEFAULT_MEMORY_SIZE - 1;
 
+    PInstruction = ^TInstruction;
     TInstruction = packed record
       opcode: integer;
+      param0: integer;
       param1: integer;
-      param2: integer;
     end;
 
     PSystemState = ^TSystemState;
@@ -47,8 +55,8 @@ interface
   const
     C_NULL_INSTRUCTION : TInstruction = (
       opcode: 0;
-      param1: 0;
-      param2: 0
+      param0: 0;
+      param1: 0
     );
 
   function strToInt(s: TString6): integer;
@@ -64,6 +72,8 @@ interface
   procedure strUpper(var str:string);
   function isValidHexNumber(s: TString4): boolean;
   function isValidRegister(s: TString4): boolean;
+
+  procedure updateIndirect(var paramValue:integer; var paramType:byte; var systemState: TSystemState);
 
 implementation
 
@@ -237,6 +247,20 @@ implementation
   begin
    isValidRegister := (length(s)=2) and (((s[1] in ['A'..'F']) and (s[2]='X')) or
      ((s[1] in ['S','B','I']) and (s[2]='P')) or (s='CC'));
+  end;
+
+  { converts an indirect param to a memory param }
+  procedure updateIndirect(var paramValue:integer; var paramType:byte; var systemState: TSystemState);
+  var 
+    mask: word;
+  begin
+    paramType := C_PARAMETER_TYPE_ADDRESS;
+    if paramValue < 0 then mask := $F000 else mask := $0000;
+    with systemState do
+      if (paramValue and $000F) in [6, 7] then
+        paramValue := registers[paramValue and $000F] + ((paramValue shr 4) or mask) + ss
+      else
+        paramValue := registers[paramValue and $000F] + ((paramValue shr 4) or mask) + ds;
   end;
 
 end.
