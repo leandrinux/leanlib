@@ -24,21 +24,46 @@ interface
   procedure doJE(var data: TOperationData);
   procedure doJG(var data: TOperationData);
   procedure doJL(var data: TOperationData);
+  procedure doJZ(var data: TOperationData);
+  procedure doJP(var data: TOperationData);
+  procedure doJN(var data: TOperationData);
+  procedure doOR(var data: TOperationData);
+  procedure doMOV(var data: TOperationData);
+  procedure doADD(var data: TOperationData);
+  procedure doSUB(var data: TOperationData);
+  procedure doMUL(var data: TOperationData);
+  procedure doDIV(var data: TOperationData);
+  procedure doCMP(var data: TOperationData);
+  procedure doJMP(var data: TOperationData);
+  procedure doJNZ(var data: TOperationData);
+  procedure doAND(var data: TOperationData);
+  procedure doNOT(var data: TOperationData);
+  procedure doXOR(var data: TOperationData);
+  procedure doSTOP(var data: TOperationData);
+  procedure doREAD(var data: TOperationData);
+  procedure doDUMP(var data: TOperationData);
+  procedure doWRITE(var data: TOperationData);
+  procedure doLSHIFT(var data: TOperationData);
+  procedure doPUSH(var data: TOperationData);
+  procedure doPOP(var data: TOperationData);
+  procedure doCALL(var data: TOperationData);
+  procedure doRET(var data: TOperationData);
+  procedure doRSHIFT(var data: TOperationData);
 
   function getOperation(opcode: byte): pointer;
 
   const
     C_OPERATIONS : array[0 .. C_INSTRUCTION_COUNT - 1] of TOperationRecord = (
-      (opcode:$01; op: doNULL), (opcode:$02; op: doNULL), (opcode:$03; op: doNULL),
-      (opcode:$04; op: doNULL), (opcode:$05; op: doNULL), (opcode:$06; op: doNULL),
-      (opcode:$07; op: doNULL), (opcode:$08; op: doNULL), (opcode:$11; op: doNULL),
-      (opcode:$12; op: doNULL), (opcode:$13; op: doNULL), (opcode:$21; op: doNULL),
-      (opcode:$22; op: doJE), (opcode:$23; op: doJG), (opcode:$24; op: doJL),
-      (opcode:$25; op: doNULL), (opcode:$26; op: doNULL), (opcode:$27; op: doNULL),
-      (opcode:$28; op: doNULL), (opcode:$31; op: doNULL), (opcode:$32; op: doNULL),
-      (opcode:$33; op: doNULL), (opcode:$34; op: doNULL), (opcode:$41; op: doNULL),
-      (opcode:$42; op: doNULL), (opcode:$43; op: doNULL), (opcode:$44; op: doNULL),
-      (opcode:$77; op: doNULL)
+      (opcode:$01; op: doMOV),    (opcode:$02; op: doADD),     (opcode:$03; op: doSUB),
+      (opcode:$04; op: doMUL),    (opcode:$05; op: doDIV),     (opcode:$06; op: doCMP),
+      (opcode:$07; op: doLSHIFT), (opcode:$08; op: doRSHIFT),  (opcode:$11; op: doREAD),
+      (opcode:$12; op: doWRITE),  (opcode:$13; op: doDUMP),    (opcode:$21; op: doJMP),
+      (opcode:$22; op: doJE),     (opcode:$23; op: doJG),      (opcode:$24; op: doJL),
+      (opcode:$25; op: doJZ),     (opcode:$26; op: doJP),      (opcode:$27; op: doJN),
+      (opcode:$28; op: doJNZ),    (opcode:$31; op: doAND),     (opcode:$32; op: doOR),
+      (opcode:$33; op: doNOT),    (opcode:$34; op: doXOR),     (opcode:$41; op: doPUSH),
+      (opcode:$42; op: doPOP),    (opcode:$43; op: doCALL),    (opcode:$44; op: doRET),
+      (opcode:$77; op: doSTOP)
     );
 
 implementation
@@ -649,19 +674,25 @@ implementation
  end;
 
  procedure doCALL(var data: TOperationData);
+ var 
+   aux: TOperationData;
  begin
-(*
-  doPUSH(registers[8]+3,0,C_PARAMETER_TYPE_LITERAL,0,m,scr);
-  doJMP(arg0,arg1,type0,type1,m,scr);
-*)
+  aux.systemState := data.systemState;
+  aux.arg0 := data.systemState^.registers[8]+3;
+  aux.type0 := C_PARAMETER_TYPE_LITERAL;
+  doPUSH(aux);
+  doJMP(data);
  end;
 
  procedure doRET(var data: TOperationData);
+ var 
+   aux: TOperationData;
  begin
-(*
-  doPOP(8,0,C_PARAMETER_TYPE_REGISTER,0,m,scr);
-  registers[8]:=registers[8]-3; {correcci�n del IP debido a POP}
-*)
+   aux.systemState := data.systemState;
+   data.arg0 := 8;
+   data.type0 := C_PARAMETER_TYPE_REGISTER;
+   doPOP(aux);
+   with data.systemState^ do registers[8] := registers[8] - 3; {correcci�n del IP debido a POP lo avanzó}
  end;
 
   function getOperation(opcode: byte): pointer;
