@@ -1,4 +1,5 @@
 uses
+  xcrt,
   uobject, ulist, 
   lcommon, lbin;
 
@@ -21,6 +22,7 @@ type
     value: integer;
   end;
 
+procedure doClear(args: string); far; forward;
 procedure doEdit(args: string); far; forward;
 procedure doHelp(args: string); far; forward;
 procedure doRegs(args: string); far; forward;
@@ -36,12 +38,13 @@ const
   C_STR_SYMBOL_NOT_FOUND = 'Symbol not found';
 
   C_SHELL_COMMAND_QUIT = 'exit';
-  C_SHELL_COMMAND_COUNT = 6;
+  C_SHELL_COMMAND_COUNT = 7;
   C_SHELL_COMMANDS: array [0..C_SHELL_COMMAND_COUNT-1] of TShellCommand = (
+    (name: 'clear'; detail: 'clears the screen'; handler:doClear),
     (name: 'edit'; detail: 'starts code editing mode'; handler:doEdit),
     (name: 'help'; detail: 'displays this info'; handler:doHelp),
     (name: 'regs'; detail: 'displays register values'; handler:doRegs),
-    (name: 'set'; detail: 'sets a symbol value'; handler:doSetSymbol),
+    (name: 'set'; detail: 'use to assign or delete a symbol. Use #, @ or $'; handler:doSetSymbol),
     (name: 'symbols'; detail: 'lists all symbols'; handler:doSymbols),
     (name: C_SHELL_COMMAND_QUIT; detail: 'ends this shell session'; handler:nil)
   );
@@ -49,6 +52,11 @@ const
 var
   systemState: TSystemState;
   symbolList: PList;
+
+procedure doClear(args: string);
+begin
+  clrscr;
+end;
 
 procedure doEdit(args: string);
 var 
@@ -128,36 +136,36 @@ begin
     exit;
   end;
   
-  if length(valueStr) > 0 then
+  if (length(valueStr) > 0) and not (valueStr[1] in ['@', '$', '#']) then
   begin
-    if not (valueStr[1] in ['@', '$', '#']) then
-    begin
-      writeln(' ', C_STR_SYNTAX_ERROR);
-      exit;
-    end;
-    { adds the symbol to the list }
-    symbol := new(PSymbol, init);
-    symbol^.name := name;
-    symbol^.value := strToInt(valueStr);
-    symbolList^.addObject(symbol);
-    symbol^.release;
-    writeln(' ', C_STR_SYMBOL_ADDED);
-  end else with symbolList^ do begin
-    { deletes the symbol from the list }
+    writeln(' ', C_STR_SYNTAX_ERROR);
+    exit;
+  end;
+
+  with symbolList^ do begin
+    { deletes the symbol from the list if it exists }
     moveToStart;
     symbol := PSymbol(getObjectAtCursor);
-    while (symbol <> nil) and (symbol^.name = name) do
+    while (symbol <> nil) and (symbol^.name <> name) do
     begin
       moveForward;
       symbol := PSymbol(getObjectAtCursor);
     end;
     if symbol <> nil then 
-    begin 
       symbolList^.removeObject(symbol);
-      writeln(' ', C_STR_SYMBOL_REMOVED);
-    end else
-      writeln(' ', C_STR_SYMBOL_NOT_FOUND);
-  end; 
+  end;
+
+  if length(valueStr) = 0 then exit;
+
+  { adds the symbol to the list }
+  symbol := new(PSymbol, init);
+  symbol^.name := name;
+  strUpper(valueStr);
+  symbol^.value := strToInt(valueStr);
+  symbolList^.addObject(symbol);
+  symbol^.release;
+
+  with symbol^ do writeln(' ', name, ': ', value);
 end;
 
 function findShellCommand(name: TShellCommandName): PShellCommand;
