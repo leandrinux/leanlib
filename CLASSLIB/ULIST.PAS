@@ -28,6 +28,7 @@ interface
       procedure addObjectInOrder(obj: PObject);
       procedure removeObjectAt(index: longint);
       procedure removeObject(obj: PObject);
+      procedure removeObjectAtCursor;
       procedure removeFirst;
       procedure clear;
       procedure moveToStart;
@@ -254,6 +255,11 @@ implementation
       killNode(curr);
       dec(_count);
     end;
+  end;
+
+  procedure TList.removeObjectAtCursor;
+  begin
+    removeObject(_cursor^.obj);
   end;
 
   procedure TList.removeFirst;
