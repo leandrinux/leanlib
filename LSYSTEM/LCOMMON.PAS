@@ -52,6 +52,13 @@ interface
       EErrorFatal
     );
 
+    ELogType = (
+      ELogNone,
+      ELogNormal,
+      ELogHigh,
+      ELogVerbose
+    );
+
   const
     C_NULL_INSTRUCTION : TInstruction = (
       opcode: 0;
@@ -74,6 +81,8 @@ interface
   function isValidRegister(s: TString4): boolean;
 
   procedure updateIndirect(var paramValue:integer; var paramType:byte; var systemState: TSystemState);
+
+  procedure log(logType: ELogType; message: string);
 
 implementation
 
@@ -261,6 +270,11 @@ implementation
         paramValue := registers[paramValue and $000F] + ((paramValue shr 4) or mask) + ss
       else
         paramValue := registers[paramValue and $000F] + ((paramValue shr 4) or mask) + ds;
+  end;
+
+  procedure log(logType: ELogType; message: string);
+  begin
+    writeln('[-] ', message);
   end;
 
 end.
