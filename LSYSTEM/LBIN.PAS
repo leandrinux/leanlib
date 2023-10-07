@@ -43,6 +43,8 @@ interface
 
     TInstructionId = string[6];
 
+    TRegisterName = string[2];
+
     TInstructionPair = packed record
       id: TInstructionId;
       code: byte;      
@@ -62,13 +64,24 @@ interface
       (id:'XOR';     code:$34)
     );
 
+    C_PARAMETER_TYPES: array[EParameterType] of string[9] = (
+      'inmediate', 'symbol', 'address', 'register', 'indirect', 'empty', 'invalid'
+    );
+
+    C_REGISTER_COUNT = 10;
+    C_REGISTERS: array[0..C_REGISTER_COUNT-1] of TRegisterName = (
+      'SP', 'BP', 'IP', 'CC', 'AX', 'BX', 'CX', 'DX', 'EX', 'FX'
+    );
+
   function addToSymbolList(var list: PSymbolNode; const id: TSymbolId; value: integer): PSymbolNode;
   function findSymbolNodeWithId(const symbolList: PSymbolNode; const id: TSymbolId): PSymbolNode;
   function getOpcode(const id: TInstructionId): byte;
   procedure extractToken(var input:string; var token:string);
   function getParameterType(parameter: string): EParameterType;
+  function getParameterTypeCode(parameterType: EParameterType; var parameterCode: byte): boolean;
   procedure addPendingValue(var pendingList: PPendingSymbolNode; value: integer);
   procedure clearPendingList(var symbolNode: PSymbolNode; var systemState: TSystemState);
+  function getRegisterValue(const registerName: TRegisterName; var registerValue: byte): boolean;
   function compileInstruction( 
     const line: string; 
     var systemState: TSystemState;
@@ -78,6 +91,37 @@ interface
   function build(const sourceFilename, binaryFilename: string): boolean;
 
 implementation
+
+  function getRegisterValue(const registerName: TRegisterName; var registerValue: byte): boolean;
+  var
+    i: byte;
+  begin
+    getRegisterValue := true;
+    i := 0;
+    while (i < C_REGISTER_COUNT) and (C_REGISTERS[i] <> registerName) do inc(i);
+    if i = C_REGISTER_COUNT then
+      getRegisterValue := false
+    else
+      registerValue := i + 6;
+  end;
+
+  function getParameterTypeCode(parameterType: EParameterType; var parameterCode: byte): boolean;
+  begin
+    getParameterTypeCode := true;
+    case parameterType of
+      EParameterTypeInmediate, EParameterTypeSymbol: 
+        parameterCode := C_PARAMETER_TYPE_LITERAL;
+      EParameterTypeAddress:
+        parameterCode := C_PARAMETER_TYPE_ADDRESS;
+      EParameterTypeRegister:
+        parameterCode := C_PARAMETER_TYPE_REGISTER;
+      EParameterTypeIndirect:
+        parameterCode := C_PARAMETER_TYPE_INDIRECT;
+    else
+      parameterCode := 0;
+      getParameterTypeCode := false;
+    end;
+  end;
 
   {
     receives the list of symbols and a symbol identifier and returns pointer where a symbol is stored or nil if not found
@@ -170,6 +214,7 @@ implementation
   { gets a string with a valid parameter and returns its type }
   function getParameterType(parameter: string): EParameterType;
   begin
+    getParameterType := EParameterTypeInvalid;
     if parameter = '' then
       getParameterType := EParameterTypeEmpty
     else
@@ -217,6 +262,104 @@ implementation
       end;
   end;
 
+  procedure parseLiteral(const token: string; var paramType, paramValue: integer);
+  begin
+    paramType := C_PARAMETER_TYPE_LITERAL;
+    paramValue := strToInt(token);
+  end;
+
+  procedure parseSymbol(
+    const token: string; 
+    var paramType, paramValue: integer; 
+    var symbolList: PSymbolNode; 
+    var systemState: TSystemState;
+    paramAddress: integer
+  );
+  var
+    node: PSymbolNode;
+  begin
+    paramType := C_PARAMETER_TYPE_LITERAL;
+    node := findSymbolNodeWithId(symbolList, token);
+    if node = nil then
+    begin
+      node := addToSymbolList(symbolList, token, -1);
+      addPendingValue(node^.pendingList, paramAddress);
+      paramValue := -1;
+    end else
+      { if there's no pending list, then the symbol value is already set }
+      if node^.pendingList = nil then
+        paramValue := node^.value
+      else begin
+        addPendingValue(node^.pendingList, paramAddress);
+        paramValue := -1;
+      end;  
+  end;
+
+  procedure parseAddress(const token: string; var paramType, paramValue: integer);
+  begin
+    paramType := C_PARAMETER_TYPE_ADDRESS;
+    paramValue := decToInt(token);
+  end;
+
+  procedure parseRegister(const token: string; var paramType, paramValue: integer);
+  begin
+    paramType := C_PARAMETER_TYPE_REGISTER;
+    if token[2] = 'X' then
+      paramValue := hexToInt(token[1])
+    else
+      if token[2] = 'P' then
+        case token[1] of
+          'S': paramValue := 6;
+          'I': paramValue := 8;
+          'B': paramValue := 7;
+        end
+    else
+      if token[1] = 'CC' then
+        paramValue := 9;
+  end;
+
+  procedure parseIndirect(var token: string; var paramType, paramValue: integer; const lineCopy: string);
+  var
+    offset: byte;
+    position: byte;
+    b: byte;
+    decstr: string;
+    plus: integer;
+  begin
+    paramType := C_PARAMETER_TYPE_INDIRECT;
+    { we get the code for the specified register }
+    if token[3] = 'X' then
+      paramValue := hexToInt(token[2])
+    else
+      if token[3] = 'P' then
+        case token[2] of
+          'S': paramValue := 6;
+          'I': paramValue := 8;
+          'B': paramValue := 7;
+        end
+      else
+        paramValue := 9;
+    { if there is a constant present then we get its value }
+    token := token + lineCopy;
+    b := pos(',', token);
+    if b<>0 then delete(token, b, ord(token[0])-b+1);
+    delete(token, 1, 4);
+    extractToken(token, decstr);
+    if decstr = '' then
+      plus := 0
+    else begin
+      plus := 1;
+      if decstr[1] in ['+', '-'] then
+      begin
+        if decstr[1] = '-' then plus := -1;
+        delete(decstr, 1, 1);
+      end;
+      plus := (plus * decToInt(decstr)) shl 4;
+    end;
+    { we form the value for this parameter and assign it }
+    paramValue := paramValue or plus;
+  end;
+
   {
     receives:
       - a line of text representing a sentence to be compiled
@@ -233,13 +376,12 @@ implementation
   ): boolean;
   var
     parameters: array[1..2] of string;
-    types: array[1..2] of word;
-    plus: integer;
+    types: array[1..2] of integer;
     command: TString10; 
-    lineCopy, aux, decstr: string;  
+    lineCopy, aux: string;  
     opcode: byte;  
     parameterValue: ^integer;
-    i, b: byte;
+    i: byte;
     instruction: TInstruction;
     node: PSymbolNode;
   begin
@@ -295,91 +437,21 @@ implementation
          begin
            aux := parameters[i];
            case getParameterType(aux) of
-
              EParameterTypeInmediate:
-             begin
-               types[i] := C_PARAMETER_TYPE_LITERAL;
-               parameterValue^ := strToInt(aux);
-             end;
+               parseLiteral(parameters[i], types[i], parameterValue^);
       
              EParameterTypeSymbol:
-             begin
-               types[i] := C_PARAMETER_TYPE_LITERAL;
-               node := findSymbolNodeWithId(symbolList, aux);
-               if node = nil then
-               begin
-                 node := addToSymbolList(symbolList, aux, -1);
-                 addPendingValue(node^.pendingList, systemState.ds + i);
-                 parameterValue^ := -1;
-               end else
-                 { if there's no pending list, then the symbol value is already set }
-                 if node^.pendingList = nil then
-                   parameterValue^ := node^.value
-                 else begin
-                   addPendingValue(node^.pendingList, systemState.ds + i);
-                   parameterValue^ := -1;
-                 end;
-             end;
+               parseSymbol(parameters[i], types[i], parameterValue^, symbolList, systemState, systemState.ds + i);
 
              EParameterTypeAddress: 
-             begin
-               types[i] := C_PARAMETER_TYPE_ADDRESS;
-               parameterValue^ := decToInt(aux);
-             end;
+               parseAddress(parameters[i], types[i], parameterValue^);
              
              EParameterTypeRegister: 
-             begin
-               types[i] := C_PARAMETER_TYPE_REGISTER;
-               if aux[2] = 'X' then
-                 parameterValue^ := hexToInt(aux[1])
-               else
-                 if aux[2] = 'P' then
-                   case aux[1] of
-                     'S': parameterValue^ := 6;
-                     'I': parameterValue^ := 8;
-                     'B': parameterValue^ := 7;
-                   end
-                 else
-                   if aux[1] = 'CC' then
-                     parameterValue^ := 9;
-             end;
+               parseRegister(parameters[i], types[i], parameterValue^);
              
              EParameterTypeIndirect:
-             begin
-               types[i] := C_PARAMETER_TYPE_INDIRECT;
-               { we get the code for the specified register }
-               if aux[3] = 'X' then
-                 parameterValue^ := hexToInt(aux[2])
-               else
-                 if aux[3] = 'P' then
-                   case aux[2] of
-                     'S': parameterValue^ := 6;
-                     'I': parameterValue^ := 8;
-                     'B': parameterValue^ := 7;
-                   end
-                 else
-                   parameterValue^ := 9;
-               { if there is a constant present then we get its value }
-               aux := aux + lineCopy;
-               b := pos(',', aux);
-               if b<>0 then delete(aux, b, ord(aux[0])-b+1);
-               delete(aux, 1, 4);
-               extractToken(aux, decstr);
-               if decstr = '' then
-                 plus := 0
-               else begin
-                 plus := 1;
-                 if decstr[1] in ['+', '-'] then
-                 begin
-                   if decstr[1] = '-' then plus := -1;
-                   delete(decstr, 1, 1);
-                 end;
-                 plus := (plus * decToInt(decstr)) shl 4;
-               end;
-               { we form the value for this parameter and assign it }
-               parameterValue^ := parameterValue^ or plus;
-             end;
-           end; { case end}
+               parseIndirect(parameters[i], types[i], parameterValue^, lineCopy);
+           end;
          end else begin 
            { if parameter doesn't exist then assign default values }
            parameterValue^ := 0;
