@@ -38,6 +38,8 @@ const
   C_STR_SYMBOL_ADDED = 'Symbol added';
   C_STR_SYMBOL_REMOVED = 'Symbol removed';
   C_STR_SYMBOL_NOT_FOUND = 'Symbol not found';
+  C_STR_INVALID_OPCODE = 'Invalid opcode';
+  C_STR_INVALID_ARGUMENT = 'Invalid argument';
 
   C_SHELL_COMMAND_QUIT = 'exit';
   C_SHELL_COMMAND_COUNT = 7;
@@ -56,6 +58,14 @@ const
 var
   systemState: TSystemState;
   symbolList: PList;
+
+{ misc functions }
+
+function assert(value: boolean; const msg: string): boolean;
+begin
+  if not value then writeln(msg);
+  assert := value;
+end;
 
 { system state }
 
@@ -102,6 +112,26 @@ begin
   symbol^.release;
 end;
 
+function getSymbolValue(const name: TSymbolName; var symbolValue: integer): boolean;
+var
+  symbol: PSymbol;
+begin
+  getSymbolValue := true;
+  with symbolList^ do begin
+    moveToStart;
+    symbol := PSymbol(getObjectAtCursor);
+    while (symbol <> nil) and (symbol^.name <> name) do
+    begin
+      moveForward;
+      symbol := PSymbol(getObjectAtCursor);
+    end;
+    if symbol <> nil then 
+      symbolValue := symbol^.value
+    else
+      getSymbolValue := false;
+  end;
+end;
+
 { assembly processing }
 
 procedure getToken(const assemblyLine: string; var position:byte; var token: TToken);
@@ -116,13 +146,69 @@ begin
   end;
 end;
 
+function getIndirectParameterValue(var registerValue: integer; const token: TToken): boolean;
+var
+  result: boolean;
+  registerCode: byte;
+  registerName: TRegisterName;
+  constantStr: string[6];
+  constantValue: integer;
+  code: integer;
+begin
+  getIndirectParameterValue := false;
+  if length(token) < 4 then exit;
+  registerName := token[2] + token[3];
+  result := getRegisterValue(registerName, registerCode);
+  if not result then exit;
+  if length(token) > 4 then
+  begin
+    constantStr := copy(token, 5, length(token) - 4);
+    val(constantStr, constantValue, code);
+    if code <> 0 then exit;
+    if (constantValue < -2048) or (constantValue > 2047) then exit;
+    registerValue := (constantValue shl 4) or registerCode;
+  end;
+  getIndirectParameterValue := true;
+end;
+
+function getParameterValue(var paramValue: integer; paramType: EParameterType; const token: TToken): boolean;
+var
+  value: byte;
+begin
+  getParameterValue := true;
+  case paramType of
+    EParameterTypeInmediate:
+      paramValue := strToInt(token);
+
+    EParameterTypeSymbol:
+      getParameterValue := getSymbolValue(token, paramValue);
+
+    EParameterTypeAddress:
+      paramValue := decToInt(token);
+
+    EParameterTypeRegister:
+    begin
+      getParameterValue := getRegisterValue(token, value);
+      paramValue := value;
+    end;
+
+    EParameterTypeIndirect:
+      getParameterValue := getIndirectParameterValue(paramValue, token);
+  end;
+end;
+
 procedure parseAssembly(address: integer; assemblyLine: string);
 var
   token: TToken;
   position: byte;
+  instruction: TInstruction;
+  paramType0, paramType1: EParameterType;
+  paramTypeCode0, paramTypeCode1: byte;
 begin
   position := 1;
   getToken(assemblyLine, position, token);
+
+  { get the label, if present }
   if (token[length(token)] = ':') then
   begin
     dec(token[0]);
@@ -131,6 +217,42 @@ begin
     getToken(assemblyLine, position, token);
   end;
   
+  { get the opcode }
+  if not assert(token <> '', C_STR_SYNTAX_ERROR) then exit;
+  strUpper(token);
+  with instruction do
+  begin
+    opcode := getOpcode(token);
+    if not assert(opcode <> C_INVALID_OPCODE, C_STR_INVALID_OPCODE) then exit;
+  end;
+  
+  { get the first parameter }
+  getToken(assemblyLine, position, token);
+  strUpper(token);
+  paramType0 := getParameterType(token);
+  if not assert(paramType0 <> EParameterTypeInvalid, C_STR_INVALID_ARGUMENT) then exit;
+  getParameterTypeCode(paramType0, paramTypeCode0);
+  if not assert(getParameterValue(instruction.param0, paramType0, token), C_STR_INVALID_ARGUMENT) then exit;
+
+  { get the second parameter }
+  getToken(assemblyLine, position, token);
+  strUpper(token);
+  paramType1 := getParameterType(token);
+  getParameterValue(instruction.param1, paramType1, token);
+  if not assert(paramType1 <> EParameterTypeInvalid, C_STR_INVALID_ARGUMENT) then exit;
+  getParameterTypeCode(paramType1, paramTypeCode1);
+  if not assert(getParameterValue(instruction.param1, paramType1, token), C_STR_INVALID_ARGUMENT) then exit;
+
+  with instruction do opcode := (opcode shl 8) or (paramTypeCode0 shl 2) or paramTypeCode1;
+
+  writeln('opcode:', wordToHex(instruction.opcode));
+  write('param0 type:', C_PARAMETER_TYPES[paramType0]);
+  write(', code:', paramTypeCode0);
+  writeln(', value:', wordToHex(instruction.param0));
+  write('param1 type:', C_PARAMETER_TYPES[paramType1]);
+  write(', code:', paramTypeCode1);
+  writeln(', value:', wordToHex(instruction.param1));
+  writeln;
 end;
 
 { command processing }  
@@ -149,7 +271,7 @@ begin
   repeat
     write(' ', address, ': ');
     readln(assemblyLine);
-    parseAssembly(address, assemblyLine);
+    if assemblyLine <> '' then parseAssembly(address, assemblyLine);
     inc(address, 3);
   until assemblyLine = '';
 end;
