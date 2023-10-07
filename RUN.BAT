@@ -10,6 +10,7 @@ echo.
 config -set "cpu cycles=240"
 c:\bin\%2
 echo.
+echo (program ended)
 pause
 goto end
 
