@@ -4,6 +4,8 @@ uses
   lcommon, lbin;
 
 type
+  TToken = string[32];
+
   TShellCommandName = string[8];
   TShellCommandDetail = string[64];
   TShellCommandHandler = procedure (args: string);
@@ -15,7 +17,7 @@ type
     handler: TShellCommandHandler;
   end;
 
-  TSymbolName = string[10];
+  TSymbolName = TToken;
   PSymbol = ^TSymbol;
   TSymbol = object (TObject)
     name: TSymbolName;
@@ -41,7 +43,7 @@ const
   C_SHELL_COMMAND_COUNT = 7;
   C_SHELL_COMMANDS: array [0..C_SHELL_COMMAND_COUNT-1] of TShellCommand = (
     (name: 'clear'; detail: 'clears the screen'; handler:doClear),
-    (name: 'edit'; detail: 'starts code editing mode'; handler:doEdit),
+    (name: 'edit'; detail: 'enters code editing mode'; handler:doEdit),
     (name: 'help'; detail: 'displays this info'; handler:doHelp),
     (name: 'regs'; detail: 'displays register values'; handler:doRegs),
     (name: 'set'; detail: 'use to assign or delete a symbol. Use #, @ or $'; handler:doSetSymbol),
@@ -49,9 +51,89 @@ const
     (name: C_SHELL_COMMAND_QUIT; detail: 'ends this shell session'; handler:nil)
   );
 
+  C_IGNORE_CHARS = [#9, ' ', ','];
+
 var
   systemState: TSystemState;
   symbolList: PList;
+
+{ system state }
+
+procedure initSystemState;
+begin
+  fillchar(systemState, sizeof(TSystemState), 0);
+  symbolList := new(PList, init);
+  systemState.registers[6] := C_DEFAULT_STACK_SIZE;
+  systemState.ss := C_DEFAULT_MEMORY_SIZE - C_DEFAULT_STACK_SIZE;
+end;
+
+procedure releaseSystemState;
+begin
+  symbolList^.release;
+end;
+
+{ symbol list management }
+
+procedure deleteSymbol(const name: string);
+var
+  symbol: PSymbol;
+begin
+  with symbolList^ do begin
+    moveToStart;
+    symbol := PSymbol(getObjectAtCursor);
+    while (symbol <> nil) and (symbol^.name <> name) do
+    begin
+      moveForward;
+      symbol := PSymbol(getObjectAtCursor);
+    end;
+    if symbol <> nil then 
+      symbolList^.removeObject(symbol);
+  end;
+end;
+
+procedure addSymbol(const name: string; value: integer);
+var
+  symbol: PSymbol;
+begin
+  symbol := new(PSymbol, init);
+  symbol^.name := name;
+  symbol^.value := value;
+  symbolList^.addObject(symbol);
+  symbol^.release;
+end;
+
+{ assembly processing }
+
+procedure getToken(const assemblyLine: string; var position:byte; var token: TToken);
+begin
+  token := '';
+  while (position <= length(assemblyLine)) and (assemblyLine[position] in C_IGNORE_CHARS) do
+    inc(position);
+  while (position <= length(assemblyLine)) and not (assemblyLine[position] in C_IGNORE_CHARS) do 
+  begin
+    token := token + assemblyLine[position]; 
+    inc(position); 
+  end;
+end;
+
+procedure parseAssembly(address: integer; assemblyLine: string);
+var
+  token: TToken;
+  position: byte;
+begin
+  position := 1;
+  getToken(assemblyLine, position, token);
+  if (token[length(token)] = ':') then
+  begin
+    dec(token[0]);
+    deleteSymbol(token);
+    addSymbol(token, address);
+    getToken(assemblyLine, position, token);
+  end;
+  
+end;
+
+{ command processing }  
 
 procedure doClear(args: string);
 begin
@@ -60,14 +142,16 @@ end;
 
 procedure doEdit(args: string);
 var 
-  line: string;
-  position: integer;
+  assemblyLine: string;
+  address: integer;
 begin
-  position := systemState.ds;
+  address := systemState.ds;
   repeat
-    write(' 0000 ');
-    readln(line);
-  until line = '';
+    write(' ', address, ': ');
+    readln(assemblyLine);
+    parseAssembly(address, assemblyLine);
+    inc(address, 3);
+  until assemblyLine = '';
 end;
 
 procedure doSymbols(args: string); 
@@ -120,7 +204,7 @@ var
   position: byte;
   name: TSymbolName;
   valueStr: string[6];
-  symbol: PSymbol;
+  value: integer;
 begin
   position := pos('=', args);
   if position = 0 then
@@ -142,30 +226,13 @@ begin
     exit;
   end;
 
-  with symbolList^ do begin
-    { deletes the symbol from the list if it exists }
-    moveToStart;
-    symbol := PSymbol(getObjectAtCursor);
-    while (symbol <> nil) and (symbol^.name <> name) do
-    begin
-      moveForward;
-      symbol := PSymbol(getObjectAtCursor);
-    end;
-    if symbol <> nil then 
-      symbolList^.removeObject(symbol);
-  end;
-
+  deleteSymbol(name);
   if length(valueStr) = 0 then exit;
-
-  { adds the symbol to the list }
-  symbol := new(PSymbol, init);
-  symbol^.name := name;
   strUpper(valueStr);
-  symbol^.value := strToInt(valueStr);
-  symbolList^.addObject(symbol);
-  symbol^.release;
+  value := strToInt(valueStr);
+  addSymbol(name, value);
 
-  with symbol^ do writeln(' ', name, ': ', value);
+  writeln(' ', name, ': ', value);
 end;
 
 function findShellCommand(name: TShellCommandName): PShellCommand;
@@ -208,19 +275,6 @@ begin
     write('> ');
     readln(commandLine);
   end; 
-end;
-
-procedure initSystemState;
-begin
-  fillchar(systemState, sizeof(TSystemState), 0);
-  symbolList := new(PList, init);
-  systemState.registers[6] := C_DEFAULT_STACK_SIZE;
-  systemState.ss := C_DEFAULT_MEMORY_SIZE - C_DEFAULT_STACK_SIZE;
-end;
-
-procedure releaseSystemState;
-begin
-  symbolList^.release;
 end;
 
 begin
