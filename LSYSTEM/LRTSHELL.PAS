@@ -30,6 +30,7 @@ procedure doHelp(args: string); far; forward;
 procedure doRegs(args: string); far; forward;
 procedure doSymbols(args: string); far; forward;
 procedure doSetSymbol(args: string); far; forward;
+procedure doVerbose(args: string); far; forward;
 
 const
   C_STR_UNRECOGNIZED_COMMAND = 'Unrecognized command';
@@ -42,7 +43,7 @@ const
   C_STR_INVALID_ARGUMENT = 'Invalid argument';
 
   C_SHELL_COMMAND_QUIT = 'exit';
-  C_SHELL_COMMAND_COUNT = 7;
+  C_SHELL_COMMAND_COUNT = 8;
   C_SHELL_COMMANDS: array [0..C_SHELL_COMMAND_COUNT-1] of TShellCommand = (
     (name: 'clear'; detail: 'clears the screen'; handler:doClear),
     (name: 'edit'; detail: 'enters code editing mode'; handler:doEdit),
@@ -50,6 +51,7 @@ const
     (name: 'regs'; detail: 'displays register values'; handler:doRegs),
     (name: 'set'; detail: 'use to assign or delete a symbol. Use #, @ or $'; handler:doSetSymbol),
     (name: 'symbols'; detail: 'lists all symbols'; handler:doSymbols),
+    (name: 'verbose'; detail: 'toggle verbosity'; handler:doVerbose),
     (name: C_SHELL_COMMAND_QUIT; detail: 'ends this shell session'; handler:nil)
   );
 
@@ -58,6 +60,7 @@ const
 var
   systemState: TSystemState;
   symbolList: PList;
+  verbose: boolean;
 
 { misc functions }
 
@@ -71,6 +74,7 @@ end;
 
 procedure initSystemState;
 begin
+  verbose := false;
   fillchar(systemState, sizeof(TSystemState), 0);
   symbolList := new(PList, init);
   systemState.registers[6] := C_DEFAULT_STACK_SIZE;
@@ -194,17 +198,20 @@ begin
 
     EParameterTypeIndirect:
       getParameterValue := getIndirectParameterValue(paramValue, token);
+  
+  else
+    paramValue := 0;
   end;
 end;
 
-procedure parseAssembly(address: integer; assemblyLine: string);
+function parseAssembly(address: integer; assemblyLine: string; var instruction: TInstruction): boolean;
 var
   token: TToken;
   position: byte;
-  instruction: TInstruction;
   paramType0, paramType1: EParameterType;
   paramTypeCode0, paramTypeCode1: byte;
 begin
+  parseAssembly := false;
   position := 1;
   getToken(assemblyLine, position, token);
 
@@ -213,6 +220,7 @@ begin
   begin
     dec(token[0]);
     deleteSymbol(token);
+    strUpper(token);
     addSymbol(token, address);
     getToken(assemblyLine, position, token);
   end;
@@ -243,16 +251,20 @@ begin
   getParameterTypeCode(paramType1, paramTypeCode1);
   if not assert(getParameterValue(instruction.param1, paramType1, token), C_STR_INVALID_ARGUMENT) then exit;
 
+  { set final opcode value including parameter types }
   with instruction do opcode := (opcode shl 8) or (paramTypeCode0 shl 2) or paramTypeCode1;
 
-  writeln('opcode:', wordToHex(instruction.opcode));
-  write('param0 type:', C_PARAMETER_TYPES[paramType0]);
-  write(', code:', paramTypeCode0);
-  writeln(', value:', wordToHex(instruction.param0));
-  write('param1 type:', C_PARAMETER_TYPES[paramType1]);
-  write(', code:', paramTypeCode1);
-  writeln(', value:', wordToHex(instruction.param1));
-  writeln;
+  if verbose then
+  begin 
+    writeln('  opcode: 0x', wordToHex(instruction.opcode));
+    write('  param0: 0x', wordToHex(instruction.param0));
+    writeln(', type:', paramTypeCode0, ' (', C_PARAMETER_TYPES[paramType0], ')');
+    write('  param1: 0x', wordToHex(instruction.param1));
+    writeln(', type:', paramTypeCode1, ' (', C_PARAMETER_TYPES[paramType1], ')');
+    writeln;
+  end;
+
+  parseAssembly := true;
 end;
 
 { command processing }  
@@ -266,14 +278,21 @@ procedure doEdit(args: string);
 var 
   assemblyLine: string;
   address: integer;
+  instruction: TInstruction;
 begin
   address := systemState.ds;
   repeat
-    write(' ', address, ': ');
+    write(address:5, ': ');
     readln(assemblyLine);
-    if assemblyLine <> '' then parseAssembly(address, assemblyLine);
-    inc(address, 3);
+    if (assemblyLine <> '') and parseAssembly(address, assemblyLine, instruction) then
+    with systemState, instruction do begin
+      memory[ds] := opcode;
+      memory[ds+1] := param0;
+      memory[ds+2] := param1;
+      inc(address, 3);
+    end;
   until assemblyLine = '';
+  systemState.ds := address;
 end;
 
 procedure doSymbols(args: string); 
@@ -287,7 +306,7 @@ begin
     symbol := PSymbol(getObjectAtCursor);
     while symbol <> nil do
     begin
-      with symbol^ do writeln(' ', name, ': ', value);
+      with symbol^ do writeln(' ', name, ' = #', value, ', 0x', wordToHex(value));
       moveForward;
       symbol := PSymbol(getObjectAtCursor);
     end;
@@ -325,7 +344,7 @@ procedure doSetSymbol(args: string);
 var
   position: byte;
   name: TSymbolName;
-  valueStr: string[6];
+  valueStr: string[7];
   value: integer;
 begin
   position := pos('=', args);
@@ -348,13 +367,22 @@ begin
     exit;
   end;
 
+  strUpper(name);
   deleteSymbol(name);
   if length(valueStr) = 0 then exit;
   strUpper(valueStr);
   value := strToInt(valueStr);
   addSymbol(name, value);
 
-  writeln(' ', name, ': ', value);
+  if verbose then
+    writeln(' ', name, ' = #', value, ', 0x', wordToHex(value));
+end;
+
+procedure doVerbose(args: string);
+begin
+  verbose := not verbose;
+  write('verbose is ');
+  if verbose then writeln('on') else writeln('off');
 end;
 
 function findShellCommand(name: TShellCommandName): PShellCommand;
