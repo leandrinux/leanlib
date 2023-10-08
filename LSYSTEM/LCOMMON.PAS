@@ -66,7 +66,7 @@ interface
       param1: 0
     );
 
-  function strToInt(s: TString6): integer;
+  function strToInt(s: TString7): integer;
   function decToInt(const s: TString6): integer;
   function hexToInt(const s: TString4): integer;
   function octToInt(const s: TString6): integer;
@@ -90,7 +90,7 @@ implementation
     gets: a string with a literal number (including #, @ o $)
     returns: the integer value for that string 
   }
-  function strToInt(s: TString6): integer;
+  function strToInt(s: TString7): integer;
   var c: char;
   begin
     c := s[1];
