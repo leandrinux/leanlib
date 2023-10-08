@@ -219,8 +219,8 @@ begin
   if (token[length(token)] = ':') then
   begin
     dec(token[0]);
-    deleteSymbol(token);
     strUpper(token);
+    deleteSymbol(token);
     addSymbol(token, address);
     getToken(assemblyLine, position, token);
   end;
