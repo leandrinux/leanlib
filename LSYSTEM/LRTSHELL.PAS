@@ -138,14 +138,14 @@ end;
 
 { assembly processing }
 
-procedure getToken(const assemblyLine: string; var position:byte; var token: TToken);
+procedure getToken(const line: string; var position:byte; var token: TToken);
 begin
   token := '';
-  while (position <= length(assemblyLine)) and (assemblyLine[position] in C_IGNORE_CHARS) do
+  while (position <= length(line)) and (line[position] in C_IGNORE_CHARS) do
     inc(position);
-  while (position <= length(assemblyLine)) and not (assemblyLine[position] in C_IGNORE_CHARS) do 
+  while (position <= length(line)) and not (line[position] in C_IGNORE_CHARS) do 
   begin
-    token := token + assemblyLine[position]; 
+    token := token + line[position]; 
     inc(position); 
   end;
 end;
@@ -279,8 +279,17 @@ var
   assemblyLine: string;
   address: integer;
   instruction: TInstruction;
+  position: byte;
+  token: TToken;
 begin
-  address := systemState.ds;
+  position := 1;
+  getToken(args, position, token);
+  if token = '' then
+    address := systemState.ds
+  else begin
+    address := decToInt(token);
+    if not assert((address mod 3) = 0, C_STR_INVALID_ARGUMENT) then exit;  
+  end;
   repeat
     write(address:5, ': ');
     readln(assemblyLine);
@@ -290,9 +299,9 @@ begin
       memory[ds+1] := param0;
       memory[ds+2] := param1;
       inc(address, 3);
+      with systemState do if ds < address then ds := address;
     end;
   until assemblyLine = '';
-  systemState.ds := address;
 end;
 
 procedure doSymbols(args: string); 
