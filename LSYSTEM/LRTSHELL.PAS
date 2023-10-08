@@ -26,6 +26,7 @@ type
 
 procedure doClear(args: string); far; forward;
 procedure doEdit(args: string); far; forward;
+procedure doList(args: string); far; forward;
 procedure doHelp(args: string); far; forward;
 procedure doRegs(args: string); far; forward;
 procedure doSymbols(args: string); far; forward;
@@ -43,11 +44,12 @@ const
   C_STR_INVALID_ARGUMENT = 'Invalid argument';
 
   C_SHELL_COMMAND_QUIT = 'exit';
-  C_SHELL_COMMAND_COUNT = 8;
+  C_SHELL_COMMAND_COUNT = 9;
   C_SHELL_COMMANDS: array [0..C_SHELL_COMMAND_COUNT-1] of TShellCommand = (
     (name: 'clear'; detail: 'clears the screen'; handler:doClear),
     (name: 'edit'; detail: 'enters code editing mode'; handler:doEdit),
     (name: 'help'; detail: 'displays this info'; handler:doHelp),
+    (name: 'list'; detail: 'lists the code in memory'; handler:doList),
     (name: 'regs'; detail: 'displays register values'; handler:doRegs),
     (name: 'set'; detail: 'use to assign or delete a symbol. Use #, @ or $'; handler:doSetSymbol),
     (name: 'symbols'; detail: 'lists all symbols'; handler:doSymbols),
@@ -204,7 +206,26 @@ begin
   end;
 end;
 
-function parseAssembly(address: integer; assemblyLine: string; var instruction: TInstruction): boolean;
+function parseAssemblyParameter(
+  const assemblyLine: string; 
+  var position: byte; 
+  var paramType: EParameterType;
+  var paramTypeCode: byte;
+  var paramValue: integer): boolean;
+var
+  token: TToken;
+begin
+  parseAssemblyParameter := false;
+  getToken(assemblyLine, position, token);
+  strUpper(token);
+  paramType := getParameterType(token);
+  if not assert(paramType <> EParameterTypeInvalid, C_STR_INVALID_ARGUMENT) then exit;
+  getParameterTypeCode(paramType, paramTypeCode);
+  if not assert(getParameterValue(paramValue, paramType, token), C_STR_INVALID_ARGUMENT) then exit;
+  parseAssemblyParameter := true;
+end;
+
+function parseAssembly(address: integer; const assemblyLine: string; var instruction: TInstruction): boolean;
 var
   token: TToken;
   position: byte;
@@ -233,23 +254,14 @@ begin
     opcode := getOpcode(token);
     if not assert(opcode <> C_INVALID_OPCODE, C_STR_INVALID_OPCODE) then exit;
   end;
-  
-  { get the first parameter }
-  getToken(assemblyLine, position, token);
-  strUpper(token);
-  paramType0 := getParameterType(token);
-  if not assert(paramType0 <> EParameterTypeInvalid, C_STR_INVALID_ARGUMENT) then exit;
-  getParameterTypeCode(paramType0, paramTypeCode0);
-  if not assert(getParameterValue(instruction.param0, paramType0, token), C_STR_INVALID_ARGUMENT) then exit;
 
-  { get the second parameter }
-  getToken(assemblyLine, position, token);
-  strUpper(token);
-  paramType1 := getParameterType(token);
-  getParameterValue(instruction.param1, paramType1, token);
-  if not assert(paramType1 <> EParameterTypeInvalid, C_STR_INVALID_ARGUMENT) then exit;
-  getParameterTypeCode(paramType1, paramTypeCode1);
-  if not assert(getParameterValue(instruction.param1, paramType1, token), C_STR_INVALID_ARGUMENT) then exit;
+  if not assert(
+    parseAssemblyParameter(assemblyLine, position, paramType0, paramTypeCode0, instruction.param0)
+    , C_STR_INVALID_ARGUMENT) then exit;
+
+  if not assert(
+    parseAssemblyParameter(assemblyLine, position, paramType1, paramTypeCode1, instruction.param1)
+    , C_STR_INVALID_ARGUMENT) then exit;
 
   { set final opcode value including parameter types }
   with instruction do opcode := (opcode shl 8) or (paramTypeCode0 shl 2) or paramTypeCode1;
@@ -302,6 +314,26 @@ begin
       with systemState do if ds < address then ds := address;
     end;
   until assemblyLine = '';
+end;
+
+procedure doList(args: string);
+var
+  address: word;
+  instruction: PInstruction;
+begin
+  address := 0;
+  with systemState do while address < ds do
+  begin
+    instruction := @memory[address];
+    with instruction^ do
+    begin
+      write(address:5, ': 0x', wordToHex(opcode));
+      write(' 0x', wordToHex(param0));
+      write(' 0x', wordToHex(param1));
+    end;
+    writeln;
+    inc(address, 3);
+  end;
 end;
 
 procedure doSymbols(args: string); 
