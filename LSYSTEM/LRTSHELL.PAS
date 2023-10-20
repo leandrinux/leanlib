@@ -1,6 +1,6 @@
 uses
   xcrt,
-  uobject, ulist, 
+  utils, uobject, ulist, 
   lcommon, lbin;
 
 type
@@ -25,6 +25,7 @@ type
   end;
 
 procedure doClear(args: string); far; forward;
+procedure doDump(args: string); far; forward;
 procedure doEdit(args: string); far; forward;
 procedure doList(args: string); far; forward;
 procedure doHelp(args: string); far; forward;
@@ -44,9 +45,10 @@ const
   C_STR_INVALID_ARGUMENT = 'Invalid argument';
 
   C_SHELL_COMMAND_QUIT = 'exit';
-  C_SHELL_COMMAND_COUNT = 9;
+  C_SHELL_COMMAND_COUNT = 10;
   C_SHELL_COMMANDS: array [0..C_SHELL_COMMAND_COUNT-1] of TShellCommand = (
     (name: 'clear'; detail: 'clears the screen'; handler:doClear),
+    (name: 'dump'; detail: 'lists the memory state in the specified range A-B'; handler:doDump),
     (name: 'edit'; detail: 'enters code editing mode'; handler:doEdit),
     (name: 'help'; detail: 'displays this info'; handler:doHelp),
     (name: 'list'; detail: 'lists the code in memory'; handler:doList),
@@ -285,6 +287,32 @@ end;
 procedure doClear(args: string);
 begin
   clrscr;
+end;
+
+procedure doDump(args: string);
+var
+  position, fromAddress, toAddress, count: word;
+begin
+  position := pos('-', args);
+  if position = 0 then
+  begin
+    writeln(' ', C_STR_SYNTAX_ERROR);
+    exit;
+  end;
+  fromAddress := utils.strToInt(copy(args, 1, position-1));
+  toAddress := utils.strToInt(copy(args, position+1, length(args)-position));
+  count := 0;
+  for position := fromAddress to toAddress do with systemState do
+  begin
+    if ((position - fromAddress) mod 16) = 0 then
+    begin
+      writeln;
+      write('   $', wordToHex(position), ':  ');
+    end;
+    write(byteToHex(memory[position]), ' ');
+    inc(count);
+  end;
+  writeln;
 end;
 
 procedure doEdit(args: string);
