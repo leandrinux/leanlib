@@ -28,8 +28,11 @@ procedure doClear(args: string); far; forward;
 procedure doDump(args: string); far; forward;
 procedure doEdit(args: string); far; forward;
 procedure doList(args: string); far; forward;
+procedure doLoad(args: string); far; forward;
+procedure doNew(args: string); far; forward;
 procedure doHelp(args: string); far; forward;
 procedure doRegs(args: string); far; forward;
+procedure doSave(args: string); far; forward;
 procedure doSymbols(args: string); far; forward;
 procedure doSetSymbol(args: string); far; forward;
 procedure doVerbose(args: string); far; forward;
@@ -44,16 +47,20 @@ const
   C_STR_INVALID_OPCODE = 'Invalid opcode';
   C_STR_INVALID_ARGUMENT = 'Invalid argument';
   C_STR_INVALID_ARGUMENT_COUNT = 'Wrong number of arguments';
+  C_STR_IO_ERROR = 'I/O Error';
 
   C_SHELL_COMMAND_QUIT = 'exit';
-  C_SHELL_COMMAND_COUNT = 10;
+  C_SHELL_COMMAND_COUNT = 13;
   C_SHELL_COMMANDS: array [0..C_SHELL_COMMAND_COUNT-1] of TShellCommand = (
     (name: 'clear'; detail: 'clears the screen'; handler:doClear),
     (name: 'dump'; detail: 'lists the memory state in the specified range A-B'; handler:doDump),
     (name: 'edit'; detail: 'enters code editing mode'; handler:doEdit),
     (name: 'help'; detail: 'displays this info'; handler:doHelp),
     (name: 'list'; detail: 'lists the code in memory'; handler:doList),
+    (name: 'load'; detail: 'loads the system state from file'; handler:doLoad),
+    (name: 'new'; detail: 'wipes the system state and starts from scratch'; handler:doNew),
     (name: 'regs'; detail: 'displays register values'; handler:doRegs),
+    (name: 'save'; detail: 'saves the system state to file'; handler:doSave),
     (name: 'set'; detail: 'use to assign or delete a symbol. Use #, @ or $'; handler:doSetSymbol),
     (name: 'symbols'; detail: 'lists all symbols'; handler:doSymbols),
     (name: 'verbose'; detail: 'toggle verbosity'; handler:doVerbose),
@@ -77,13 +84,20 @@ end;
 
 { system state }
 
-procedure initSystemState;
+procedure resetSystemState;
 begin
   verbose := false;
   fillchar(systemState, sizeof(TSystemState), 0);
+  if symbolList <> nil then symbolList^.release;
   symbolList := new(PList, init);
   systemState.registers[6] := C_DEFAULT_STACK_SIZE;
   systemState.ss := C_DEFAULT_MEMORY_SIZE - C_DEFAULT_STACK_SIZE;
+end;
+
+procedure initSystemState;
+begin
+  symbolList := nil;
+  resetSystemState;
 end;
 
 procedure releaseSystemState;
@@ -275,7 +289,7 @@ begin
   if not assert(paramCount = opcodeData.args, C_STR_INVALID_ARGUMENT_COUNT) then exit;
 
   { set final opcode value including parameter types }
-  with instruction do opcode := (opcode shl 8) or (paramTypeCode0 shl 2) or paramTypeCode1;
+  with instruction do opcode := (opcodeData.code shl 8) or (paramTypeCode0 shl 2) or paramTypeCode1;
 
   if verbose then
   begin 
@@ -374,6 +388,23 @@ begin
     writeln;
     inc(address, 3);
   end;
+end;
+
+procedure doNew(args: string); 
+begin
+  resetSystemState;
+end;
+
+procedure doLoad(args: string); 
+begin
+  if not assert(args <> '', C_STR_SYNTAX_ERROR) then exit;
+  if not assert(loadState(systemState, args), C_STR_IO_ERROR) then exit;
+end;
+
+procedure doSave(args: string); 
+begin
+  if not assert(args <> '', C_STR_SYNTAX_ERROR) then exit;
+  if not assert(saveState(systemState, args), C_STR_IO_ERROR) then exit;
 end;
 
 procedure doSymbols(args: string); 
