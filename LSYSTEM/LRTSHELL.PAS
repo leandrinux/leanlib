@@ -158,21 +158,22 @@ var
   registerCode: byte;
   registerName: TRegisterName;
   constantStr: string[6];
-  constantValue: integer;
+  constantValue: shortint;
   code: integer;
 begin
   getIndirectParameterValue := false;
+  registerValue := 0;
   if length(token) < 4 then exit;
   registerName := token[2] + token[3];
-  result := getRegisterValue(registerName, registerCode);
-  if not result then exit;
+  strUpper(registerName);
+  if not getRegisterValue(registerName, registerCode) then exit;
+  registerValue := registerCode;
   if length(token) > 4 then
   begin
     constantStr := copy(token, 5, length(token) - 4);
     val(constantStr, constantValue, code);
     if code <> 0 then exit;
-    if (constantValue < -2048) or (constantValue > 2047) then exit;
-    registerValue := (constantValue shl 4) or registerCode;
+    registerValue := (constantValue shl 8) or registerValue;
   end;
   getIndirectParameterValue := true;
 end;
@@ -320,6 +321,8 @@ procedure doList(args: string);
 var
   address: word;
   instruction: PInstruction;
+const
+  C_SPACER = '     ';
 begin
   address := 0;
   with systemState do while address < ds do
@@ -327,10 +330,11 @@ begin
     instruction := @memory[address];
     with instruction^ do
     begin
-      write(address:5, ': 0x', wordToHex(opcode));
-      write(' 0x', wordToHex(param0));
-      write(' 0x', wordToHex(param1));
+      write('   $', wordToHex(address), C_SPACER, wordToHex(opcode));
+      write(' ', wordToHex(param0));
+      write(' ', wordToHex(param1));
     end;
+    write(C_SPACER, instructionToText(instruction^));
     writeln;
     inc(address, 3);
   end;

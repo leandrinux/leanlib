@@ -11,7 +11,7 @@ interface
   {$P+} { enables compatibility between strings of different type }
 
   const
-    C_SYSTEM_VERSION = '0.0.1';
+    C_SYSTEM_VERSION = '0.0.2';
     C_DEFAULT_MEMORY_SIZE = 2000;
     C_DEFAULT_STACK_SIZE = 200;
     C_INVALID_OPCODE = $FF;    
