@@ -14,6 +14,14 @@ begin
   end;
 end;
 
+function getOpcode(id: TOpcodeId): byte;
+var
+  opcodeData: TOpcodeData;
+begin
+  getOpcodeDataById(id, opcodeData);
+  getOpcode := opcodeData.code;
+end;
+
 procedure testOpcodes;
 type
   TOpcodePair = packed record
