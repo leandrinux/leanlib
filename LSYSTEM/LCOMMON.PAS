@@ -77,7 +77,7 @@ interface
   function shortintToDec(value: shortint): TString4;
 
   function loadState(var m: TSystemState; const filename: string): boolean;
-  procedure saveState(var m: TSystemState; const filename: string);
+  function saveState(var m: TSystemState; const filename: string): boolean;
 
   procedure strUpper(var str:string);
   function isValidHexNumber(s: TString4): boolean;
@@ -210,14 +210,17 @@ implementation
   {
     saves the system state to a file
   }
-  procedure saveState(var m: TSystemState; const filename: string);
+  function saveState(var m: TSystemState; const filename: string): boolean;
   var
     f: file;
   begin
+    {$I-}
     assign(f, filename);
     rewrite(f, 1);
     blockwrite(f, m, sizeof(m));
     close(f);
+    {$I+}
+    saveState := IOResult <> 0;
   end;
 
   {
@@ -235,7 +238,7 @@ implementation
       blockread(f, m, sizeof(m));
       close(f);
     end else
-      loadState:=False;
+      loadState := false;
   end;
 
   { modifies the given string, changing it to uppercase }
