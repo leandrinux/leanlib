@@ -1,0 +1,26 @@
+
+version 0.0.4 - language update
+   - rename LSHIFT to SHL
+   - rename RSHIFT to SHR
+   - add OUT operation: sends the memory interval $0 to $1 of data through virtual port specified at FX
+   - add IN operation: reads up to $1 bytes from virtual port specified at EX to memory position $0
+
+version 0.0.3 - running programs
+   - shell: support running a program from beginning to end
+   - shell: support running a program from an specific instruction
+   - shell: support instant input and execution
+   - 
+
+version 0.0.2 - full support for program editing, loading and saving.
+   - shell: load and save system state
+   - shell: memory inspection
+   - shell: validate number of arguments for each lsystem instruction
+
+version 0.0.1 - initial version
+   - shell: initial implementation
+   - shell: register inspection
+   - shell: support for constant symbols
+   - shell: support for labels
+   - shell: support for all argument types
+   - entire instruction set must be implemented
+   - all code from original VM should be included and compile correctly
