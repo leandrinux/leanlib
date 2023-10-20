@@ -43,6 +43,7 @@ const
   C_STR_SYMBOL_NOT_FOUND = 'Symbol not found';
   C_STR_INVALID_OPCODE = 'Invalid opcode';
   C_STR_INVALID_ARGUMENT = 'Invalid argument';
+  C_STR_INVALID_ARGUMENT_COUNT = 'Wrong number of arguments';
 
   C_SHELL_COMMAND_QUIT = 'exit';
   C_SHELL_COMMAND_COUNT = 10;
@@ -234,6 +235,8 @@ var
   position: byte;
   paramType0, paramType1: EParameterType;
   paramTypeCode0, paramTypeCode1: byte;
+  paramCount: byte;
+  opcodeData: TOpcodeData;
 begin
   parseAssembly := false;
   position := 1;
@@ -254,8 +257,8 @@ begin
   strUpper(token);
   with instruction do
   begin
-    opcode := getOpcode(token);
-    if not assert(opcode <> C_INVALID_OPCODE, C_STR_INVALID_OPCODE) then exit;
+    getOpcodeDataById(token, opcodeData);
+    if not assert(opcodeData.code <> C_INVALID_OPCODE, C_STR_INVALID_OPCODE) then exit;
   end;
 
   if not assert(
@@ -265,6 +268,11 @@ begin
   if not assert(
     parseAssemblyParameter(assemblyLine, position, paramType1, paramTypeCode1, instruction.param1)
     , C_STR_INVALID_ARGUMENT) then exit;
+
+  paramCount := 0;
+  if paramType0 <> EParameterTypeEmpty then inc(paramCount);
+  if paramType1 <> EParameterTypeEmpty then inc(paramCount);
+  if not assert(paramCount = opcodeData.args, C_STR_INVALID_ARGUMENT_COUNT) then exit;
 
   { set final opcode value including parameter types }
   with instruction do opcode := (opcode shl 8) or (paramTypeCode0 shl 2) or paramTypeCode1;

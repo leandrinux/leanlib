@@ -78,8 +78,8 @@ interface
 
   function addToSymbolList(var list: PSymbolNode; const id: TSymbolId; value: integer): PSymbolNode;
   function findSymbolNodeWithId(const symbolList: PSymbolNode; const id: TSymbolId): PSymbolNode;
-  function getOpcode(const id: TOpcodeId): byte;
-  procedure getOpcodeData(code: byte; var data: TOpcodeData);
+  procedure getOpcodeDataById(const id: TOpcodeId; var data: TOpcodeData);
+  procedure getOpcodeDataByCode(code: byte; var data: TOpcodeData);
   function getParameterAsString(parameterType: byte; parameterValue: integer): TParameterStr;
   procedure extractToken(var input:string; var token:string);
   function getParameterType(parameter: string): EParameterType;
@@ -178,7 +178,7 @@ implementation
   end;
 
   { gets a instruction identifier and returns the matching opcode }
-  function getOpcode(const id: TOpcodeId): byte;
+  procedure getOpcodeDataById(const id: TOpcodeId; var data: TOpcodeData);
   var
     min, max, i: byte;
     current: TOpcodeId;
@@ -194,14 +194,15 @@ implementation
       current := C_INSTRUCTION_SET[i].id;
     end;
     if current = id then 
-      getOpcode := C_INSTRUCTION_SET[i].code 
+      data := C_INSTRUCTION_SET[i]
     else if C_INSTRUCTION_SET[max].id = id then
-      getOpcode := C_INSTRUCTION_SET[max].code 
-    else getOpcode := C_INVALID_OPCODE;
+      data := C_INSTRUCTION_SET[max]
+    else 
+      data.code := C_INVALID_OPCODE;
   end;
 
   { returns the name of the operation for the specified opcode }
-  procedure getOpcodeData(code: byte; var data: TOpcodeData);
+  procedure getOpcodeDataByCode(code: byte; var data: TOpcodeData);
   var
     i: byte;
   begin
@@ -427,7 +428,7 @@ implementation
     types: array[1..2] of integer;
     command: TString10; 
     lineCopy, aux: string;  
-    opcode: byte;  
+    opcodeData: TOpcodeData;
     parameterValue: ^integer;
     i: byte;
     instruction: TInstruction;
@@ -464,8 +465,8 @@ implementation
       end;
      { there's no label, so I'll continue. }
      { Identify the command and search for its opcode }
-     opcode := getOpcode(command);
-     if opcode = C_INVALID_OPCODE then
+     getOpcodeDataById(command, opcodeData);
+     if opcodeData.code = C_INVALID_OPCODE then
      begin
        instruction := C_NULL_INSTRUCTION;
        writeln('> ERROR: Invalid opcode ("', command, '")');
@@ -506,7 +507,7 @@ implementation
            types[i] := 0;
          end
        end; { end of parameter for cycle }
-       instruction.opcode := (opcode shl 8) or (types[1] shl 2) or types[2];
+       instruction.opcode := (opcodeData.code shl 8) or (types[1] shl 2) or types[2];
      end;
      lineNumber := lineNumber + 1;
      with systemState, instruction do
@@ -616,7 +617,7 @@ implementation
   begin
     with instruction, opcodeData do
     begin
-      getOpcodeData(opcode shr 8, opcodeData);
+      getOpcodeDataByCode(opcode shr 8, opcodeData);
       returnValue := id;
       if args>0 then
       begin
