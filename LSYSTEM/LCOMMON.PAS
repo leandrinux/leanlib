@@ -14,7 +14,8 @@ interface
     C_SYSTEM_VERSION = '0.0.1';
     C_DEFAULT_MEMORY_SIZE = 2000;
     C_DEFAULT_STACK_SIZE = 200;
-    C_INVALID_OPCODE = $FF;    { invalid instruction code }
+    C_INVALID_OPCODE = $FF;    
+    C_INVALID_OPCODE_ID = '<ERR>';
     C_INSTRUCTION_COUNT = 28;  { total number of supported instructions }
 
     C_PARAMETER_TYPE_LITERAL  = 0;
@@ -71,7 +72,9 @@ interface
   function hexToInt(const s: TString4): integer;
   function octToInt(const s: TString6): integer;
   function wordToHex(w: word): TString4;
+  function wordToDec(w: word): TString6;
   procedure writeDecAddress(n: word);
+  function shortintToDec(value: shortint): TString4;
 
   function loadState(var m: TSystemState; const filename: string): boolean;
   procedure saveState(var m: TSystemState; const filename: string);
@@ -178,6 +181,14 @@ implementation
     wordToHex := s;
   end;
 
+  function wordToDec(w: word): TString6;
+  var
+    returnValue: TString6;
+  begin
+    str(w, returnValue);
+    wordToDec := returnValue;
+  end;
+
   {
     writes a memory address in decimal including leading zeroes
   }
@@ -275,6 +286,14 @@ implementation
   procedure log(logType: ELogType; message: string);
   begin
     writeln('[-] ', message);
+  end;
+
+  function shortintToDec(value: shortint): TString4;
+  var 
+    resultValue: TString4;
+  begin
+    str(value, resultValue);
+    shortintToDec := resultValue;
   end;
 
 end.
