@@ -220,7 +220,7 @@ implementation
     blockwrite(f, m, sizeof(m));
     close(f);
     {$I+}
-    saveState := IOResult <> 0;
+    saveState := IOResult = 0;
   end;
 
   {
