@@ -71,12 +71,12 @@ When a parameter is an address, the full 16 bit value stored in the parameter fi
 When a parameter is indirect, the parameter value is formed as follows:
 
      0   1   2   3   4   5   6   7  8  9   10  11 12  13  14  15
-    |--------------------------------------------|--------------|
-    |                                Constant    |   Register   |
-    |                                 offset     |     code     |
-    |--------------------------------------------|--------------|
+    |-----------------------------|--------------|--------------|
+    |           Constant          |    Unused    |   Register   |
+    |            offset           |              |     code     |
+    |-----------------------------|--------------|--------------|
 
-The first twelve bits represent a signed 12 bit number, therefore defined within the range -2048 to 2047. The register code is the same value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
+The first eight bits represent a signed 8 bit number, therefore defined within the range -128 to 127. The register code is the same value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
 
 ## Instruction set 
 
