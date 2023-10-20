@@ -41,27 +41,30 @@ interface
         next: PSymbolNode;
     end;
 
-    TInstructionId = string[6];
+    TOpcodeId = string[6];
 
     TRegisterName = string[2];
 
-    TInstructionPair = packed record
-      id: TInstructionId;
-      code: byte;      
+    TParameterStr = string[20];
+
+    TOpcodeData = packed record
+      code: byte;
+      args: byte;      
+      id: TOpcodeId;
     end;
 
   const
-    C_INSTRUCTION_SET : array[0..C_INSTRUCTION_COUNT-1] of TInstructionPair = (
-      (id:'ADD';     code:$02), (id:'AND';     code:$31), (id:'CALL';    code:$43),
-      (id:'CMP';     code:$06), (id:'DIV';     code:$05), (id:'DUMP';    code:$13),
-      (id:'JE';      code:$22), (id:'JG';      code:$23), (id:'JL';      code:$24),
-      (id:'JMP';     code:$21), (id:'JN';      code:$27), (id:'JNZ';     code:$28),
-      (id:'JP';      code:$26), (id:'JZ';      code:$25), (id:'LSHIFT';  code:$07),
-      (id:'MOV';     code:$01), (id:'MUL';     code:$04), (id:'NOT';     code:$33),
-      (id:'OR';      code:$32), (id:'POP';     code:$42), (id:'PUSH';    code:$41),
-      (id:'READ';    code:$11), (id:'RET';     code:$44), (id:'RSHIFT';  code:$08),
-      (id:'STOP';    code:$77), (id:'SUB';     code:$03), (id:'WRITE';   code:$12),
-      (id:'XOR';     code:$34)
+    C_INSTRUCTION_SET : array[0..C_INSTRUCTION_COUNT-1] of TOpcodeData = (
+      (code:$02; args:2; id:'ADD'),  (code:$31; args:2; id:'AND'),  (code:$43; args:1; id:'CALL'),
+      (code:$06; args:2; id:'CMP'),  (code:$05; args:2; id:'DIV'),  (code:$13; args:0; id:'DUMP'),
+      (code:$22; args:2; id:'JE'),   (code:$23; args:2; id:'JG'),   (code:$24; args:2; id:'JL'),
+      (code:$21; args:1; id:'JMP'),  (code:$27; args:1; id:'JN'),   (code:$28; args:1; id:'JNZ'),
+      (code:$26; args:1; id:'JP'),   (code:$25; args:1; id:'JZ'),   (code:$07; args:2; id:'LSHIFT'),
+      (code:$01; args:2; id:'MOV'),  (code:$04; args:2; id:'MUL'),  (code:$33; args:1; id:'NOT'),
+      (code:$32; args:2; id:'OR'),   (code:$42; args:1; id:'POP'),  (code:$41; args:1; id:'PUSH'),
+      (code:$11; args:2; id:'READ'), (code:$44; args:0; id:'RET'),  (code:$08; args:2; id:'RSHIFT'),
+      (code:$77; args:0; id:'STOP'), (code:$03; args:2; id:'SUB'),  (code:$12; args:2; id:'WRITE'),
+      (code:$34; args:2; id:'XOR')
     );
 
     C_PARAMETER_TYPES: array[EParameterType] of string[9] = (
@@ -75,7 +78,9 @@ interface
 
   function addToSymbolList(var list: PSymbolNode; const id: TSymbolId; value: integer): PSymbolNode;
   function findSymbolNodeWithId(const symbolList: PSymbolNode; const id: TSymbolId): PSymbolNode;
-  function getOpcode(const id: TInstructionId): byte;
+  function getOpcode(const id: TOpcodeId): byte;
+  procedure getOpcodeData(code: byte; var data: TOpcodeData);
+  function getParameterAsString(parameterType: byte; parameterValue: integer): TParameterStr;
   procedure extractToken(var input:string; var token:string);
   function getParameterType(parameter: string): EParameterType;
   function getParameterTypeCode(parameterType: EParameterType; var parameterCode: byte): boolean;
@@ -88,6 +93,7 @@ interface
     var symbolList: PSymbolNode; 
     var lineNumber: word
   ): boolean;
+  function instructionToText(const instruction: TInstruction): string;
   function build(const sourceFilename, binaryFilename: string): boolean;
 
 implementation
@@ -172,10 +178,10 @@ implementation
   end;
 
   { gets a instruction identifier and returns the matching opcode }
-  function getOpcode(const id: TInstructionId): byte;
+  function getOpcode(const id: TOpcodeId): byte;
   var
     min, max, i: byte;
-    current: TInstructionId;
+    current: TOpcodeId;
   begin
     min := 0;
     max := C_INSTRUCTION_COUNT - 1;
@@ -192,6 +198,53 @@ implementation
     else if C_INSTRUCTION_SET[max].id = id then
       getOpcode := C_INSTRUCTION_SET[max].code 
     else getOpcode := C_INVALID_OPCODE;
+  end;
+
+  { returns the name of the operation for the specified opcode }
+  procedure getOpcodeData(code: byte; var data: TOpcodeData);
+  var
+    i: byte;
+  begin
+    i := 0;
+    while (i < C_INSTRUCTION_COUNT) and (C_INSTRUCTION_SET[i].code <> code) do inc(i);
+    if i = C_INSTRUCTION_COUNT then
+    begin
+      data.code := code;
+      data.args := 0;
+      data.id := C_INVALID_OPCODE_ID;
+    end else
+      data := C_INSTRUCTION_SET[i];
+  end;
+
+  function getParameterAsString(parameterType: byte; parameterValue: integer): TParameterStr;
+  var
+    returnValue: TParameterStr;
+    constantValue: shortInt;
+  begin
+    returnValue := '';
+    case parameterType of
+
+      C_PARAMETER_TYPE_LITERAL: 
+        returnValue := '$' + wordToHex(parameterValue);
+
+      C_PARAMETER_TYPE_ADDRESS: 
+        returnValue := wordToDec(parameterValue);
+
+      C_PARAMETER_TYPE_REGISTER: 
+        returnValue := C_REGISTERS[parameterValue - 6];
+
+      C_PARAMETER_TYPE_INDIRECT: 
+      begin
+        returnValue := '[' + C_REGISTERS[(parameterValue and $000F) - 6] + ']';
+        constantValue := parameterValue shr 8;
+        if constantValue > 0 then 
+          returnValue := returnValue + '+' + shortintToDec(constantValue)
+        else if constantValue < 0 then 
+          returnValue := returnValue + shortintToDec(constantValue);
+      end;
+
+    end;
+    getParameterAsString := returnValue;
   end;
 
   { extracts a token from the input string, removing it and returning it as output }
@@ -320,25 +373,20 @@ implementation
 
   procedure parseIndirect(var token: string; var paramType, paramValue: integer; const lineCopy: string);
   var
-    offset: byte;
-    position: byte;
     b: byte;
     decstr: string;
-    plus: integer;
+    constantValue: integer;
+    registerName: TRegisterName;  
+    registerValue: byte;  
   begin
     paramType := C_PARAMETER_TYPE_INDIRECT;
+    paramValue := 0;
+
     { we get the code for the specified register }
-    if token[3] = 'X' then
-      paramValue := hexToInt(token[2])
-    else
-      if token[3] = 'P' then
-        case token[2] of
-          'S': paramValue := 6;
-          'I': paramValue := 8;
-          'B': paramValue := 7;
-        end
-      else
-        paramValue := 9;
+    registerName := token[2] + token[3];
+    strUpper(registerName);
+    if not getRegisterValue(registerName, registerValue) then exit;
+
     { if there is a constant present then we get its value }
     token := token + lineCopy;
     b := pos(',', token);
@@ -346,18 +394,18 @@ implementation
     delete(token, 1, 4);
     extractToken(token, decstr);
     if decstr = '' then
-      plus := 0
+      constantValue := 0
     else begin
-      plus := 1;
+      constantValue := 1;
       if decstr[1] in ['+', '-'] then
       begin
-        if decstr[1] = '-' then plus := -1;
+        if decstr[1] = '-' then constantValue := -1;
         delete(decstr, 1, 1);
       end;
-      plus := (plus * decToInt(decstr)) shl 4;
+      constantValue := (constantValue * decToInt(decstr)) shl 4;
     end;
     { we form the value for this parameter and assign it }
-    paramValue := paramValue or plus;
+    paramValue := constantValue or registerValue;
   end;
 
   {
@@ -559,6 +607,25 @@ implementation
       dispose(symbolList);
       symbolList := symbolNode;
     end;
+  end;
+
+  function instructionToText(const instruction: TInstruction): string;
+  var
+    opcodeData: TOpcodeData;
+    returnValue: string;
+  begin
+    with instruction, opcodeData do
+    begin
+      getOpcodeData(opcode shr 8, opcodeData);
+      returnValue := id;
+      if args>0 then
+      begin
+        returnValue := returnValue + ' ' + getParameterAsString((opcode shr 2) and $0003, param0);
+        if args>1 then
+          returnValue := returnValue + ', ' + getParameterAsString(opcode and $0003, param1);
+      end;
+    end;
+    instructionToText := returnValue;
   end;
 
   { gets a source code file name and a binary file name }
