@@ -358,9 +358,9 @@ begin
     readln(assemblyLine);
     if (assemblyLine <> '') and parseAssembly(address, assemblyLine, instruction) then
     with systemState, instruction do begin
-      memory[ds] := opcode;
-      memory[ds+1] := param0;
-      memory[ds+2] := param1;
+      memory[address] := opcode;
+      memory[address+1] := param0;
+      memory[address+2] := param1;
       inc(address, 3);
       with systemState do if ds < address then ds := address;
     end;
