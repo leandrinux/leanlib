@@ -15,7 +15,7 @@ unit
 interface
 
   uses
-    uexc, uclasses, types, locale, uobject, ubitmap, ubitmap1, upoints;
+    uexc, uclasses, types, locale, uobject, ubitmap, ubitmap1, upoints, math;
 
   const
     C_DEFAULT_STROKE_COLOR = EWhite;
@@ -239,8 +239,10 @@ implementation
     px, py, d: integer;
     dE, dSE: integer;
     points: PPoints;
+    perimeter: longint;
   begin
-    points := new(PPoints, initWithSize(C_DEFAULT_POINTS_MAX));
+    perimeter := round(Math.perimeter(radius));
+    points := new(PPoints, initWithSize(perimeter));
     px := 0;
     py := radius;
     d := 1 - radius;
