@@ -8,6 +8,9 @@ unit
 
 interface
 
+  const
+    PI_2 = 6.28318530718;
+
   function pow(value, exp: byte): longint;
   function maxword(a, b:word): word;
   function minword(a, b:word): word;
@@ -19,6 +22,7 @@ interface
   function hiword(l: longint): word;
   procedure swapint(var first, second : integer);
   function incptr(p: pointer; count: word): pointer;
+  function perimeter(radius: real): real;
 
 implementation
 
@@ -84,6 +88,11 @@ implementation
   function incptr(p: pointer; count: word): pointer;
   begin
     incptr := ptr(seg(p^), ofs(p^) + count);
+  end;
+
+  function perimeter(radius: real): real;
+  begin
+    perimeter := PI_2 * radius;
   end;
 
 end.
