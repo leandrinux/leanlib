@@ -8,6 +8,9 @@ unit
 
 interface
 
+  uses
+    types;
+
   const
     PI_2 = 6.28318530718;
 
@@ -23,6 +26,7 @@ interface
   procedure swapint(var first, second : integer);
   function incptr(p: pointer; count: word): pointer;
   function perimeter(radius: real): real;
+  procedure createCirclePoints(radius: word; var points: PPoint; var count, byteSize: word);
 
 implementation
 
@@ -93,6 +97,61 @@ implementation
   function perimeter(radius: real): real;
   begin
     perimeter := PI_2 * radius;
+  end;
+
+  procedure createCirclePoints(radius: word; var points: PPoint; var count, byteSize: word);
+  var
+    px, py, d: integer;
+    dE, dSE: integer;
+    p: ^integer;
+
+    procedure add(x, y: integer);
+    begin
+      p^ := x; inc(p);
+      p^ := y; inc(p);
+    end; 
+
+  begin
+    byteSize := sizeof(TPoint) * round(Math.perimeter(radius));
+    GetMem(p, byteSize);
+    points := PPoint(p);
+    px := 0;
+    py := radius;
+    d := 1 - radius;
+    dE := 3;
+    dSE := -(radius shl 1) + 5;
+    
+    add(0, -py);
+    add(0, +py);
+    add(+py, -px);
+    add(-py, +px);
+    count := 4;    
+    while py>px do
+    begin
+      if d<0 then
+      begin
+        d := d + dE;
+        dE := dE + 2;
+        dSE := dSE + 2;
+        px := px + 1;
+      end else
+      begin
+        d := d + dSE;
+        dE := dE + 2;
+        dSE := dSE + 4;
+        px := px + 1;
+        py := py - 1;
+      end;
+      add(+px, -py);
+      add(-px, +py);
+      add(-px, -py);
+      add(+px, +py);
+      add(+py, -px);
+      add(-py, +px);
+      add(-py, -px);
+      add(+py, +px);
+      inc(count, 8);
+    end;
   end;
 
 end.
