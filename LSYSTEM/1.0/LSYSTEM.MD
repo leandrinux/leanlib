@@ -10,20 +10,38 @@ The lsystem architecture is little-endian 32-bit. CPU registers are all 32-bit. 
 
 |Register|Code|Description|
 |--------|----|-----------|
-|SP|6|Stack pointer|
-|BP|7|Base pointer|
-|IP|8|Instruction pointer|
-|CC|9|Condition codes (flags)|
-|AX|10|General use register|
-|BX|11|General use register|
-|CX|12|General use register|
-|DX|13|General use register|
-|DS||Data segment|
-|SS||Stack segment|
+|SP|$10|Stack pointer|
+|BP|$20|Base pointer|
+|IP|$30|Instruction pointer|
+|CC|$40|Condition codes (flags)|
+|EAX|$50|General use register (32 bit)|
+|AX|$51|General use register (low 16 bit of EAX)|
+|AH|$52|General use register (high 8 bit of AX)|
+|AL|$53|General use register (low 8 bit of AX)|
+|EBX|$60|General use register (32 bit)|
+|BX|$61|General use register (low 16 bit of EBX)|
+|BH|$62|General use register (high 8 bit of BX)|
+|BL|$63|General use register (low 8 bit of BX)|
+|ECX|$70|General use register (32 bit)|
+|CX|$71|General use register (low 16 bit of ECX)|
+|CH|$72|General use register (high 8 bit of CX)|
+|CL|$73|General use register (low 8 bit of CX)|
+|EDX|$80|General use register (32 bit)|
+|DX|$81|General use register (low 16 bit of EDX)|
+|DH|$82|General use register (high 8 bit of DX)|
+|DL|$83|General use register (low 8 bit of DX)|
+|CS|$A0|Code segment|
+|DS|$A1|Data segment|
+|SS|$A2|Stack segment|
 
-The CC register is affected by certain instructions. It has two meaningful bits: the zero bit and the sign bit. 
+The CC register is affected by certain instructions and has three meaningful bits. 
 
-The DS and SS registers cannot be modified by code, they are fixed during execution.
+|Bit number|Name|Meaning|
+|----------|----|-------|
+|0|Zero flag|1 if the last operation produced a zero value, 0 if it produced a non-zero value|
+|1|Sign flag|1 if the last operation produced a odd value, 0 if it produced an even value|
+|2|I/O flag|1 if the last I/O operation was successful, 0 if the device is busy|
+|3..31|Unused|Bits reserved for future use|
 
 ## Instructions
 
@@ -38,24 +56,25 @@ Instruction sizes are fixed, so instructions like `MOV` that take two arguments 
 
 The 32-bit header field is made of two parts: the first 16 bits which contains the opcode of the instruction that must be performed by the CPU, and the final 16 bits which contain extra information such as the type of each parameter.
     
-    0                      15          28  29   30  31     
-    |------------------------|------------------------|
-    |        Opcode          |  N/A | Param0 | Param1 |
-    |------------------------|------------------------|
+    0                      15        24 25 26 27 28 29 30 31     
+    |------------------------|------|-----------|-----------|
+    |        Opcode          |  N/A | Param0    | Param1    |
+    |------------------------|------|-----------|-----------|
 
     0 .. 15  : 8-bit operation code
     16 .. 27 : Reserved / Not applicable
-    28 - 29 : Param0 type
-    30 - 31 : Param1 type
+    24 - 27 : Param0 type
+    28 - 31 : Param1 type
 
-The 2-bit parameter type values are defined as follows:
+The 4-bit parameter type values are defined as follows:
 
 |Type|Value|
-|-|-|
+|----|-----|
 |0|Inmediate / Literal|
 |1|Register|
 |2|Address|
 |3|Indirect|
+|4..7|Not used / Reserved|
 
 When a parameter is a literal, the full 32 bit of the parameter field represent the value.
 
@@ -65,17 +84,17 @@ When a parameter is an address, the full 32 bit value stored in the parameter fi
 
 When a parameter is indirect, the parameter value is formed as follows:
 
-     0                                         27 28  29  30  31  	
-    |--------------------------------------------|--------------|
-    |           Constant                         |   Register   |
-    |            offset                          |     code     |
-    |--------------------------------------------|--------------|
+     0             7 8                          27 28  29  30  31  	
+    |---------------|-----------------------------|--------------|
+    |    Constant   |          Unused             |   Register   |
+    |     offset    |                             |     code     |
+    |---------------|-----------------------------|--------------|
 
-The first 28 bits are a signed integer constant, therefore defined in the -67108864..67108863 range. The register code is the same value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
+The first 8 bits are a signed byte constant, therefore defined in the -128..127 range. The register code is the same value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
 
 ## Instruction set 
 
-The lsystem instruction set consists of 32 instructions divided in 5 groups: math, jumps, binary algebra and stack operations.
+The lsystem instruction set consists of 31 instructions divided in 5 groups: math, jumps, binary algebra, stack operations and device IO.
 
 ### Math
 
@@ -91,10 +110,10 @@ The math group of instructions is made of 12 instructions, including all from th
 |CMP|0x06|2|Yes|Does $1 - $2 without changing $1|
 |SHL|0x07|2|Yes|Shifts $1 to the left by $2 bits|
 |SHR|0x08|2|Yes|Shifts $1 to the right by $2 bits|
-|FADD|0x09|2|Yes|$1 becomes $1 + $2 (floating point)|
-|FSUB|0x0A|2|Yes|$1 becomes $1 - $2 (floating point)|
-|FMUL|0x0B|2|Yes|$1 becomes $1 * $2 (floating point)|
-|FDIV|0x0C|2|Yes|$1 becomes $1 / $2 (floating point)|
+|FADD|0x09|2|Yes|$1 becomes $1 + $2 (floating point operation)|
+|FSUB|0x0A|2|Yes|$1 becomes $1 - $2 (floating point operation)|
+|FMUL|0x0B|2|Yes|$1 becomes $1 * $2 (floating point operation)|
+|FDIV|0x0C|2|Yes|$1 becomes $1 / $2 (floating point operation)|
 
 ### Jumps
 
@@ -124,52 +143,71 @@ The binary algebra group includes the 4 basic logical operations.
 
 ### Stack operations
 
-The stack operations are 4 instructions allowing for stack access such as adding or removing values to it, and most importantly, enables the ability to call subroutines.
+The stack operations are 7 instructions allowing for stack access such as adding or removing values to it, and most importantly, enables the ability to call subroutines.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
 |PUSH|0x41|1|No|Pushes a value to the stack|
 |POP|0x42|1|No|Pops a value from the stack|
-|CALL|0x43|1|No|Performs subroutine call (pushes current instruction address plus one, then jumps to specified address)|
-|RET|0x44|0|No|Pops the address from the stack and resumes execution from there|
+|PUSHA|0x43|0|No|Pushes all registers to the stack|
+|POPA|0x44|0|No|Pops all registers to the stack|
+|CALL|0x45|1|No|Performs subroutine call (pushes current instruction address plus one, then jumps to specified address)|
+|RET|0x46|0|No|Pops the address from the stack and resumes execution from there|
+
+### Device I/O
+
+The device operations are two. They allow to send or receive messages to the device bus
+
+|Instruction|Opcode|Args|Affects CC|Description|
+|-----------|------|----|----------|-----------|
+|OUT|0x51|2|Yes|Sends the value $2 to device number $1|
+|IN|0x52|2|Yes|Receives a value from device number $1 and stores it in $2|
 
 ## Memory map
 
-The memory size is fixed to 2000 16-bit words (total size is 4K).
-By default, the stack is 200 words in size. The stack segment is located at the end of the memory space.
+The memory size is user configurable. It is divided in three sections: code, data and stack. 
+By default, the stack is 200 words in size, but this is user configurable as well. The stack segment is located at the end of the memory space.
 
           |-----------------| 
-        0 | code            |
-        1 | segment         |
+        0 | reserved        |
+        1 | area            |
+       ..
+          |-----------------|
+          | code            |  <- CS points here
+          | segment         |
       ...
           |-----------------|
           | data            |  <- DS points here
           | segment         |
       ...
-     1799 |                 |
+          |                 |
           |-----------------|
-     1800 | stack           |  <- SS points here
-     1801 | segment         |
+          | stack           |  <- SS points here
+          | segment         |
       ...
-     1999 |                 |
+          |                 |
           |-----------------|
+
+When the system starts, IP (instruction pointer) and CS are initialized with a value that depends on the system (by default it is 1024 but it could be something else or even 0), then execution starts from that position. The reserved area is intended for multiple uses such as storing information about the hardware, data buffers and the interrupt table. By default the interrupt table starts at position 100 and usually it's no more than 256 bytes in size.
 
 ## lsystem assembly language
 
 The basic assembly program structure is as follows:
 
-    * comments are preceded by asterisks
-    \\ASM
-       mov ax, #1
-       mov bx, #2
-       add ax, bx
+    # comments are preceded by hash symbols
+    // they can also be defined with double slashes
+    /*
+      multiline comments are also possible using /* and */ just like in C and other languages 
+    */
+    main:
+       mov ax, 1
+       mov bx, 2
+       add ax, bx  // comments can go here as well
        mov 1, ax
+       
+       // you can also skip lines
        write 1, 1
        stop
-
-You can specify a custom size for the stack by adding STACK=(size) next to the `\\ASM` header. 
-
-    \\ASM STACK=100
 
 ### Instructions and arguments
 
@@ -182,15 +220,20 @@ Instructions are case insensitive. They can have 1 or 2 arguments, or none at al
 
 #### Literal values
 
-The only supported literals are integer numbers. No chars and no strings are supported. Literals can be written in decimal, octal or hexadecimal format. Decimals must be preceded by `#`, octals are preceded by `@` and hexadecimals are preceded by `$`. Beware that plain numbers without this identification will be treated as memory references.
+Supported literal values are
+
+* 8-bit ASCII chars: represented between quotes. For instance 'a' which represents the 8-bit number 97.
+* Integer constants: represented as 1, #2, $3 and 0x4. No prefix means it's a decimal constant, # means it's octal and $ or 0x means it's hexadecimal. Decimal literals can have a minus sign (-) for convenience to represent negative numbers.
+* 32-bit floating point numbers: always in decimal and containing a dot. 3.1415 is a float literal. 3.0 is a float value, but plain 3 is an integer.
 
 #### Memory references
 
-You can operate with information in main memory by using memory references. They are simply stated as plain numbers, for instance, to move the number 23 to the memory position 1332 you would write `MOV 1332, #23` 
+You can operate with information in main memory by using memory references. They are stated as a numerical constant between brackets. Numerical constants can be decimal, octal or hexadecimal.
+For instance, to move the number 0xEE to the memory position 1332 you would write `MOV [1332], 0xEE` 
 
 #### Registers
 
-There are several registers that you can use together with instructions. For a full list, check the beginning of this document. You cannot change or access in any way the values stored in the DS or SS registers.
+There are several registers that you can use together with instructions. For a full list, check the table at the beginning of this document. 
 
 #### Indirect values
 
@@ -200,22 +243,30 @@ You can also add a constant that will be substracted or added to the memory loca
 
 Indirect values only work with registers. If you want to use the address located in a memory position you first need to load that memory position into a register, then use the register.
 
-### Constants and labels
+### Labels
 
-You can use labels to create subroutines. Labels are defined right before an instruction.
+You can use labels to create subroutines. Labels are defined before an instruction, but not necessarily in the same line. Labels are case sensitive
 
-    \\ASM STACK=100
+    main:
                  call doSomething
                  stop
 
-    doSomething: mov ax, #1
-                 mov bx, #2
+    doSomething: mov ax, 1
+                 mov bx, 2
                  add ax, bx
                  mov 1, ax
-                 write 1, 1
+                 
+`main` is a mandatory label which indicates the starting point of the program. 
 
-You can also define constants before the `\\ASM` header, and then use them instead of literal values.
+### Definitions and inclusions
 
-    NUMBER EQU #16
-    \\ASM
-        mov ax, NUMBER
+Definitions are processed before compilation and they consist of names that are replaced by the value on the right side. Definitions can be any string, for instance a literal value, a register, or a memory reference. Definition names cannot be duplicates or existing reserved words. Definitions can be defined anywhere, but they can only be used after being defined. They are case sensitive
+
+    #DEFINE value 0xCAFE
+    
+	main:
+        mov ax, value
+        
+### Constants
+
+### Interacting with devices
