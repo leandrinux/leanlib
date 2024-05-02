@@ -1,5 +1,6 @@
 uses
-  ltypes;
+  lcbase,
+  lcommon;
 
 begin
 end.
