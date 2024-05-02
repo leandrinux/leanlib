@@ -1,2 +1,5 @@
+uses
+  ltypes;
+
 begin
 end.

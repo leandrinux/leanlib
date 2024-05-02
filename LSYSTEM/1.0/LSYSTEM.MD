@@ -68,13 +68,13 @@ The 32-bit header field is made of two parts: the first 16 bits which contains t
 
 The 4-bit parameter type values are defined as follows:
 
-|Type|Value|
+|Value|Meaning|
 |----|-----|
 |0|Inmediate / Literal|
 |1|Register|
 |2|Address|
 |3|Indirect|
-|4..7|Not used / Reserved|
+|4..15|Not used / Reserved|
 
 When a parameter is a literal, the full 32 bit of the parameter field represent the value.
 
@@ -84,17 +84,17 @@ When a parameter is an address, the full 32 bit value stored in the parameter fi
 
 When a parameter is indirect, the parameter value is formed as follows:
 
-     0             7 8                          27 28  29  30  31  	
-    |---------------|-----------------------------|--------------|
-    |    Constant   |          Unused             |   Register   |
-    |     offset    |                             |     code     |
-    |---------------|-----------------------------|--------------|
+     0             7 8                    26  27  28  29  30  31  	
+    |---------------|------------------------|------------------|
+    |    Constant   |         Unused         |     Register     |
+    |     offset    |                        |       code       |
+    |---------------|------------------------|------------------|
 
-The first 8 bits are a signed byte constant, therefore defined in the -128..127 range. The register code is the same value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
+The first 8 bits are a signed byte constant, therefore defined in the -128..127 range. The register code field contains the same 5-bit value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
 
 ## Instruction set 
 
-The lsystem instruction set consists of 31 instructions divided in 5 groups: math, jumps, binary algebra, stack operations and device IO.
+The lsystem instruction set consists of 32 instructions divided in 5 groups: math, jumps, binary algebra, stack operations and device IO.
 
 ### Math
 
@@ -223,7 +223,7 @@ Instructions are case insensitive. They can have 1 or 2 arguments, or none at al
 Supported literal values are
 
 * 8-bit ASCII chars: represented between quotes. For instance 'a' which represents the 8-bit number 97.
-* Integer constants: represented as 1, #2, $3 and 0x4. No prefix means it's a decimal constant, # means it's octal and $ or 0x means it's hexadecimal. Decimal literals can have a minus sign (-) for convenience to represent negative numbers.
+* Integer constants: represented as 1, #2, $3 and 0x4. No prefix means it's a decimal constant, # means it's octal and $ or 0x means it's hexadecimal. Decimal literals can have a minus sign  (-) for convenience to represent negative numbers.
 * 32-bit floating point numbers: always in decimal and containing a dot. 3.1415 is a float literal. 3.0 is a float value, but plain 3 is an integer.
 
 #### Memory references
