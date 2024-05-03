@@ -1,6 +1,7 @@
 uses
+  lcommon,
   lcbase,
-  lcommon;
+  lcparser;
 
 begin
 end.
