@@ -45,26 +45,25 @@ The CC register is affected by certain instructions and has three meaningful bit
 
 ## Instructions
 
-A lsystem virtual CPU instruction is made of three components: a header and two arguments. Each component is 32 bit in size, therefore the whole instruction is 12 bytes long. 
+A lsystem virtual CPU instruction is made of three components: a header and two arguments. The header is 16 bit in size, while the parameter info is 32 bit. This makes the whole instruction 10 bytes long. 
 
      |--------------|--------------|--------------|
      |    Header    |    Param0    |    Param1    |
      |--------------|--------------|--------------|
-     0              32             64             96
+     0              16             48             80
 
 Instruction sizes are fixed, so instructions like `MOV` that take two arguments and others like `RET` that take none require the same space in memory. Instructions are placed in the code segment, with starts at position 0 of the memory space. 
 
-The 32-bit header field is made of two parts: the first 16 bits which contains the opcode of the instruction that must be performed by the CPU, and the final 16 bits which contain extra information such as the type of each parameter.
+The 32-bit header field is made of two parts: the first byte which contains the opcode of the instruction that must be performed by the CPU, and the final byte which contain extra information such as the type of each parameter.
     
-    0                      15        24 25 26 27 28 29 30 31     
-    |------------------------|------|-----------|-----------|
-    |        Opcode          |  N/A | Param0    | Param1    |
-    |------------------------|------|-----------|-----------|
+    |------------------------|-----------|-----------|
+    |        Opcode          | Param0    | Param1    |
+    |------------------------|-----------|-----------|
+    0                        8           12          15
 
-    0 .. 15  : 8-bit operation code
-    16 .. 27 : Reserved / Not applicable
-    24 - 27 : Param0 type
-    28 - 31 : Param1 type
+    0 .. 7  : 8-bit operation code
+    8 - 11  : Param0 type
+    12 - 15 : Param1 type
 
 The 4-bit parameter type values are defined as follows:
 
@@ -84,11 +83,11 @@ When a parameter is an address, the full 32 bit value stored in the parameter fi
 
 When a parameter is indirect, the parameter value is formed as follows:
 
-     0             7 8                    26  27  28  29  30  31  	
     |---------------|------------------------|------------------|
     |    Constant   |         Unused         |     Register     |
     |     offset    |                        |       code       |
     |---------------|------------------------|------------------|
+     0             7 8                    26  27  28  29  30  31  	
 
 The first 8 bits are a signed byte constant, therefore defined in the -128..127 range. The register code field contains the same 5-bit value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
 
