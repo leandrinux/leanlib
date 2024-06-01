@@ -28,19 +28,21 @@ interface
   type
     TString3 = string[3];
     TString5 = string[5];
+    TFloat32 = single;
     TUInt8 = byte;
     TUInt16 = word;
     TUInt32 = longint;
-
-    TInstruction = packed record
-      header: TUInt32;
-      param0: TUInt32;
-      param1: TUInt32;
-    end;
+    TChar = char;
 
     TInstructionHeader = packed record
-      opcode: TUInt16;
-      params: TUInt16;
+      opcode: TUInt8;
+      params: TUInt8;
+    end;
+
+    TInstruction = packed record
+      header: TInstructionHeader;
+      param0: TUInt32;
+      param1: TUInt32;
     end;
 
 implementation
