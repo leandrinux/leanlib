@@ -1,4 +1,5 @@
 uses
+  literals,
   lcommon,
   lcbase,
   lcparser;
