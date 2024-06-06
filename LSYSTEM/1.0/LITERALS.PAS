@@ -74,7 +74,15 @@ implementation
   end;
   
   function getDecimalValue(const s: string; var value: TUInt32): boolean;
+  var 
+    clean: string;
+    code: integer;
+    i: byte;
   begin
+    clean := '';
+    for i := 1 to length(s) do if s[i]<>C_NUMBER_SPACER then clean := clean + s[i];
+    val(clean, value, code);
+    getDecimalValue := code <> 0;
   end;
   
   function getHexadecimalValue(const s: string; var value: TUInt32): boolean;

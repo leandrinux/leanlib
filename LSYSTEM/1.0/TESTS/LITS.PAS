@@ -14,14 +14,14 @@ begin
   result := func(s, value);
   if (result <> expectedSuccess) and (value <> expectedValue) then 
   begin
-    write('fail! ');
+    write('fail ');
     if expectedSuccess then 
-      writeln('expected ', expectedValue, ', got ', value)
+      writeln('(expected ', expectedValue, ', got ', value, ')')
     else
       writeln('should return false');
     halt(1);
   end else
-    writeln('ok');
+    writeln('pass');
 end;
 
 begin
@@ -42,6 +42,8 @@ begin
   testValue(getBinaryValue, '0B10101100', false, 0);
   testValue(getBinaryValue, '0b', false, 0);
   testValue(getBinaryValue, '0', false, 0);
+  testValue(getBinaryValue, '___', false, 0);
+  testValue(getBinaryValue, '_', false, 0);
   testValue(getBinaryValue, '', false, 0);
 
   writeln('test for octal integers');
@@ -60,7 +62,26 @@ begin
   testValue(getOctalValue, '0O0118010', false, 0);
   testValue(getOctalValue, '0O', false, 0);
   testValue(getOctalValue, '0', false, 0);
+  testValue(getOctalValue, '___', false, 0);
+  testValue(getOctalValue, '_', false, 0);
   testValue(getOctalValue, '', false, 0);
+
+  writeln('test for decimal integers');
+  testValue(getDecimalValue, '0', true, 0);
+  testValue(getDecimalValue, '10', true, 10);
+  testValue(getDecimalValue, '110', true, 110);
+  testValue(getDecimalValue, '60000', true, 60000);
+  testValue(getDecimalValue, '100000', true, 100000);
+  testValue(getDecimalValue, '-110', true, -110);
+  testValue(getDecimalValue, '-60000', true, -60000);
+  testValue(getDecimalValue, '-100000', true, -100000);
+  testValue(getDecimalValue, '1816_07_09', true, 18160709);
+  testValue(getDecimalValue, '2_147_483_647', true, 2147483647);
+  testValue(getDecimalValue, '-2_147_483_648', true, $80000000);
+  testValue(getDecimalValue, 'A', false, 0);
+  testValue(getDecimalValue, '_', false, 0);
+  testValue(getDecimalValue, '1_A', false, 0);
+  testValue(getDecimalValue, '', false, 0);
 
   writeln('test for hexadecimal integers');
   testValue(getHexadecimalValue, '0x0', true, 0);
@@ -73,11 +94,13 @@ begin
   testValue(getHexadecimalValue, '0x1234567', true, $1234567);
   testValue(getHexadecimalValue, '0x1234_4321', true, $12344321);
   testValue(getHexadecimalValue, '0xABCDEF', true, $ABCDEF);
-  testValue(getHexadecimalValue, '0x_77777777', false, $77777777);
+  testValue(getHexadecimalValue, '0x_7777_7777', true, $77777777);
   testValue(getHexadecimalValue, '0x011G010', false, 0);
   testValue(getHexadecimalValue, '0X011G010', false, 0);
   testValue(getHexadecimalValue, '0X', false, 0);
   testValue(getHexadecimalValue, '0', false, 0);
+  testValue(getHexadecimalValue, '_', false, 0);
+  testValue(getHexadecimalValue, '___', false, 0);
   testValue(getHexadecimalValue, '', false, 0);
 
 end.
