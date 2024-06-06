@@ -1,5 +1,5 @@
 uses
-  literals,
+  strconv,
   lcommon,
   lcbase,
   lcparser;
