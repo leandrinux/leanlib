@@ -11,5 +11,5 @@
     * ~~Convert hexadecimal integers to TUInt32~~
     * ~~Convert float values to TFloat32~~
     * ~~Parse and convert instruction names to opcode values~~
-    * Convert register names into their numeric representations
+    * ~~Convert register names into their numeric representations~~
     

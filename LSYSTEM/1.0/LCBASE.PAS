@@ -98,6 +98,35 @@ interface
       (name: 'in'; code:$52; count:2)
     );  
 
+  function getOpcodeInfoByName(const name: TOpcodeName; var code, count: byte): boolean;
+  function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
+
 implementation
+
+  function getOpcodeInfoByName(const name: TOpcodeName; var code, count: byte): boolean;
+  var
+    i: byte;
+  begin
+    getOpcodeInfoByName := false;
+    i := 0;
+    while (i<C_OPCODE_COUNT) and (C_OPCODE_INFO[i].name <> name) do inc(i);
+    if C_OPCODE_INFO[i].name <> name then exit;
+    code := C_OPCODE_INFO[i].code;
+    count := C_OPCODE_INFO[i].count;
+    getOpcodeInfoByName := true;
+  end;
+
+  function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
+  var
+    i: byte;
+  begin
+    getRegisterInfoByName := false;
+    i := 0;
+    while (i<C_REGISTER_COUNT) and (C_REGISTER_INFO[i].name <> name) do inc(i);
+    if C_REGISTER_INFO[i].name <> name then exit;
+    code := C_REGISTER_INFO[i].code;
+    bitSize := C_REGISTER_INFO[i].bitSize;
+    getRegisterInfoByName := true;
+  end;
 
 end.
