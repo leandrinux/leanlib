@@ -1,3 +1,5 @@
+{$N+}
+
 uses
   lcommon,
   strconv;
@@ -12,6 +14,25 @@ var
 begin
   write('  ', s, ' - ');
   result := func(s, value);
+  if (result <> expectedSuccess) and (value <> expectedValue) then 
+  begin
+    write('fail ');
+    if expectedSuccess then 
+      writeln('(expected ', expectedValue, ', got ', value, ')')
+    else
+      writeln('should return false');
+    halt(1);
+  end else
+    writeln('pass');
+end;
+
+procedure testFloat32(const s: string; expectedSuccess: boolean; expectedValue: TFloat32);
+var
+  value: TFloat32;
+  result: boolean;
+begin
+  write('  ', s, ' - ');
+  result := str2single(s, value);
   if (result <> expectedSuccess) and (value <> expectedValue) then 
   begin
     write('fail ');
@@ -115,6 +136,14 @@ begin
   testValue(f, '_', false, 0);
   testValue(f, '___', false, 0);
   testValue(f, '', false, 0);
+
+  writeln('test for 32-bit floating point');
+  testFloat32('0', true, 0);
+  testFloat32('10', true, 10);
+  testFloat32('1_0', true, 10);
+  testFloat32('1.1', true, 1.1);
+  testFloat32('123.345', true, 123.345);
+  testFloat32('.5', true, 0.5);
 
   writeln('passed all tests!');
 end.

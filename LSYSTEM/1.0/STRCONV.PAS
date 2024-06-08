@@ -1,3 +1,5 @@
+{$N+}
+
 unit 
   strconv;
 
@@ -10,7 +12,7 @@ interface
   function oct2int(const s: string; var value: TUInt32): boolean;
   function dec2int(const s: string; var value: TUInt32): boolean;
   function hex2int(const s: string; var value: TUInt32): boolean;
-  function str2float(const s: string; var value: TFloat32): boolean;
+  function str2single(const s: string; var value: TFloat32): boolean;
 
 implementation
 
@@ -113,8 +115,16 @@ implementation
     hex2int := true;
   end;
   
-  function str2float(const s: string; var value: TFloat32): boolean;
+  function str2single(const s: string; var value: TFloat32): boolean;
+  var 
+    clean: string;
+    code: integer;
+    i: byte;
   begin
-  end;  
+    clean := '';
+    for i := 1 to length(s) do if s[i]<>C_NUMBER_SPACER then clean := clean + s[i];
+    val(clean, value, code);
+    str2single := code <> 0;
+  end;
 
 end.
