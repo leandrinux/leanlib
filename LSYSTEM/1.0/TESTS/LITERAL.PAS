@@ -137,13 +137,24 @@ begin
   testValue(f, '___', false, 0);
   testValue(f, '', false, 0);
 
+  writeln('test for characters');
+  f := chr2int;
+  testValue(f, '''a''', true, ord('a'));
+  testValue(f, '''$''', true, ord('$'));
+  testValue(f, '''Q''', true, ord('Q'));
+  testValue(f, '''', false, 0);
+  testValue(f, 'a''', false, 0);
+  testValue(f, '''ab''', false, 0);
+
   writeln('test for 32-bit floating point');
   testFloat32('0', true, 0);
   testFloat32('10', true, 10);
   testFloat32('1_0', true, 10);
   testFloat32('1.1', true, 1.1);
+  testFloat32('-7.8', true, -7.8);
   testFloat32('123.345', true, 123.345);
   testFloat32('.5', true, 0.5);
+  testFloat32('-.25', true, -0.25);
 
   writeln('passed all tests!');
 end.
