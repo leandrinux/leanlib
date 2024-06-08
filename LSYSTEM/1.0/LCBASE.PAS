@@ -32,6 +32,20 @@ interface
 
     TOpcodeInfoArray = array[0..C_OPCODE_COUNT-1] of TOpcodeInfo;
 
+    EParameterType = (
+      EParameterTypeUnknown,
+      EParameterTypeLiteral,
+      EParameterTypeRegister,
+      EParameterTypeAddress,
+      EParameterTypePointer
+    );
+
+    TParameterInfo = record
+      paramType: EParameterType;
+      bitSize: byte;
+      value: TUInt32;
+    end;
+
   const
     C_REGISTER_INFO: TRegisterInfoArray = (
       (name: 'sp'; code:$10; bitSize:32),
@@ -100,6 +114,7 @@ interface
 
   function getOpcodeInfoByName(const name: TOpcodeName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
+  function guessParameterType(const token: string): EParameterType;
 
 implementation
 
@@ -129,4 +144,31 @@ implementation
     getRegisterInfoByName := true;
   end;
 
+  function guessParameterType(const token: string): EParameterType;
+  const
+    C_SET_LITERALS: set of char = ['+', '-', '0'..'9', '$', '#', ''''];
+    C_SET_REGISTERS: set of char = ['a', 'b', 'c', 'd', 'e', 'i', 's'];
+  begin
+    (*
+      literals = 0, 1, 2, -23, $7, 0xAA, $A000, 0oAA, 0b0010, #77, 'a', 7.8, -4.3
+      registers = eax, ax, fx, cc, ah, bl
+      address = [$A000], [0xA48A]
+      pointer = [AX]+2, [EDX]-5, [DS]
+    *)
+    guessParameterType := EParameterTypeUnknown;
+    if length(token)<1 then exit;
+    if token[1] in C_SET_LITERALS then
+      guessParameterType := EParameterTypeLiteral
+    else if token[1] in C_SET_REGISTERS then
+      guessParameterType := EParameterTypeRegister
+    else if token[1] = '[' then
+    begin
+      if length(token)<3 then exit;
+      if token[2] in C_SET_LITERALS then
+        guessParameterType := EParameterTypeAddress
+      else if token[2] in C_SET_REGISTERS then 
+        guessParameterType := EParameterTypePointer;
+    end;    
+  end;
+  
 end.
