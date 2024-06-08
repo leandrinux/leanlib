@@ -1,7 +1,8 @@
 uses
-  strconv,
   lcommon,
-  lcbase;
+  lliteral,
+  lcbase,
+  lregs;
 
 begin
 end.

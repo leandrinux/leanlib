@@ -2,7 +2,7 @@
 
 uses
   lcommon,
-  strconv;
+  lliteral;
 
 type
   TFunction = function(const s: string; var value: TUInt32): boolean;

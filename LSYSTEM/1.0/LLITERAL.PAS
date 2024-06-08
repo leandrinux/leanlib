@@ -1,7 +1,7 @@
 {$N+}
 
 unit 
-  strconv;
+  lliteral;
 
 interface
 

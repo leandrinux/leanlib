@@ -7,23 +7,16 @@ unit
 interface
 
   const
-    C_REGISTER_COUNT = 23;
-    C_OPCODE_COUNT   = 32; 
+    C_REGISTER_COUNT = 23;       { how many registers does the CPU have }
+    C_OPCODE_COUNT   = 32;       { how many operations does the CPU recognize }
     
-    C_MASK_FLAG_ZERO = $01;
-    C_MASK_FLAG_SIGN = $02;
-    C_MASK_FLAG_IO   = $04;
+    C_MASK_FLAG_ZERO = $01;      { used to know if CC indicates a zero flag }
+    C_MASK_FLAG_SIGN = $02;      { used to know the sign of the last operation that affected the CC }
 
-    C_MASK_INST_PARAM0 = $0F;
-    C_MASK_INST_PARAM1 = $F0;
-
-    C_PARAM_LITERAL  = 0;
-    C_PARAM_REGISTER = 1;
-    C_PARAM_ADDRESS  = 2;
-    C_PARAM_INDIRECT = 3;
-
-    C_MASK_INDIRECT_OFFSET   = $00000000;
-    C_MASK_INDIRECT_REGISTER = $0000000F;
+    C_PARAM_LITERAL  = 0;        { param type value for literal parameters }
+    C_PARAM_REGISTER = 1;        { param type value for register parameters }
+    C_PARAM_ADDRESS  = 2;        { param type value for address parameters }
+    C_PARAM_INDIRECT = 3;        { param type value for indirect parameters }
 
   type
     TString3 = string[3];
