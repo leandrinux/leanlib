@@ -72,7 +72,7 @@ The 4-bit parameter type values are defined as follows:
 |0|Inmediate / Literal|
 |1|Register|
 |2|Address|
-|3|Indirect|
+|3|Pointer|
 |4..15|Not used / Reserved|
 
 When a parameter is a literal, the full 32 bit of the parameter field represent the value.
@@ -81,7 +81,7 @@ When a parameter is a register, the value stored in the parameter field is a cod
 
 When a parameter is an address, the full 32 bit value stored in the parameter field is a memory address.
 
-When a parameter is indirect, the parameter value is formed as follows:
+When a parameter is pointer, the parameter value is formed as follows:
 
     |---------------|------------------------|------------------|
     |    Constant   |         Unused         |     Register     |
@@ -215,7 +215,7 @@ Instructions are case insensitive. They can have 1 or 2 arguments, or none at al
 * Literal values
 * Memory references
 * Registers
-* Indirect values
+* Pointer values
 
 #### Literal values
 
@@ -234,13 +234,13 @@ For instance, to move the number 0xEE to the memory position 1332 you would writ
 
 There are several registers that you can use together with instructions. For a full list, check the table at the beginning of this document. 
 
-#### Indirect values
+#### Pointer values
 
-Indirect values are memory references, but instead of defining them as fixed values, we can use the value stored in a register. This allows registers to function as pointers. For instance, `[AX]` represents the value stored in memory at the position pointed by the AX register. You can use any register except DS or SS.
+Pointer values are memory references, but instead of defining them as fixed values, we can use the value stored in a register. This allows registers to function as pointers. For instance, `[AX]` represents the value stored in memory at the position pointed by the AX register. You can use any register except DS or SS.
 
 You can also add a constant that will be substracted or added to the memory location specified by that register. To do this just add it next to it. For instance `[AX]+2` is a memory reference that is 2 words ahead from the position specified by AX.
 
-Indirect values only work with registers. If you want to use the address located in a memory position you first need to load that memory position into a register, then use the register.
+Pointer values only work with registers. If you want to use the address located in a memory position you first need to load that memory position into a register, then use the register.
 
 ### Labels
 
