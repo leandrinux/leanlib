@@ -1,8 +1,7 @@
 uses
   strconv,
   lcommon,
-  lcbase,
-  lcparser;
+  lcbase;
 
 begin
 end.
