@@ -10,7 +10,7 @@ interface
     lcommon;
 
   type
-    TRegisterName = TString3;
+    TRegisterName = string[3];
 
     TRegisterInfo = record
       name: TRegisterName;
@@ -20,7 +20,7 @@ interface
 
     TRegisterInfoArray = array[0..C_REGISTER_COUNT-1] of TRegisterInfo;
 
-    TOpcodeName = TString5;
+    TOpcodeName = string[5];
 
     TParamCount = 0..2;
 
