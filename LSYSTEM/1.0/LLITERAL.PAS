@@ -12,6 +12,7 @@ interface
   function oct2int(const s: string; var value: TUInt32): boolean;
   function dec2int(const s: string; var value: TUInt32): boolean;
   function hex2int(const s: string; var value: TUInt32): boolean;
+  function chr2int(const s: string; var value: TUInt32): boolean;
   function str2single(const s: string; var value: TFloat32): boolean;
 
 implementation
@@ -115,6 +116,15 @@ implementation
     hex2int := true;
   end;
   
+  function chr2int(const s: string; var value: TUInt32): boolean;
+  begin
+    chr2int := false;
+    if length(s)<>3 then exit;
+    if (s[1]<>C_CHAR_LITERAL_DELIMITER) or (s[3]<>C_CHAR_LITERAL_DELIMITER) then exit;
+    value := ord(s[2]);
+    chr2int := true;
+  end;
+
   function str2single(const s: string; var value: TFloat32): boolean;
   var 
     clean: string;
