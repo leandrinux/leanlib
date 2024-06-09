@@ -1,5 +1,5 @@
 {
-  Types and constants used by the compiler
+  Types, constants and utility functions used by the compiler
 }
 unit
   lcbase;
@@ -170,5 +170,5 @@ implementation
         guessParameterType := EParameterTypePointer;
     end;    
   end;
-  
+
 end.

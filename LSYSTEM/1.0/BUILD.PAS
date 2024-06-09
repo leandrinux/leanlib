@@ -1,7 +1,8 @@
 uses
   lcommon,
   lliteral,
-  lcbase;
+  lcbase,
+  lcu;
 
 begin
 end.
