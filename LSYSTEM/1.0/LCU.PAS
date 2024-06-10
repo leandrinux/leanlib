@@ -26,15 +26,6 @@ implementation
       position: word;                               { current position within buffer }
     end;
 
-    TBuildInfo = record
-      sourceFileName: string;           { name of the file being compiled }
-      sourceFile: file;                 { source file handle }
-      fileBuffer: TFileBuffer;          { data buffer used to read file }
-      lineNumber: longint;              { current line number }
-      instructionCount: longint;        { how many instructions have been built }
-      verbose: boolean;                 { whether it should display info messages or not }
-    end;
-
     EState = (                          { code parsing states}
       EStateStart,                      { parsing starts here }
       EStateEndSuccessful,              { parsing ended successfully }
@@ -54,13 +45,30 @@ implementation
       state: EState;
     end;
 
+    TBuildInfo = record
+      sourceFileName: string;           { name of the file being compiled }
+      sourceFile: file;                 { source file handle }
+      isOpen: boolean;                  { indicates if file is open correctly }
+      fileBuffer: TFileBuffer;          { data buffer used to read file }
+      lineNumber: longint;              { current line number }
+      instructionCount: longint;        { how many instructions have been built }
+      verbose: boolean;                 { whether it should display info messages or not }
+    end;
+
   var
     buildInfo: TBuildInfo;   
 
   procedure error(const msg: string);
   begin
-    writeln('error: ', msg);
-    halt(1);
+    with buildInfo do
+    begin
+      write('error: ', msg);
+      if isOpen then
+        writeln(' at line ', lineNumber)
+      else
+        writeln;
+      halt(1);
+    end;
   end;
 
   procedure message(const msg: string);
@@ -130,15 +138,18 @@ implementation
   const
     C_END_STATES: set of EState = [EStateEndSuccessful, EStateEndFailed];
   var
+    result: boolean;
     ch: char;
     stack: TStateStack;
     instructionName, param0, param1: string;
+    opcode, expectedParamCount: byte;
   begin
     with buildInfo, stack do
     begin
       assign(sourceFile, sourceFileName);
       {$I-} reset(buildInfo.sourceFile, 1); {$I+}
-      if IOResult<>0 then error('"' + sourceFileName + '" not found or invalid');
+      isOpen := IOResult = 0;
+      if not isOpen then error('"' + sourceFileName + '" not found or invalid');
       fileBuffer.position := 0;
       fileBuffer.size := 0;
 
@@ -164,9 +175,13 @@ implementation
 
           EStateSkipSpacesAndLineBreaks:
           begin
-            if ch in [' ', #10, #13] then
+            if (ch = ' ') or (ch = #13) then
               ch := readChar
-            else
+            else if (ch = #10) then
+            begin
+              inc(lineNumber);
+              ch := readChar;
+            end else
               pop(stack);
           end;
 
@@ -178,9 +193,13 @@ implementation
               ch := readChar;
             end else if ch in [' '] then
             begin
-              writeln('instruction: "', instructionName, '"');
-              push(stack, EStateEndSuccessful);
-              state := EStateSkipSpacesAndLineBreaks;
+              result := getOpcodeInfoByName(instructionName, opcode, expectedParamCount);
+              if result then
+              begin
+                push(stack, EStateEndSuccessful);
+                state := EStateSkipSpacesAndLineBreaks;
+              end else
+                error('unknown instruction "' + instructionName + '"');
             end else
               state := EStateEndFailed;
           end;
