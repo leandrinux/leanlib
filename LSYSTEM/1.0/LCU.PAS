@@ -11,7 +11,7 @@ interface
   procedure error(const msg: string);
   procedure message(const msg: string);
   procedure initBuild(const filename: string);
-  procedure build;
+  procedure startBuilding;
 
 implementation
 
@@ -45,26 +45,28 @@ implementation
       state: EState;
     end;
 
-    TBuildInfo = record
+    TBuild = record
       sourceFileName: string;           { name of the file being compiled }
       sourceFile: file;                 { source file handle }
       isOpen: boolean;                  { indicates if file is open correctly }
-      fileBuffer: TFileBuffer;          { data buffer used to read file }
       lineNumber: longint;              { current line number }
+      lineCharacter: word;              { char number being evaluated in current line }
       instructionCount: longint;        { how many instructions have been built }
       verbose: boolean;                 { whether it should display info messages or not }
+      fileBuffer: TFileBuffer;          { data buffer used to read file }
+      stack: TStateStack;               { stack of machine states }
     end;
 
   var
-    buildInfo: TBuildInfo;   
+    build: TBuild;   
 
   procedure error(const msg: string);
   begin
-    with buildInfo do
+    with build do
     begin
       write('error: ', msg);
       if isOpen then
-        writeln(' at line ', lineNumber)
+        writeln(' at line ', lineNumber,' position ', lineCharacter)
       else
         writeln;
       halt(1);
@@ -78,20 +80,25 @@ implementation
 
   procedure initBuild(const filename: string);
   begin
-    with buildInfo do
+    with build do
     begin
       sourceFileName := filename;
       instructionCount := 0;
       lineNumber := 1;
+      lineCharacter := 1;
       verbose := true;
       fillChar(fileBuffer, sizeof(TFileBuffer), 0);
+      stack.count := 0;
+      stack.state := EStateStart;
+      fileBuffer.position := 0;
+      fileBuffer.size := 0;
     end;
   end;
 
   function loadBuffer: boolean;
   begin
     loadBuffer := false;
-    with buildInfo, fileBuffer do
+    with build, fileBuffer do
     begin
       if eof(sourceFile) then exit;
       blockread(sourceFile, data, C_READ_BUFFER_SIZE, size);
@@ -103,12 +110,13 @@ implementation
   function readChar: char;
   begin
     readChar := #0;
-    with buildInfo.fileBuffer do
+    with build, fileBuffer do
     begin
       if (position = size) and not loadBuffer then exit;
       if size = 0 then exit;
       readChar := data[position];
       inc(position);
+      inc(lineCharacter);
     end;
   end;
 
@@ -134,30 +142,25 @@ implementation
       end;  
   end;
 
-  procedure build;
+  procedure startBuilding;
   const
     C_END_STATES: set of EState = [EStateEndSuccessful, EStateEndFailed];
   var
     result: boolean;
     ch: char;
-    stack: TStateStack;
     instructionName, param0, param1: string;
     opcode, expectedParamCount: byte;
   begin
-    with buildInfo, stack do
+    with build, stack do
     begin
       assign(sourceFile, sourceFileName);
-      {$I-} reset(buildInfo.sourceFile, 1); {$I+}
+      {$I-} reset(build.sourceFile, 1); {$I+}
       isOpen := IOResult = 0;
       if not isOpen then error('"' + sourceFileName + '" not found or invalid');
-      fileBuffer.position := 0;
-      fileBuffer.size := 0;
 
       instructionName := '';
       param0 := '';
       param1 := '';
-      count := 0;
-      state := EStateStart;
       ch := readChar;
       message('building "' + sourceFileName + '"');
       while not (state in C_END_STATES) do
@@ -180,6 +183,7 @@ implementation
             else if (ch = #10) then
             begin
               inc(lineNumber);
+              lineCharacter := 1;
               ch := readChar;
             end else
               pop(stack);
@@ -199,7 +203,10 @@ implementation
                 push(stack, EStateEndSuccessful);
                 state := EStateSkipSpacesAndLineBreaks;
               end else
+              begin
+                lineCharacter := lineCharacter - length(instructionName) - 1;
                 error('unknown instruction "' + instructionName + '"');
+              end;
             end else
               state := EStateEndFailed;
           end;

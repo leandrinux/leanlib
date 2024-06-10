@@ -12,5 +12,5 @@ begin
   writeln('lsystem compiler');
   if filename='' then error('no source file specified');
   initBuild(filename);
-  build;
+  startBuilding;
 end.
