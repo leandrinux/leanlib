@@ -93,7 +93,7 @@ The first 8 bits are a signed byte constant, therefore defined in the -128..127 
 
 ## Instruction set 
 
-The lsystem instruction set consists of 32 instructions divided in 5 groups: math, jumps, binary algebra, stack operations and device IO.
+The lsystem instruction set consists of 32 instructions or operations divided in 5 groups: math, jumps, binary algebra, stack operations and device IO.
 
 ### Math
 
