@@ -16,7 +16,8 @@ interface
 implementation
 
   const
-    C_READ_BUFFER_SIZE = 4096;
+    C_READ_BUFFER_SIZE = 1024;
+    C_STATE_STACK_SIZE = 4;
 
   type
     TFileBuffer = record
@@ -32,6 +33,25 @@ implementation
       lineNumber: longint;              { current line number }
       instructionCount: longint;        { how many instructions have been built }
       verbose: boolean;                 { whether it should display info messages or not }
+    end;
+
+    EState = (                          { code parsing states}
+      EStateStart,                      { parsing starts here }
+      EStateEndSuccessful,              { parsing ended successfully }
+      EStateEndFailed,                  { parsing ended with errors }
+      EStateSkipSpacesAndLineBreaks,    { skipping empty spaces and line breaks }
+      EStateSkipSpaces,                 { skipping spaces only }
+      EStateReadInstruction,            { reading instruction name }
+      EStateReadParam0,                 { reading first parameter }
+      EStateReadParam1,                 { reading second parameter }
+      EStateCommentUntilLineBreak,      { skipping everything until the next line break }
+      EStateCommentUntilDelimiter       { skipping everything until a comment block ending tag is found }
+    );
+
+    TStateStack = record
+      values: array [0..C_STATE_STACK_SIZE-1] of EState;
+      count: word;
+      state: EState;
     end;
 
   var
@@ -84,36 +104,96 @@ implementation
     end;
   end;
 
-  function buildLine: boolean;
-  var
-    ch: char;
-    line: string;
-    result: word;
+  procedure push(var stack: TStateStack; value: EState);
   begin
-    buildLine := false;
-    with buildInfo do
-    begin
-      ch := readChar;
-      while ch <> #0 do
-      begin
-        ch := readChar;
+    with stack do
+      if stack.count = C_STATE_STACK_SIZE then
+        error('State stack overflow')
+      else begin
+        stack.values[stack.count] := value;
+        count := count + 1;
       end;
-    end;
+  end;
+
+  procedure pop(var stack: TStateStack);
+  begin
+    with stack do
+      if count = 0 then
+        error('State stack empty')
+      else begin
+        count := count - 1;
+        state := values[count];
+      end;  
   end;
 
   procedure build;
+  const
+    C_END_STATES: set of EState = [EStateEndSuccessful, EStateEndFailed];
+  var
+    ch: char;
+    stack: TStateStack;
+    instructionName, param0, param1: string;
   begin
-    with buildInfo do
+    with buildInfo, stack do
     begin
       assign(sourceFile, sourceFileName);
       {$I-} reset(buildInfo.sourceFile, 1); {$I+}
       if IOResult<>0 then error('"' + sourceFileName + '" not found or invalid');
+      fileBuffer.position := 0;
+      fileBuffer.size := 0;
+
+      instructionName := '';
+      param0 := '';
+      param1 := '';
+      count := 0;
+      state := EStateStart;
+      ch := readChar;
       message('building "' + sourceFileName + '"');
-      while not eof(sourceFile) do
-      begin
-        if buildLine then inc(instructionCount);
-        inc(lineNumber);
-      end;
+      while not (state in C_END_STATES) do
+        case state of
+
+          EStateStart:
+          begin
+            if ch in [' ', #10, #13] then
+            begin
+              push(stack, EStateReadInstruction);
+              state := EStateSkipSpacesAndLineBreaks;
+            end else 
+              state := EStateReadInstruction;
+          end;
+
+          EStateSkipSpacesAndLineBreaks:
+          begin
+            if ch in [' ', #10, #13] then
+              ch := readChar
+            else
+              pop(stack);
+          end;
+
+          EStateReadInstruction: 
+          begin
+            if ch in ['a'..'z'] then
+            begin 
+              instructionName := instructionName + ch;
+              ch := readChar;
+            end else if ch in [' '] then
+            begin
+              writeln('instruction: "', instructionName, '"');
+              push(stack, EStateEndSuccessful);
+              state := EStateSkipSpacesAndLineBreaks;
+            end else
+              state := EStateEndFailed;
+          end;
+
+        end;
+
+      if state = EStateEndSuccessful then
+        writeln('Ended successfully')
+      else if state = EStateEndFailed then
+        writeln('Ended with errors')
+      else
+        writeln('Unknown error');
+
     end;
   end;
 
