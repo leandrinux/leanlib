@@ -45,16 +45,26 @@ implementation
       state: EState;
     end;
 
+    TInstructionData = record
+      name: TInstructionName;           { the name of the instruction as written in code }
+      param0: string;                   { the first parameter as written in code }
+      param1: string;                   { the second parameter as written in code }
+      opcode: byte;                     { the operation code that matches the specified instruction }
+      expectedParamCount: byte;         { how many arguments this instruction requires }
+    end;
+
     TBuild = record
       sourceFileName: string;           { name of the file being compiled }
       sourceFile: file;                 { source file handle }
       isOpen: boolean;                  { indicates if file is open correctly }
+      ch: char;                         { the character being currently examined }
       lineNumber: longint;              { current line number }
       lineCharacter: word;              { char number being evaluated in current line }
       instructionCount: longint;        { how many instructions have been built }
       verbose: boolean;                 { whether it should display info messages or not }
       fileBuffer: TFileBuffer;          { data buffer used to read file }
       stack: TStateStack;               { stack of machine states }
+      instructionData: TInstructionData { the instruction and arguments retrieved from the line }
     end;
 
   var
@@ -66,7 +76,7 @@ implementation
     begin
       write('error: ', msg);
       if isOpen then
-        writeln(' at line ', lineNumber,' position ', lineCharacter)
+        writeln(' at ln ', lineNumber,' pos ', lineCharacter)
       else
         writeln;
       halt(1);
@@ -92,6 +102,9 @@ implementation
       stack.state := EStateStart;
       fileBuffer.position := 0;
       fileBuffer.size := 0;
+      instructionData.name := '';
+      instructionData.param0 := '';
+      instructionData.param1 := '';
     end;
   end;
 
@@ -142,14 +155,62 @@ implementation
       end;  
   end;
 
+  procedure doStart;
+  begin
+    with build, stack do
+    begin
+      ch := readChar;
+      if ch in [' ', #10, #13] then
+      begin
+        push(stack, EStateReadInstruction);
+        state := EStateSkipSpacesAndLineBreaks;
+      end else 
+        state := EStateReadInstruction;
+    end;
+  end;
+
+  procedure doSkipSpacesAndLineBreaks;
+  begin
+    with build do
+      if (ch = ' ') or (ch = #13) then
+        ch := readChar
+      else if (ch = #10) then
+      begin
+        inc(lineNumber);
+        lineCharacter := 1;
+        ch := readChar;
+      end else
+        pop(stack);
+  end;
+
+  procedure doReadInstruction;
+  var
+    result: boolean;
+  begin
+    with build, instructionData, stack do
+      if ch in ['a'..'z'] then
+      begin 
+        name := name + ch;
+        ch := readChar;
+      end else if ch in [' '] then
+      begin
+        result := getOpcodeInfoByName(name, opcode, expectedParamCount);
+        if result then
+        begin
+          push(stack, EStateEndSuccessful);
+          state := EStateSkipSpacesAndLineBreaks;
+        end else
+        begin
+          lineCharacter := lineCharacter - length(name) - 1;
+          error('unknown instruction "' + name + '"');
+        end;
+      end else
+        state := EStateEndFailed;
+  end;
+
   procedure startBuilding;
   const
     C_END_STATES: set of EState = [EStateEndSuccessful, EStateEndFailed];
-  var
-    result: boolean;
-    ch: char;
-    instructionName, param0, param1: string;
-    opcode, expectedParamCount: byte;
   begin
     with build, stack do
     begin
@@ -157,69 +218,17 @@ implementation
       {$I-} reset(build.sourceFile, 1); {$I+}
       isOpen := IOResult = 0;
       if not isOpen then error('"' + sourceFileName + '" not found or invalid');
-
-      instructionName := '';
-      param0 := '';
-      param1 := '';
-      ch := readChar;
       message('building "' + sourceFileName + '"');
       while not (state in C_END_STATES) do
         case state of
-
-          EStateStart:
-          begin
-            if ch in [' ', #10, #13] then
-            begin
-              push(stack, EStateReadInstruction);
-              state := EStateSkipSpacesAndLineBreaks;
-            end else 
-              state := EStateReadInstruction;
-          end;
-
-          EStateSkipSpacesAndLineBreaks:
-          begin
-            if (ch = ' ') or (ch = #13) then
-              ch := readChar
-            else if (ch = #10) then
-            begin
-              inc(lineNumber);
-              lineCharacter := 1;
-              ch := readChar;
-            end else
-              pop(stack);
-          end;
-
-          EStateReadInstruction: 
-          begin
-            if ch in ['a'..'z'] then
-            begin 
-              instructionName := instructionName + ch;
-              ch := readChar;
-            end else if ch in [' '] then
-            begin
-              result := getOpcodeInfoByName(instructionName, opcode, expectedParamCount);
-              if result then
-              begin
-                push(stack, EStateEndSuccessful);
-                state := EStateSkipSpacesAndLineBreaks;
-              end else
-              begin
-                lineCharacter := lineCharacter - length(instructionName) - 1;
-                error('unknown instruction "' + instructionName + '"');
-              end;
-            end else
-              state := EStateEndFailed;
-          end;
-
+          EStateStart: doStart;
+          EStateSkipSpacesAndLineBreaks: doSkipSpacesAndLineBreaks;
+          EStateReadInstruction: doReadInstruction;
         end;
-
       if state = EStateEndSuccessful then
         writeln('Ended successfully')
-      else if state = EStateEndFailed then
-        writeln('Ended with errors')
       else
-        writeln('Unknown error');
-
+        writeln('Ended with errors');
     end;
   end;
 
