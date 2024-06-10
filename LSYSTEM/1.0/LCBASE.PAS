@@ -20,12 +20,12 @@ interface
 
     TRegisterInfoArray = array[0..C_REGISTER_COUNT-1] of TRegisterInfo;
 
-    TOpcodeName = string[5];
+    TInstructionName = string[5];
 
     TParamCount = 0..2;
 
     TOpcodeInfo = record
-      name: TOpcodeName;
+      name: TInstructionName;
       code: TUInt8;
       count: TParamCount;
     end;
@@ -112,13 +112,13 @@ interface
       (name: 'in'; code:$52; count:2)
     );  
 
-  function getOpcodeInfoByName(const name: TOpcodeName; var code, count: byte): boolean;
+  function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
   function guessParameterType(const token: string): EParameterType;
 
 implementation
 
-  function getOpcodeInfoByName(const name: TOpcodeName; var code, count: byte): boolean;
+  function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   var
     i: byte;
   begin
