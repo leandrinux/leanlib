@@ -18,6 +18,11 @@ implementation
   const
     C_READ_BUFFER_SIZE = 1024;
     C_STATE_STACK_SIZE = 4;
+    C_SPACE = ' ';
+    C_CR    = #13;
+    C_LF    = #10;
+    C_TAB   = #09;
+    C_SPACING_CHARS = [C_SPACE, C_TAB, C_LF, C_CR];
 
   type
     TFileBuffer = record
@@ -160,7 +165,7 @@ implementation
     with build, stack do
     begin
       ch := readChar;
-      if ch in [' ', #10, #13] then
+      if ch in C_SPACING_CHARS then
       begin
         push(stack, EStateReadInstruction);
         state := EStateSkipSpacesAndLineBreaks;
@@ -172,15 +177,16 @@ implementation
   procedure doSkipSpacesAndLineBreaks;
   begin
     with build do
-      if (ch = ' ') or (ch = #13) then
-        ch := readChar
-      else if (ch = #10) then
+      if (ch = C_LF) then
       begin
         inc(lineNumber);
         lineCharacter := 1;
         ch := readChar;
-      end else
-        pop(stack);
+      end else 
+        if ch in C_SPACING_CHARS then
+          ch := readChar
+        else
+          pop(stack);
   end;
 
   procedure doReadInstruction;
@@ -192,7 +198,7 @@ implementation
       begin 
         name := name + ch;
         ch := readChar;
-      end else if ch in [' '] then
+      end else if ch = C_SPACE then
       begin
         result := getOpcodeInfoByName(name, opcode, expectedParamCount);
         if result then
