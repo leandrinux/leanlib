@@ -40,6 +40,7 @@ implementation
       EStateReadInstruction,            { reading instruction name }
       EStateReadParam0,                 { reading first parameter }
       EStateReadParam1,                 { reading second parameter }
+      EStateBuildBinaryInstruction,     { builds binary code based on collected instruction data }
       EStateCommentUntilLineBreak,      { skipping everything until the next line break }
       EStateCommentUntilDelimiter       { skipping everything until a comment block ending tag is found }
     );
@@ -174,6 +175,15 @@ implementation
     end;
   end;
 
+  procedure doCommentUntilLineBreak;
+  begin
+    with build do
+      if ch <> C_LF then
+        ch := readChar
+      else
+        pop(stack);
+  end;
+
   procedure doSkipSpacesAndLineBreaks;
   begin
     with build do
@@ -182,11 +192,23 @@ implementation
         inc(lineNumber);
         lineCharacter := 1;
         ch := readChar;
-      end else 
-        if ch in C_SPACING_CHARS then
-          ch := readChar
-        else
-          pop(stack);
+      end else if ch = '#' then
+        stack.state := EStateCommentUntilLineBreak  
+      else if ch in C_SPACING_CHARS then
+        ch := readChar
+      else
+        pop(stack);
+  end;
+
+  procedure doSkipSpaces;
+  begin
+    with build do
+      if ch in [C_SPACE, C_TAB, C_CR] then
+        ch := readChar
+      else if ch = '#' then
+        stack.state := EStateCommentUntilLineBreak  
+      else
+        pop(stack);
   end;
 
   procedure doReadInstruction;
@@ -203,8 +225,9 @@ implementation
         result := getOpcodeInfoByName(name, opcode, expectedParamCount);
         if result then
         begin
-          push(stack, EStateEndSuccessful);
-          state := EStateSkipSpacesAndLineBreaks;
+          writeln(name, ': ', opcode);
+          push(stack, EStateReadParam0);
+          state := EStateSkipSpaces;
         end else
         begin
           lineCharacter := lineCharacter - length(name) - 1;
@@ -212,6 +235,43 @@ implementation
         end;
       end else
         state := EStateEndFailed;
+  end;
+
+  procedure doReadParam0;
+  begin
+    with build, instructionData, stack do
+      if ch in [#0, C_CR, C_LF, ','] then
+      begin
+        writeln('got param0: "', param0 ,'"');
+        if ch = ',' then
+        begin
+          ch := readChar;
+          push(stack, EStateReadParam1);
+          state := EStateSkipSpaces;
+        end else
+          state := EStateBuildBinaryInstruction;
+      end else begin
+        param0 := param0 + ch;
+        ch := readChar;
+      end;
+  end;
+
+  procedure doReadParam1;
+  begin
+    with build, instructionData, stack do
+      if ch in [#0, C_CR, C_LF] then
+      begin
+        writeln('got param1: "', param1 ,'"');
+        state := EStateBuildBinaryInstruction;
+      end else begin
+        param1 := param1 + ch;
+        ch := readChar;
+      end;
+  end;
+
+  procedure doBuildBinaryInstruction;
+  begin
+    build.stack.state := EStateEndSuccessful;
   end;
 
   procedure startBuilding;
@@ -230,6 +290,11 @@ implementation
           EStateStart: doStart;
           EStateSkipSpacesAndLineBreaks: doSkipSpacesAndLineBreaks;
           EStateReadInstruction: doReadInstruction;
+          EStateReadParam0: doReadParam0;
+          EStateReadParam1: doReadParam1;
+          EStateSkipSpaces: doSkipSpaces;
+          EStateCommentUntilLineBreak: doCommentUntilLineBreak;
+          EStateBuildBinaryInstruction: doBuildBinaryInstruction;
         end;
       if state = EStateEndSuccessful then
         writeln('Ended successfully')
