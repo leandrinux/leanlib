@@ -1,1 +1,1 @@
-  call 10
+  mov eax, $FFFFAAAA

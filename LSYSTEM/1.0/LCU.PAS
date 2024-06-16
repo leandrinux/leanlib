@@ -126,10 +126,8 @@ implementation
 
   procedure doBuildBinaryInstruction;
   begin
-    if not validateParams(build.instructionData) then 
-      build.stack.state := EStateEnd
-    else 
-      build.stack.state := EStateEnd;
+    validateParams;
+    build.stack.state := EStateEnd;
   end;
 
   procedure startBuild(const filename: string);

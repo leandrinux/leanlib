@@ -8,6 +8,7 @@ interface
 
   uses
     lcommon,
+    lliteral,
     utils;
 
   const
@@ -95,6 +96,8 @@ interface
       param1: string;                   { the second parameter as written in code }
       paramType0: EParameterType;       { type of the first parameter }
       paramType1: EParameterType;       { type of the second parameter }
+      paramValue0: TUInt32;             { binary value for first parameter }
+      paramValue1: TUInt32;             { binary value for second parameter }
       opcode: byte;                     { the operation code that matches the specified instruction }
       expectedParamCount: byte;         { how many arguments this instruction requires }
     end;
@@ -192,8 +195,7 @@ interface
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
   function guessParameterType(const token: string): EParameterType;
-  function getLiteralBitSize(const param: string): byte;
-  function validateParams(var data: TInstructionData): boolean;
+  procedure validateParams;
 
 implementation
 
@@ -334,13 +336,58 @@ implementation
         guessParameterType := EParameterTypePointer;
     end;    
   end;
-
-  function getLiteralBitSize(const param: string): byte;
+{
+  function getParamValue(const param: string; paramType:EParameterType): TUInt32;
+  var
+    value: TUInt32;
   begin
-    
+    case paramType of
+      EParameterTypeLiteral: 
+        if not any2int(param, value) then raise ('literal argument could not be recognized');
+    else
+      value := 0;
+    end;
+    getParamValue := value;
+  end;
+}
+  function getLiteralBitSize(const param: string): byte;
+  var
+    value: TUInt32;
+  begin
+    if not any2int(param, value) then 
+      raise ('literal argument could not be recognized');
+    if (value and $FFFF0000) <> 0 then 
+      getLiteralBitSize := 32
+    else if (value and $FF) <> 0 then getLiteralBitSize := 16
+    else getLiteralBitSize := 8;
   end;
 
-  function validateParams(var data: TInstructionData): boolean;
+  function getRegisterBitSize(const param: string): byte;
+  var
+    code, bitSize: byte;
+  begin
+    if not getRegisterInfoByName(param, code, bitSize) then
+      raise ('register argument could not be recognized');
+    getRegisterBitSize := bitSize;
+  end;
+
+  function getBitSize(const param: string; paramType:EParameterType): byte;
+  var
+    result: byte;
+  begin
+    case paramType of 
+      EParameterTypeLiteral: result := getLiteralBitSize(param);
+      
+      EParameterTypeRegister: result := getRegisterBitSize(param);
+
+      EParameterTypeAddress, EParameterTypePointer: result := 32;
+    else
+      result := 0;
+    end;
+    getBitSize := result;
+  end;
+
+  procedure validateParams;
   const 
     C_P0_NO_LITERAL: set of byte = 
       [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
@@ -352,9 +399,8 @@ implementation
   var 
     paramCount: byte;
   begin
-    with data do
+    with build.instructionData do
     begin
-      validateParams := false;
       paramCount := 0;
 
       { check the number of given parameters }
@@ -375,8 +421,9 @@ implementation
         raise('instruction ' + name + ' does not support a literal as second parameter');
 
       { check that the left size bit size is equal or greater than the right size bit size }
+      if (paramCount=2) and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
+        raise('first parameter bit size is smaller than second parameter bit size');
 
-      validateParams := true;
     end;
   end;
 

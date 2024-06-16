@@ -8,6 +8,7 @@ interface
   uses
     lcommon;
 
+  function any2int(const s: string; var value: TUInt32): boolean;
   function bin2int(const s: string; var value: TUInt32): boolean;
   function oct2int(const s: string; var value: TUInt32): boolean;
   function dec2int(const s: string; var value: TUInt32): boolean;
@@ -27,6 +28,19 @@ implementation
     C_DOUBLE_PREFIX_HEX = 'x';
     C_DOUBLE_PREFIX_OCT = 'o';
     C_DOUBLE_PREFIX_BIN = 'b';
+
+  function any2int(const s: string; var value: TUInt32): boolean;
+  var
+    result: boolean;
+  begin
+    result := dec2int(s, value);
+    if not result then result := hex2int(s, value);
+    if not result then result := oct2int(s, value);
+    if not result then result := bin2int(s, value);
+    if not result then result := chr2int(s, value);
+    if not result then result := str2single(s, TFloat32(value));
+    any2int := result;
+  end;
 
   function bin2int(const s: string; var value: TUInt32): boolean;
   var
