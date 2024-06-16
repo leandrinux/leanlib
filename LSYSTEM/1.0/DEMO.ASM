@@ -1,2 +1,1 @@
-  mov eax, 10
-  add al, 10
+  call 10

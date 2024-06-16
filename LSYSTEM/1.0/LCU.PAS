@@ -6,7 +6,8 @@ interface
   uses
     lcommon,
     lliteral,
-    lcbase;
+    lcbase,
+    utils;
 
   procedure error(const msg: string);
   procedure message(const msg: string);
@@ -33,8 +34,7 @@ implementation
 
     EState = (                          { code parsing states}
       EStateStart,                      { parsing starts here }
-      EStateEndSuccessful,              { parsing ended successfully }
-      EStateEndFailed,                  { parsing ended with errors }
+      EStateEnd,                        { parsing ends here }
       EStateSkipSpacesAndLineBreaks,    { skipping empty spaces and line breaks }
       EStateSkipSpaces,                 { skipping spaces only }
       EStateReadInstruction,            { reading instruction name }
@@ -55,6 +55,8 @@ implementation
       name: TInstructionName;           { the name of the instruction as written in code }
       param0: string;                   { the first parameter as written in code }
       param1: string;                   { the second parameter as written in code }
+      paramType0: EParameterType;       { type of the first parameter }
+      paramType1: EParameterType;       { type of the second parameter }
       opcode: byte;                     { the operation code that matches the specified instruction }
       expectedParamCount: byte;         { how many arguments this instruction requires }
     end;
@@ -161,6 +163,44 @@ implementation
       end;  
   end;
 
+  function validateParams(var data: TInstructionData): boolean;
+  const 
+    C_P0_NO_LITERAL: set of byte = 
+      [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
+       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL];
+    C_P1_NO_LITERAL: set of byte = 
+      [C_JE, C_JG, C_JL];
+    
+  var 
+    paramCount: byte;
+  begin
+    with data do
+    begin
+      validateParams := false;
+      paramCount := 0;
+
+      { check the number of given parameters }
+      if length(param0)>0 then inc(paramCount);
+      if length(param1)>0 then inc(paramCount);
+      if paramCount<>expectedParamCount then
+        error('instruction ' + name + 
+          ' expects ' + intToStr(expectedParamCount) + 
+          ' parameters, but it got ' + intToStr(paramCount)
+        );
+        
+      { check the parameter types are correct }
+      paramType0 := guessParameterType(param0);
+      paramType1 := guessParameterType(param1);
+      if (opcode in C_P0_NO_LITERAL) and (paramType0 = EParameterTypeLiteral) then
+        error('instruction ' + name + ' does not support a literal as first parameter');
+      if (opcode in C_P1_NO_LITERAL) and (paramType1 = EParameterTypeLiteral) then
+        error('instruction ' + name + ' does not support a literal as second parameter');
+
+      validateParams := true;
+    end;
+  end;
+
   procedure doStart;
   begin
     with build, stack do
@@ -220,7 +260,7 @@ implementation
       begin 
         name := name + ch;
         ch := readChar;
-      end else if ch = C_SPACE then
+      end else if ch in [C_SPACE, C_LF, #0] then
       begin
         result := getOpcodeInfoByName(name, opcode, expectedParamCount);
         if result then
@@ -234,7 +274,10 @@ implementation
           error('unknown instruction "' + name + '"');
         end;
       end else
-        state := EStateEndFailed;
+      begin
+        error('unexpected character "' + ch + '" #' + intToStr(ord(ch)));
+        state := EStateEnd;
+      end;
   end;
 
   procedure doReadParam0;
@@ -271,12 +314,13 @@ implementation
 
   procedure doBuildBinaryInstruction;
   begin
-    build.stack.state := EStateEndSuccessful;
+    if not validateParams(build.instructionData) then 
+      build.stack.state := EStateEnd
+    else 
+      build.stack.state := EStateEnd;
   end;
 
   procedure startBuilding;
-  const
-    C_END_STATES: set of EState = [EStateEndSuccessful, EStateEndFailed];
   begin
     with build, stack do
     begin
@@ -285,7 +329,7 @@ implementation
       isOpen := IOResult = 0;
       if not isOpen then error('"' + sourceFileName + '" not found or invalid');
       message('building "' + sourceFileName + '"');
-      while not (state in C_END_STATES) do
+      while state <> EStateEnd do
         case state of
           EStateStart: doStart;
           EStateSkipSpacesAndLineBreaks: doSkipSpacesAndLineBreaks;
@@ -296,7 +340,7 @@ implementation
           EStateCommentUntilLineBreak: doCommentUntilLineBreak;
           EStateBuildBinaryInstruction: doBuildBinaryInstruction;
         end;
-      if state = EStateEndSuccessful then
+      if state = EStateEnd then
         writeln('Ended successfully')
       else
         writeln('Ended with errors');
