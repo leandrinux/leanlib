@@ -5,10 +5,11 @@ var
   filename: string;
 
 begin
+  writeln('lsystem compiler');
   { if paramCount=1 then filename := paramStr(1); }
   filename := 'demo.asm';
-  writeln('lsystem compiler');
-  if filename='' then error('no source file specified');
-  initBuild(filename);
-  startBuilding;
+  if filename='' then 
+    writeln('no source file specified')
+  else
+    startBuild(filename);
 end.

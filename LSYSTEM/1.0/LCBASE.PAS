@@ -7,7 +7,25 @@ unit
 interface
 
   uses
-    lcommon;
+    lcommon,
+    utils;
+
+  const
+    C_READ_BUFFER_SIZE = 1024;
+    C_STATE_STACK_SIZE = 4;
+    C_SPACE = ' ';
+    C_CR    = #13;
+    C_LF    = #10;
+    C_TAB   = #09;
+    C_SPACING_CHARS = [C_SPACE, C_TAB, C_LF, C_CR];
+    C_MOV = $01; C_ADD = $02; C_SUB = $03; C_MUL = $04;
+    C_DIV = $05; C_CMP = $06; C_SHL = $07; C_SHR = $08;
+    C_FADD = $09; C_FSUB = $0A; C_FMUL = $0B; C_FDIV = $0C;
+    C_JMP = $21; C_JE = $22; C_JG = $23; C_JL = $24;
+    C_JZ = $25; C_JP = $26; C_JN = $27; C_JNZ = $28;
+    C_AND = $31; C_OR = $32; C_NOT = $33; C_XOR = $34;
+    C_PUSH = $41; C_POP = $42; C_PUSHA = $43; C_POPA = $44;
+    C_CALL = $45; C_RET = $46; C_OUT = $51; C_IN = $52;
 
   type
     TRegisterName = string[3];
@@ -46,6 +64,55 @@ interface
       value: TUInt32;
     end;
 
+    TFileBuffer = record
+      data: array[0..C_READ_BUFFER_SIZE-1] of char; { data in buffer }
+      size: word;                                   { how many bytes of valid data in buffer }
+      position: word;                               { current position within buffer }
+    end;
+
+    EState = (                          { code parsing states}
+      EStateStart,                      { parsing starts here }
+      EStateEnd,                        { parsing ends here }
+      EStateSkipSpacesAndLineBreaks,    { skipping empty spaces and line breaks }
+      EStateSkipSpaces,                 { skipping spaces only }
+      EStateReadInstruction,            { reading instruction name }
+      EStateReadParam0,                 { reading first parameter }
+      EStateReadParam1,                 { reading second parameter }
+      EStateBuildBinaryInstruction,     { builds binary code based on collected instruction data }
+      EStateCommentUntilLineBreak,      { skipping everything until the next line break }
+      EStateCommentUntilDelimiter       { skipping everything until a comment block ending tag is found }
+    );
+
+    TStateStack = record
+      values: array [0..C_STATE_STACK_SIZE-1] of EState;
+      count: word;
+      state: EState;
+    end;
+
+    TInstructionData = record
+      name: TInstructionName;           { the name of the instruction as written in code }
+      param0: string;                   { the first parameter as written in code }
+      param1: string;                   { the second parameter as written in code }
+      paramType0: EParameterType;       { type of the first parameter }
+      paramType1: EParameterType;       { type of the second parameter }
+      opcode: byte;                     { the operation code that matches the specified instruction }
+      expectedParamCount: byte;         { how many arguments this instruction requires }
+    end;
+
+    TBuild = record
+      sourceFileName: string;           { name of the file being compiled }
+      sourceFile: file;                 { source file handle }
+      isOpen: boolean;                  { indicates if file is open correctly }
+      ch: char;                         { the character being currently examined }
+      lineNumber: longint;              { current line number }
+      lineCharacter: word;              { char number being evaluated in current line }
+      instructionCount: longint;        { how many instructions have been built }
+      verbose: boolean;                 { whether it should display info messages or not }
+      fileBuffer: TFileBuffer;          { data buffer used to read file }
+      stack: TStateStack;               { stack of machine states }
+      instructionData: TInstructionData { the instruction and arguments retrieved from the line }
+    end;
+
   const
     C_REGISTER_INFO: TRegisterInfoArray = (
       (name: 'sp'; code:$10; bitSize:32),
@@ -73,42 +140,6 @@ interface
       (name: 'ss'; code:$A2; bitSize:32)
     );
 
-    C_MOV = $01;
-    C_ADD = $02;
-    C_SUB = $03;
-    C_MUL = $04;
-    C_DIV = $05;
-    C_CMP = $06;
-    C_SHL = $07;
-    C_SHR = $08;
-    C_FADD = $09;
-    C_FSUB = $0A;
-    C_FMUL = $0B;
-    C_FDIV = $0C;
-
-    C_JMP = $21;
-    C_JE = $22;
-    C_JG = $23;
-    C_JL = $24;
-    C_JZ = $25;
-    C_JP = $26;
-    C_JN = $27;
-    C_JNZ = $28;
-
-    C_AND = $31;
-    C_OR = $32;
-    C_NOT = $33;
-    C_XOR = $34;
-
-    C_PUSH = $41;
-    C_POP = $42;
-    C_PUSHA = $43;
-    C_POPA = $44;
-    C_CALL = $45;
-    C_RET = $46;
-
-    C_OUT = $51;
-    C_IN = $52;
 
     C_OPCODE_INFO: TOpcodeInfoArray = (
       (name: 'mov'; code:C_MOV; count:2),
@@ -149,11 +180,107 @@ interface
       (name: 'in'; code:C_IN; count:2)
     );  
 
+  var
+    build: TBuild;   
+
+  procedure initBuild(const filename: string);
+  function readChar: char;
+  procedure raise(const msg: string);
+  procedure message(const msg: string);
+  procedure pushState(var stack: TStateStack; value: EState);
+  procedure popState(var stack: TStateStack);
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
   function guessParameterType(const token: string): EParameterType;
+  function getLiteralBitSize(const param: string): byte;
+  function validateParams(var data: TInstructionData): boolean;
 
 implementation
+
+  procedure initBuild(const filename: string);
+  begin
+    with build do
+    begin
+      sourceFileName := filename;
+      instructionCount := 0;
+      lineNumber := 1;
+      lineCharacter := 1;
+      verbose := true;
+      fillChar(fileBuffer, sizeof(TFileBuffer), 0);
+      stack.count := 0;
+      stack.state := EStateStart;
+      fileBuffer.position := 0;
+      fileBuffer.size := 0;
+      instructionData.name := '';
+      instructionData.param0 := '';
+      instructionData.param1 := '';
+    end;
+  end;
+
+  function loadBuffer: boolean;
+  begin
+    loadBuffer := false;
+    with build, fileBuffer do
+    begin
+      if eof(sourceFile) then exit;
+      blockread(sourceFile, data, C_READ_BUFFER_SIZE, size);
+      position := 0;
+      loadBuffer := true;
+    end;
+  end;
+
+  function readChar: char;
+  begin
+    readChar := #0;
+    with build, fileBuffer do
+    begin
+      if (position = size) and not loadBuffer then exit;
+      if size = 0 then exit;
+      readChar := data[position];
+      inc(position);
+      inc(lineCharacter);
+    end;
+  end;
+  
+  procedure raise(const msg: string);
+  begin
+    with build do
+    begin
+      write('error: ', msg);
+      if isOpen then
+        writeln(' at ln ', lineNumber,' pos ', lineCharacter)
+      else
+        writeln;
+      halt(1);
+    end;
+  end;
+
+  procedure message(const msg: string);
+  begin
+    writeln(msg);
+  end;
+
+  procedure pushState(var stack: TStateStack; value: EState);
+  begin
+    with stack do
+      if stack.count = C_STATE_STACK_SIZE then
+        raise('State stack overflow')
+      else begin
+        stack.values[stack.count] := value;
+        count := count + 1;
+      end;
+  end;
+
+  procedure popState(var stack: TStateStack);
+  begin
+    with stack do
+      if count = 0 then
+        raise('State stack empty')
+      else begin
+        count := count - 1;
+        state := values[count];
+      end;  
+  end;
 
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   var
@@ -206,6 +333,51 @@ implementation
       else if token[2] in C_SET_REGISTERS then 
         guessParameterType := EParameterTypePointer;
     end;    
+  end;
+
+  function getLiteralBitSize(const param: string): byte;
+  begin
+    
+  end;
+
+  function validateParams(var data: TInstructionData): boolean;
+  const 
+    C_P0_NO_LITERAL: set of byte = 
+      [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
+       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL];
+    C_P1_NO_LITERAL: set of byte = 
+      [C_JE, C_JG, C_JL];
+    
+  var 
+    paramCount: byte;
+  begin
+    with data do
+    begin
+      validateParams := false;
+      paramCount := 0;
+
+      { check the number of given parameters }
+      if length(param0)>0 then inc(paramCount);
+      if length(param1)>0 then inc(paramCount);
+      if paramCount<>expectedParamCount then
+        raise('instruction ' + name + 
+          ' expects ' + intToStr(expectedParamCount) + 
+          ' parameters, but it got ' + intToStr(paramCount)
+        );
+        
+      { check the parameter types are correct }
+      paramType0 := guessParameterType(param0);
+      paramType1 := guessParameterType(param1);
+      if (opcode in C_P0_NO_LITERAL) and (paramType0 = EParameterTypeLiteral) then
+        raise('instruction ' + name + ' does not support a literal as first parameter');
+      if (opcode in C_P1_NO_LITERAL) and (paramType1 = EParameterTypeLiteral) then
+        raise('instruction ' + name + ' does not support a literal as second parameter');
+
+      { check that the left size bit size is equal or greater than the right size bit size }
+
+      validateParams := true;
+    end;
   end;
 
 end.
