@@ -153,6 +153,61 @@ The stack operations are 7 instructions allowing for stack access such as adding
 |CALL|0x45|1|No|Performs subroutine call (pushes current instruction address plus one, then jumps to specified address)|
 |RET|0x46|0|No|Pops the address from the stack and resumes execution from there|
 
+### Parameter validation per instruction
+
+Each instruction can take up to two parameters. These parameters have four different types. But not all combinations of parameter types are valid. The following tables show the different valid combinations for each instruction. The rows represent the first parameter and the columns represent the second.
+
+As general rule, the left parameter cannot have a smaller bit size than the right parameter
+
+#### CMP
+
+|P0\P1|Literal|Register|Address|Pointer
+|-|-|-|-|-|
+|Literal|✅|✅|✅|✅|
+|Register|✅|✅|✅|✅|
+|Address|✅|✅|✅|✅|
+|Pointer|✅|✅|✅|✅|
+
+#### MOV, ADD, SUB, MUL, DIV, SHL, SHR, FADD, FSUB, FMUL, FDIV, AND, OR, NOT, XOR
+
+|P0\P1|Literal|Register|Address|Pointer
+|-|-|-|-|-|
+|Literal|❌|✅|✅|✅|
+|Register|❌|✅|✅|✅|
+|Address|❌|✅|✅|✅|
+|Pointer|❌|✅|✅|✅|
+
+#### JE, JG, JL
+
+|P0\P1|Literal|Register|Address|Pointer
+|-|-|-|-|-|
+|Literal|❌|❌|❌|❌|
+|Register|✅|✅|✅|✅|
+|Address|✅|✅|✅|✅|
+|Pointer|✅|✅|✅|✅|
+
+#### JMP, JZ, JP, JN, JNZ, CALL
+
+|P0||
+|-|-|
+|Literal|❌|
+|Register|✅|
+|Address|✅|
+|Pointer|✅|
+
+#### PUSH, POP
+
+|P0||
+|-|-|
+|Literal|✅|
+|Register|✅|
+|Address|✅|
+|Pointer|✅|
+
+#### PUSHA, POPA, RET
+
+These instructions take no arguments
+
 ### Device I/O
 
 The device operations are two. They allow to send or receive messages to the device bus
