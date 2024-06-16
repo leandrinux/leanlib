@@ -73,43 +73,80 @@ interface
       (name: 'ss'; code:$A2; bitSize:32)
     );
 
+    C_MOV = $01;
+    C_ADD = $02;
+    C_SUB = $03;
+    C_MUL = $04;
+    C_DIV = $05;
+    C_CMP = $06;
+    C_SHL = $07;
+    C_SHR = $08;
+    C_FADD = $09;
+    C_FSUB = $0A;
+    C_FMUL = $0B;
+    C_FDIV = $0C;
+
+    C_JMP = $21;
+    C_JE = $22;
+    C_JG = $23;
+    C_JL = $24;
+    C_JZ = $25;
+    C_JP = $26;
+    C_JN = $27;
+    C_JNZ = $28;
+
+    C_AND = $31;
+    C_OR = $32;
+    C_NOT = $33;
+    C_XOR = $34;
+
+    C_PUSH = $41;
+    C_POP = $42;
+    C_PUSHA = $43;
+    C_POPA = $44;
+    C_CALL = $45;
+    C_RET = $46;
+
+    C_OUT = $51;
+    C_IN = $52;
+
     C_OPCODE_INFO: TOpcodeInfoArray = (
-      (name: 'mov'; code:$01; count:2),
-      (name: 'add'; code:$02; count:2),
-      (name: 'sub'; code:$03; count:2),
-      (name: 'mul'; code:$04; count:2),
-      (name: 'div'; code:$05; count:2),
-      (name: 'cmp'; code:$06; count:2),
-      (name: 'shl'; code:$07; count:2),
-      (name: 'shr'; code:$08; count:2),
-      (name: 'fadd'; code:$09; count:2),
-      (name: 'fsub'; code:$0A; count:2),
-      (name: 'fmul'; code:$0B; count:2),
-      (name: 'fdiv'; code:$0C; count:2),
+      (name: 'mov'; code:C_MOV; count:2),
+      (name: 'add'; code:C_ADD; count:2),
+      (name: 'sub'; code:C_SUB; count:2),
+      (name: 'mul'; code:C_MUL; count:2),
+      (name: 'div'; code:C_DIV; count:2),
+      (name: 'cmp'; code:C_CMP; count:2),
+      (name: 'shl'; code:C_SHL; count:2),
+      (name: 'shr'; code:C_SHR; count:2),
+      (name: 'fadd'; code:C_FADD; count:2),
+      (name: 'fsub'; code:C_FSUB; count:2),
+      (name: 'fmul'; code:C_FMUL; count:2),
+      (name: 'fdiv'; code:C_FDIV; count:2),
 
-      (name: 'jmp'; code:$21; count:1),
-      (name: 'je'; code:$22; count:2),
-      (name: 'jg'; code:$23; count:2),
-      (name: 'jl'; code:$24; count:2),
-      (name: 'jz'; code:$25; count:1),
-      (name: 'jp'; code:$26; count:1),
-      (name: 'jn'; code:$27; count:1),
-      (name: 'jnz'; code:$28; count:1),
+      (name: 'jmp'; code:C_JMP; count:1),
+      (name: 'je'; code:C_JE; count:2),
+      (name: 'jg'; code:C_JG; count:2),
+      (name: 'jl'; code:C_JL; count:2),
+      (name: 'jz'; code:C_JZ; count:1),
+      (name: 'jp'; code:C_JP; count:1),
+      (name: 'jn'; code:C_JN; count:1),
+      (name: 'jnz'; code:C_JNZ; count:1),
 
-      (name: 'and'; code:$31; count:2),
-      (name: 'or'; code:$32; count:2),
-      (name: 'not'; code:$33; count:1),
-      (name: 'xor'; code:$34; count:2),
+      (name: 'and'; code:C_AND; count:2),
+      (name: 'or'; code:C_OR; count:2),
+      (name: 'not'; code:C_NOT; count:1),
+      (name: 'xor'; code:C_XOR; count:2),
 
-      (name: 'push'; code:$41; count:1),
-      (name: 'pop'; code:$42; count:1),
-      (name: 'pusha'; code:$43; count:0),
-      (name: 'popa'; code:$44; count:0),
-      (name: 'call'; code:$45; count:1),
-      (name: 'ret'; code:$46; count:0),
+      (name: 'push'; code:C_PUSH; count:1),
+      (name: 'pop'; code:C_POP; count:1),
+      (name: 'pusha'; code:C_PUSHA; count:0),
+      (name: 'popa'; code:C_POPA; count:0),
+      (name: 'call'; code:C_CALL; count:1),
+      (name: 'ret'; code:C_RET; count:0),
 
-      (name: 'out'; code:$51; count:2),
-      (name: 'in'; code:$52; count:2)
+      (name: 'out'; code:C_OUT; count:2),
+      (name: 'in'; code:C_IN; count:2)
     );  
 
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
