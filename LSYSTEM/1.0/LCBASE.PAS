@@ -250,7 +250,7 @@ implementation
     begin
       write('error: ', msg);
       if isOpen then
-        writeln(' at ln ', lineNumber,' pos ', lineCharacter)
+        writeln(' at line ', lineNumber,', position ', lineCharacter)
       else
         writeln;
       halt(1);
@@ -358,7 +358,7 @@ implementation
       raise ('literal argument could not be recognized');
     if (value and $FFFF0000) <> 0 then 
       getLiteralBitSize := 32
-    else if (value and $FF) <> 0 then getLiteralBitSize := 16
+    else if (value and $FF00) <> 0 then getLiteralBitSize := 16
     else getLiteralBitSize := 8;
   end;
 
@@ -389,13 +389,23 @@ implementation
 
   procedure validateParams;
   const 
-    C_P0_NO_LITERAL: set of byte = 
+    { these instructions do not support a literal as first parameter }
+    C_OPCODES_NO_FIRST_LITERAL: set of byte = 
       [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
        C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
        C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL];
-    C_P1_NO_LITERAL: set of byte = 
+
+    { these instructions do not support a literal as second parameter }
+    C_OPCODES_NO_SECOND_LITERAL: set of byte = 
       [C_JE, C_JG, C_JL];
-    
+
+    { these instructions cannot have a register in the first parameter and a
+      literal on the second, where the register has a smaller bitsize than the literal }
+    C_OPCODES_LITERAL_BITSIZE_CHK: set of byte =
+      [ C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
+        C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, 
+        C_OR, C_NOT, C_XOR ];
+
   var 
     paramCount: byte;
   begin
@@ -415,14 +425,19 @@ implementation
       { check the parameter types are correct }
       paramType0 := guessParameterType(param0);
       paramType1 := guessParameterType(param1);
-      if (opcode in C_P0_NO_LITERAL) and (paramType0 = EParameterTypeLiteral) then
+
+      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
         raise('instruction ' + name + ' does not support a literal as first parameter');
-      if (opcode in C_P1_NO_LITERAL) and (paramType1 = EParameterTypeLiteral) then
+
+      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (paramType1 = EParameterTypeLiteral) then
         raise('instruction ' + name + ' does not support a literal as second parameter');
 
       { check that the left size bit size is equal or greater than the right size bit size }
-      if (paramCount=2) and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
-        raise('first parameter bit size is smaller than second parameter bit size');
+      if (paramType0 = EParameterTypeRegister) 
+         and (paramType1 in [EParameterTypeLiteral, EParameterTypeRegister]) 
+         and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
+         and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
+        raise('register in first parameter cannot fit literal or register on the second parameter');
 
     end;
   end;

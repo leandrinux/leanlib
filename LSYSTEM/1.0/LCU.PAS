@@ -77,7 +77,6 @@ implementation
         result := getOpcodeInfoByName(name, opcode, expectedParamCount);
         if result then
         begin
-          writeln(name, ': ', opcode);
           pushState(stack, EStateReadParam0);
           state := EStateSkipSpaces;
         end else
@@ -97,7 +96,6 @@ implementation
     with build, instructionData, stack do
       if ch in [#0, C_CR, C_LF, ','] then
       begin
-        writeln('got param0: "', param0 ,'"');
         if ch = ',' then
         begin
           ch := readChar;
@@ -116,7 +114,6 @@ implementation
     with build, instructionData, stack do
       if ch in [#0, C_CR, C_LF] then
       begin
-        writeln('got param1: "', param1 ,'"');
         state := EStateBuildBinaryInstruction;
       end else begin
         param1 := param1 + ch;
