@@ -1,5 +1,5 @@
 
   xor eax, eax
-  add eax, 0xA
+  add ax, 0xFFFF
   ret
 

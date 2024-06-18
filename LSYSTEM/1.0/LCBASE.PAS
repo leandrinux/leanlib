@@ -110,7 +110,6 @@ interface
       lineNumber: longint;              { current line number }
       lineCharacter: word;              { char number being evaluated in current line }
       instructionCount: longint;        { how many instructions have been built }
-      verbose: boolean;                 { whether it should display info messages or not }
       fileBuffer: TFileBuffer;          { data buffer used to read file }
       stack: TStateStack;               { stack of machine states }
       instructionData: TInstructionData { the instruction and arguments retrieved from the line }
@@ -184,7 +183,7 @@ interface
     );  
 
   var
-    build: TBuild;   
+    build: TBuild;
 
   procedure initBuild(const filename: string);
   function readChar: char;
@@ -207,7 +206,6 @@ implementation
       instructionCount := 0;
       lineNumber := 1;
       lineCharacter := 1;
-      verbose := true;
       fillChar(fileBuffer, sizeof(TFileBuffer), 0);
       stack.count := 0;
       stack.state := EStateStart;
@@ -248,7 +246,7 @@ implementation
   begin
     with build do
     begin
-      write('error: ', msg);
+      write('[X] Error: ', msg);
       if isOpen then
         writeln(' at line ', lineNumber,', position ', lineCharacter)
       else
@@ -259,7 +257,7 @@ implementation
 
   procedure message(const msg: string);
   begin
-    writeln(msg);
+    writeln('[-] ', msg);
   end;
 
   procedure pushState(var stack: TStateStack; value: EState);
@@ -336,30 +334,22 @@ implementation
         guessParameterType := EParameterTypePointer;
     end;    
   end;
-{
-  function getParamValue(const param: string; paramType:EParameterType): TUInt32;
-  var
-    value: TUInt32;
-  begin
-    case paramType of
-      EParameterTypeLiteral: 
-        if not any2int(param, value) then raise ('literal argument could not be recognized');
-    else
-      value := 0;
-    end;
-    getParamValue := value;
-  end;
-}
+
   function getLiteralBitSize(const param: string): byte;
   var
     value: TUInt32;
+    result: byte;
   begin
+    result := 0;
     if not any2int(param, value) then 
       raise ('literal argument could not be recognized');
     if (value and $FFFF0000) <> 0 then 
-      getLiteralBitSize := 32
-    else if (value and $FF00) <> 0 then getLiteralBitSize := 16
-    else getLiteralBitSize := 8;
+      result := 32
+    else if (value and $FF00) <> 0 then 
+      result := 16
+    else 
+      result := 8;
+    getLiteralBitSize := result;
   end;
 
   function getRegisterBitSize(const param: string): byte;
@@ -377,9 +367,7 @@ implementation
   begin
     case paramType of 
       EParameterTypeLiteral: result := getLiteralBitSize(param);
-      
       EParameterTypeRegister: result := getRegisterBitSize(param);
-
       EParameterTypeAddress, EParameterTypePointer: result := 32;
     else
       result := 0;

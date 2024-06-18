@@ -33,11 +33,11 @@ implementation
   var
     result: boolean;
   begin
-    result := dec2int(s, value);
-    if not result then result := hex2int(s, value);
+    result := hex2int(s, value);
     if not result then result := oct2int(s, value);
     if not result then result := bin2int(s, value);
     if not result then result := chr2int(s, value);
+    if not result then result := dec2int(s, value);
     if not result then result := str2single(s, TFloat32(value));
     any2int := result;
   end;

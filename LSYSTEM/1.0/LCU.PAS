@@ -9,6 +9,9 @@ interface
     lcbase,
     utils;
 
+  var
+    verbose: boolean;
+
   procedure startBuild(const filename: string);
 
 implementation
@@ -18,7 +21,9 @@ implementation
     with build, stack do
     begin
       ch := readChar;
-      if ch in C_SPACING_CHARS then
+      if ch = #0 then
+        state := EStateEnd
+      else if ch in C_SPACING_CHARS then
       begin
         pushState(stack, EStateReadInstruction);
         state := EStateSkipSpacesAndLineBreaks;
@@ -68,21 +73,27 @@ implementation
     result: boolean;
   begin
     with build, instructionData, stack do
-      if ch in ['a'..'z'] then
+      if ch = #0 then
+        state := EStateEnd
+      else if ch in ['a'..'z'] then
       begin 
         name := name + ch;
         ch := readChar;
-      end else if ch in [C_SPACE, C_LF, #0] then
+      end else if ch in [C_SPACE, C_CR, C_LF] then
       begin
         result := getOpcodeInfoByName(name, opcode, expectedParamCount);
         if result then
         begin
-          pushState(stack, EStateReadParam0);
-          state := EStateSkipSpaces;
+          if ch in [C_CR, C_LF] then
+            state := EStateBuildBinaryInstruction
+          else begin
+            pushState(stack, EStateReadParam0);
+            state := EStateSkipSpaces;
+          end;
         end else
         begin
           lineCharacter := lineCharacter - length(name) - 1;
-          raise('unknown instruction "' + name + '"');
+          raise('unknown instruction "' + name + '" unknown');
         end;
       end else
       begin
@@ -113,9 +124,8 @@ implementation
   begin
     with build, instructionData, stack do
       if ch in [#0, C_CR, C_LF] then
-      begin
-        state := EStateBuildBinaryInstruction;
-      end else begin
+        state := EStateBuildBinaryInstruction
+      else begin
         param1 := param1 + ch;
         ch := readChar;
       end;
@@ -123,8 +133,21 @@ implementation
 
   procedure doBuildBinaryInstruction;
   begin
-    validateParams;
-    build.stack.state := EStateEnd;
+    with build do
+    begin
+      validateParams;
+
+      if verbose then 
+        with instructionData do writeln('    (', name, ', ', param0, ', ', param1, ')');
+
+      if ch = #0 then
+        stack.state := EStateEnd
+      else begin
+        inc(instructionCount);
+        fillchar(instructionData, sizeof(instructionData), 0);
+        stack.state := EStateStart;
+      end;
+    end;
   end;
 
   procedure startBuild(const filename: string);
@@ -148,11 +171,10 @@ implementation
           EStateCommentUntilLineBreak: doCommentUntilLineBreak;
           EStateBuildBinaryInstruction: doBuildBinaryInstruction;
         end;
-      if state = EStateEnd then
-        writeln('Ended successfully')
-      else
-        writeln('Ended with errors');
+      message('Ended successfully')
     end;
   end;
 
+begin
+  verbose := false;
 end.

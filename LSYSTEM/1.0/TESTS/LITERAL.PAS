@@ -128,6 +128,7 @@ begin
   testValue(f, '0xABCDEF', true, $ABCDEF);
   testValue(f, '$ABCDEF', true, $ABCDEF);
   testValue(f, '0x_7777_7777', true, $77777777);
+  testValue(f, '0xFFFFF', true, $FFFFF);
   testValue(f, '0x011G010', false, 0);
   testValue(f, '0X011G010', false, 0);
   testValue(f, '0X', false, 0);
@@ -155,6 +156,12 @@ begin
   testFloat32('123.345', true, 123.345);
   testFloat32('.5', true, 0.5);
   testFloat32('-.25', true, -0.25);
+
+  writeln('test for any type');
+  f := any2int;
+  testValue(f, '''a''', true, ord('a'));
+  testValue(f, '0x1234567', true, $1234567);
+  testValue(f, '0xFFFFF', true, $FFFFF);
 
   writeln('passed all tests!');
 end.

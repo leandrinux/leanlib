@@ -11,5 +11,8 @@ begin
   if filename='' then 
     writeln('no source file specified')
   else
+  begin
+    lcu.verbose := true;
     startBuild(filename);
+  end;
 end.
