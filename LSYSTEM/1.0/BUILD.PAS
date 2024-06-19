@@ -2,7 +2,8 @@ uses
   lcommon,
   lliteral,
   lcbase,
-  lcu;
+  lcu,
+  lbuilder;
 
 begin
 end.
