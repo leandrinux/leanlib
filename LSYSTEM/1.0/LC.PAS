@@ -6,7 +6,8 @@ var
   builder: PBuilder;
 
 begin
-  writeln('lsystem compiler');
+  writeln('lsystem assembly compiler');
+  writeln;
   { if paramCount=1 then filename := paramStr(1); }
   filename := 'demo.asm';
   if filename='' then 
@@ -20,8 +21,8 @@ begin
     builder := new(PBuilder, init);
     with builder^ do
     begin
-      setDelegate := self;
-      setSourceFromFile(filename);
+      setSourceFileStream(filename);
+      setStandardMessageOutput;
       build;
       release;
     end;
