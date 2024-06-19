@@ -27,9 +27,6 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
-      _stream: PStream;
-      _fromPos: longint;
-      _size, _position: longint;
     end;
 
 implementation
@@ -43,7 +40,6 @@ implementation
 
   destructor TStdOutput.done;
   begin
-    _stream^.release;
     inherited done;
   end;
 
