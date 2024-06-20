@@ -23,8 +23,12 @@ interface
     private
       _source: PStream;
       _message: PStream;
+      _line: string;
+      _nestedCommentBlocks: byte;
       procedure log(const msg: string);
       procedure logln(const msg: string);
+      procedure cleanComments;
+      procedure processLine;
     end;
 
   const
@@ -60,7 +64,9 @@ implementation
 
   procedure TBuilder.build;
   begin
-    log('[-] Building');
+    logln('[-] Building');
+    _nestedCommentBlocks := 0;
+    while not _source^.isEOF do processLine;
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
@@ -103,6 +109,58 @@ implementation
   procedure TBuilder.logln(const msg: string);
   begin
     if _message<>nil then _message^.writeln(msg);
+  end;
+
+  procedure TBuilder.cleanComments;
+  var
+    isDone: boolean;
+    i: byte;
+  begin
+    i := 0;
+    isDone := false;
+    while (not isDone) and (not _source^.isEOF) and (i<=length(_line)) do
+    begin
+      if (_line[i]='/') then
+      begin
+        if (i<length(_line)) then
+        begin
+          if (_line[i+1] = '/') then
+          begin
+            { found a comment until EoL }
+            { we clean the line and return }
+            _line := copy(_line, 1, i-1);
+            isDone := true;
+          end else if (_line[i+1] = '*') then
+          begin
+            { we found a comment block start }
+            inc(_nestedCommentBlocks);
+            _line := copy(_line, 1, i-1);
+            isDone := true;
+          end;
+        end;
+      end else 
+        if (_line[i]='*') and (i<length(_line)) and (_line[i+1] = '/') then
+        begin
+          { we found a comment block end }
+          _line := copy(_line, i+2, length(_line)-i-2);
+          dec(_nestedCommentBlocks);
+          i := 0;
+          isDone := true;
+        end;
+      inc(i);
+    end;
+    if (_nestedCommentBlocks>0) then
+    begin
+      if (i>length(_line)) then 
+        _line := '';
+    end;
+  end;
+
+  procedure TBuilder.processLine;
+  begin
+    _line := _source^.readln;
+    cleanComments;
+    if length(_line)>0 then writeln(_line);
   end;
 
   { Other }
