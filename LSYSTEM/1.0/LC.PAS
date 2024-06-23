@@ -8,18 +8,13 @@ var
   builder: PBuilder;
 
 begin
-  writeln('LASMC lsystem assembly compiler v', C_LASMC_VERSION);
-  writeln('Built ', C_BUILD_DATE, ' at ', C_BUILD_TIME);
-
+  write('LASMC lsystem assembly compiler v', C_LASMC_VERSION);
+  writeln(' - ', C_BUILD_DATE, ' ', C_BUILD_TIME);
   filename := 'demo.asm';
   if filename='' then 
-    writeln('no source file specified')
+    error('no source file specified')
   else
   begin
-  {
-    lcu.verbose := true;
-    startBuild(filename);
-  }
     builder := new(PBuilder, init);
     with builder^ do
     begin
@@ -28,6 +23,5 @@ begin
       build;
       release;
     end;
-
   end;
 end.
