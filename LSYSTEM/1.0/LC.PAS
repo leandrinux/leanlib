@@ -1,4 +1,6 @@
 uses
+  ats,
+  lcbase,
   lbuilder;
 
 var 
@@ -6,9 +8,9 @@ var
   builder: PBuilder;
 
 begin
-  writeln('lsystem assembly compiler');
-  writeln;
-  { if paramCount=1 then filename := paramStr(1); }
+  writeln('LASMC lsystem assembly compiler v', C_LASMC_VERSION);
+  writeln('Built ', C_BUILD_DATE, ' at ', C_BUILD_TIME);
+
   filename := 'demo.asm';
   if filename='' then 
     writeln('no source file specified')

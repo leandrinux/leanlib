@@ -12,6 +12,7 @@ interface
     utils;
 
   const
+    C_LASMC_VERSION = '0.1';
     C_READ_BUFFER_SIZE = 1024;
     C_STATE_STACK_SIZE = 4;
     C_SPACE = ' ';

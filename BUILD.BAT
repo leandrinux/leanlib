@@ -10,11 +10,10 @@ if "%1"=="" goto buildall
 echo.
 apps\lab\basedir > basedir.bat
 call basedir
-del basedir.bat >nul
 echo Building %1
 cd %1
 config -set "cpu cycles=max"
-tpc -q -b -ec:\bin -dDEBUG build.pas
+tpc -q -b -ec:\bin -u%currentdir% -dDEBUG build.pas
 if errorlevel 1 goto fail
 echo success
 cd %currentdir%
@@ -26,6 +25,9 @@ echo fail
 exit
 
 :buildall
+apps\lab\basedir > basedir.bat
+call basedir
+apps\ats\ats > %currentdir%\ats.pas
 echo.
 echo Building all libraries
 del /q c:\bin\*.* >nul
@@ -39,3 +41,5 @@ call build lsystem\1.0
 del /q c:\bin\*.exe >nul
 
 :end
+del basedir.bat >nul
+del /q %currentdir%\ats.pas >nul
