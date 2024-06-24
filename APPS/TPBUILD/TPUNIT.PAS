@@ -107,6 +107,22 @@ implementation
     getErrorMessage := value;
   end;
 
+  procedure deleteFile(const filename: TFilename);
+  var
+    regs: Registers;
+    p: pointer;
+    asciiz: array [0..12] of char;
+    i: byte;
+  begin
+    regs.ah := $41;
+    regs.ds := seg(asciiz);
+    regs.dx := ofs(asciiz);
+    p := Ptr(seg(filename), ofs(filename) + 1);
+    move(p^, asciiz, length(filename));
+    asciiz[length(filename)] := #0;
+    msdos(regs);
+  end;
+
   function compile(const filename: TFilename; var errorMsg: string): boolean;
   var 
     cmdLine: string;
@@ -120,6 +136,7 @@ implementation
     else
       errorMsg := '';
     compile := result;
+    deleteFile(C_TEMP_FILE);
   end;
 
   { Public }
