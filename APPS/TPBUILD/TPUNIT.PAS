@@ -9,15 +9,13 @@ interface
 
   procedure error(msg: string);
   procedure log(msg: string);
-  function run(const cmd, cmdLine: string; hide: boolean): integer;
-  function compile(const cmdLine: string): boolean;
+  procedure buildAll(const baseDir: string);
   function getTPCPath: TPath;
-  function isTPCInstalled: boolean;
 
 implementation
 
   uses
-    dos, execute;
+    dos, execute, tpstring;
 
   const
     C_TPC_EXECUTABLE = 'tpc.exe';
@@ -68,19 +66,6 @@ implementation
     end;
   end;
 
-  { Public }
-
-  procedure error(msg: string);
-  begin
-    writeln('[X] ERROR: ', msg);
-    halt(1);
-  end;
-
-  procedure log(msg: string);
-  begin
-    writeln('[-] ', msg);
-  end;
-
   function run(const cmd, cmdLine: string; hide: boolean): integer;
   begin
     swapVectors;
@@ -97,14 +82,39 @@ implementation
     compile := run(TPC_PATH + C_TPC_EXECUTABLE, cmdLine, true) = 0;
   end;
 
+  { Public }
+
+  procedure error(msg: string);
+  begin
+    writeln('[X] ERROR: ', msg);
+    halt(1);
+  end;
+
+  procedure log(msg: string);
+  begin
+    writeln('[-] ', msg);
+  end;
+
+  procedure buildAll(const baseDir: string);
+  var 
+    dirInfo: SearchRec;
+  begin
+    if length(basedir)>0 then 
+      log(C_STR_PROJECT_DIR + baseDir)
+    else
+      log(C_STR_PROJECT_DIR + C_STR_CURRENT_DIR);
+    log(C_STR_BUILD_ALL);
+    findFirst(baseDir + '\*.PAS', archive, dirInfo);
+    while DOSError = 0 do
+    begin
+      with dirInfo do writeln(name, ',', time);
+      findNext(dirInfo);
+    end;   
+  end;
+
   function getTPCPath: TPath;
   begin
     getTPCPath := TPC_PATH;
-  end;
-
-  function isTPCInstalled: boolean;
-  begin
-    isTPCInstalled := TPC_PATH <> '';
   end;
 
 begin

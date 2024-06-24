@@ -20,12 +20,10 @@ uses
   tpunit;
 
 begin
-  writeln('compile:', compile('\hola.pas'));
-{
   writeln(C_STR_WELCOME);
-  if isTPCInstalled then 
-    log(C_STR_TPC_FOUND_AT + getTPCPath)
+  if getTPCPath <> '' then 
+    log(C_STR_TPC_LOCATION + getTPCPath)
   else 
     error(C_STR_TPC_NOT_INSTALLED);
- } 
+  buildAll('');
 end.
