@@ -1,1 +1,3 @@
-writeln('Howdy!');
+begin
+  writeln('Howdy!');
+end.
