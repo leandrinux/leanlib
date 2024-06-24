@@ -16,6 +16,28 @@ interface
 
 implementation
 
+  procedure pushState(var stack: TStateStack; value: EState);
+  begin
+    with stack do
+      if stack.count = C_STATE_STACK_SIZE then
+        raise('State stack overflow')
+      else begin
+        stack.values[stack.count] := value;
+        count := count + 1;
+      end;
+  end;
+
+  procedure popState(var stack: TStateStack);
+  begin
+    with stack do
+      if count = 0 then
+        raise('State stack empty')
+      else begin
+        count := count - 1;
+        state := values[count];
+      end;  
+  end;
+
   procedure doStart;
   begin
     with build, stack do

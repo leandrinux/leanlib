@@ -12,7 +12,7 @@ begin
   writeln(' - ', C_BUILD_DATE, ' ', C_BUILD_TIME);
   filename := 'demo.asm';
   if filename='' then 
-    error('no source file specified')
+    raise('no source file specified')
   else
   begin
     builder := new(PBuilder, init);

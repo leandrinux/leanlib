@@ -190,8 +190,6 @@ interface
   function readChar: char;
   procedure raise(const msg: string);
   procedure message(const msg: string);
-  procedure pushState(var stack: TStateStack; value: EState);
-  procedure popState(var stack: TStateStack);
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
   function guessParameterType(const token: string): EParameterType;
@@ -259,28 +257,6 @@ implementation
   procedure message(const msg: string);
   begin
     writeln('[-] ', msg);
-  end;
-
-  procedure pushState(var stack: TStateStack; value: EState);
-  begin
-    with stack do
-      if stack.count = C_STATE_STACK_SIZE then
-        raise('State stack overflow')
-      else begin
-        stack.values[stack.count] := value;
-        count := count + 1;
-      end;
-  end;
-
-  procedure popState(var stack: TStateStack);
-  begin
-    with stack do
-      if count = 0 then
-        raise('State stack empty')
-      else begin
-        count := count - 1;
-        state := values[count];
-      end;  
   end;
 
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
