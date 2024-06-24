@@ -167,8 +167,24 @@ implementation
           inc(count);
         end;
       close(f);
+      log(C_STR_YES_MODIFIED_RECORDS);
     end else
       log(C_STR_NO_MODIFIED_RECORDS);
+  end;
+
+  procedure saveModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
+  var
+    f: file of TModifyRecord;
+    i: word;
+  begin
+    assign(f, basedir + '\' + C_MODIFY_RECORDS_FILENAME);
+    {$I-} rewrite(f); {$I+}
+    if IOResult = 0 then
+    begin
+      with modifyRecords do for i:= 1 to count do write(f, recs[i]);
+      close(f);
+      log(C_STR_SAVE_MODIFIED_RECORDS);
+    end;
   end;
 
   procedure buildAll(const baseDir: string);
@@ -176,7 +192,7 @@ implementation
     dirInfo: SearchRec;
     fileFound, compileSuccess: boolean;
     path: TPath;
-    modifyRecords: TModifyRecords;
+    previousRec, currentRec: TModifyRecords;
     recordCount: word;
     errorMsg: string;
   begin
@@ -186,7 +202,7 @@ implementation
       log(C_STR_PACKAGE_TO_BUILD + C_STR_CURRENT_DIR);
     log(C_STR_BUILD_ALL);
 
-    readModifyRecords(basedir, modifyRecords);
+    readModifyRecords(basedir, previousRec);
 
     { start building }
     findFirst(baseDir + '\*.PAS', archive, dirInfo);
@@ -204,12 +220,11 @@ implementation
           log(path + C_STR_FAILED);
           log(errorMsg);
         end;
-          
       end;
       findNext(dirInfo);
       fileFound := DOSError = 0;
     end;
-    if not compileSuccess then error(C_STR_BUILD_FAILED);
+    if compileSuccess then log(C_STR_BUILD_SUCCESS) else error(C_STR_BUILD_FAILED);
   end;
 
   function getTPCPath: TPath;

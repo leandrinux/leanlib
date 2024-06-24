@@ -13,7 +13,10 @@ interface
     C_STR_BUILD_ALL = 'Building all';
     C_STR_SUCCESS = '... ok';
     C_STR_FAILED = '... fail!';
+    C_STR_YES_MODIFIED_RECORDS = 'modified records found - will only build new or modified files';
     C_STR_NO_MODIFIED_RECORDS = 'no modified records found - will build everything';
+    C_STR_SAVE_MODIFIED_RECORDS = 'modified records saved';
+    C_STR_BUILD_SUCCESS = 'Build successful!';
     C_STR_BUILD_FAILED = 'Build failed!';
 
 implementation
