@@ -4,9 +4,10 @@ unit
 interface
 
   const
+    C_HIDE_COMPILER_OUTPUT = false;
+    C_MODIFY_RECORDS_FILENAME = 'modify.rec';
+    C_TEMP_FILE = 'file.tmp';
     C_MAX_MODIFY_RECORDS = 100;
-    C_MODIFY_RECORDS_FILENAME = 'MODIFY.REC';
-    C_HIDE_COMPILER_OUTPUT = true;
 
   type
     TPath = string[50];
@@ -93,9 +94,32 @@ implementation
     swapVectors;
   end;
 
-  function compile(const filename: TFilename): boolean;
+  function getErrorMessage: string;
+  var
+    f: text;
+    value: string;
   begin
-    compile := run(TPC_PATH + C_TPC_EXECUTABLE, filename, C_HIDE_COMPILER_OUTPUT) = 0;
+    assign(f, C_TEMP_FILE);
+    reset(f);
+    readln(f, value);
+    readln(f, value);
+    close(f);
+    getErrorMessage := value;
+  end;
+
+  function compile(const filename: TFilename; var errorMsg: string): boolean;
+  var 
+    cmdLine: string;
+    result: boolean;
+  begin
+    cmdLine := filename + ' -Q';
+    cmdLine := cmdLine + ' >' + C_TEMP_FILE;
+    result := run(TPC_PATH + C_TPC_EXECUTABLE, cmdLine, C_HIDE_COMPILER_OUTPUT) = 0;
+    if not result then
+      errorMsg := getErrorMessage
+    else
+      errorMsg := '';
+    compile := result;
   end;
 
   { Public }
@@ -125,6 +149,7 @@ implementation
           read(f, recs[count]);
           inc(count);
         end;
+      close(f);
     end else
       log(C_STR_NO_MODIFIED_RECORDS);
   end;
@@ -136,7 +161,7 @@ implementation
     path: TPath;
     modifyRecords: TModifyRecords;
     recordCount: word;
-
+    errorMsg: string;
   begin
     if length(basedir)>0 then 
       log(C_STR_PACKAGE_TO_BUILD + baseDir)
@@ -155,11 +180,13 @@ implementation
       with dirInfo do 
       begin
         path := baseDir + '\' + name;
-        compileSuccess := compile(path);
+        compileSuccess := compile(path, errorMsg);
         if compileSuccess then 
           log(path + C_STR_SUCCESS)
-        else 
+        else begin
           log(path + C_STR_FAILED);
+          log(errorMsg);
+        end;
           
       end;
       findNext(dirInfo);
