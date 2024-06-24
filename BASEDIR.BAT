@@ -1,0 +1,1 @@
+set currentdir=C:\LEANLIB

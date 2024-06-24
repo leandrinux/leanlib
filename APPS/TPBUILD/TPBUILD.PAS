@@ -25,5 +25,5 @@ begin
     log(C_STR_TPC_LOCATION + getTPCPath)
   else 
     error(C_STR_TPC_NOT_INSTALLED);
-  buildAll('');
+  buildAll('example');
 end.
