@@ -30,6 +30,9 @@ interface
   procedure readModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
   procedure saveModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
   procedure deleteFile(const filename: TFilename);
+  function fileExists(const path: TPath; const filename: TFilename): boolean;
+  function directoryExists(const dir: TPath): boolean;
+  procedure createDirectory(const dir: TPath);
 
 implementation
 
@@ -92,6 +95,38 @@ implementation
     p := Ptr(seg(filename), ofs(filename) + 1);
     move(p^, asciiz, length(filename));
     asciiz[length(filename)] := #0;
+    msdos(regs);
+  end;
+
+  function fileExists(const path: TPath; const filename: TFilename): boolean;
+  var 
+    dirInfo: SearchRec;
+  begin
+    findFirst(path + filename, Archive, dirInfo);
+    fileExists := DOSError = 0;
+  end;
+
+  function directoryExists(const dir: TPath): boolean;
+  var 
+    dirInfo: SearchRec;
+  begin
+    findFirst(dir, Directory, dirInfo);
+    directoryExists := DOSError = 0;
+  end;
+
+  procedure createDirectory(const dir: TPath);
+  var
+    regs: Registers;
+    p: pointer;
+    asciiz: array [0..50] of char;
+    i: byte;
+  begin
+    regs.ah := $39;
+    regs.ds := seg(asciiz);
+    regs.dx := ofs(asciiz);
+    p := Ptr(seg(dir), ofs(dir) + 1);
+    move(p^, asciiz, length(dir));
+    asciiz[length(dir)] := #0;
     msdos(regs);
   end;
 

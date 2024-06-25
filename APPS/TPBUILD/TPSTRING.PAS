@@ -20,6 +20,7 @@ interface
     C_STR_BUILD_FAILED = 'Build failed!';
     C_STR_DYNAMIC_UNIT_CREATE = 'Creating dynamic unit';
     C_STR_DYNAMIC_UNIT_DELETE = 'Deleting dynamic unit';
+    C_STR_CREATED_BIN_DIR = 'Created directory for binaries';
 
 implementation
 

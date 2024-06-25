@@ -24,14 +24,6 @@ implementation
 
   { Private }
   
-  function fileExists(const path: TPath; const filename: TFilename): boolean;
-  var 
-    dirInfo: SearchRec;
-  begin
-    findFirst(path + filename, archive, dirInfo);
-    fileExists := DOSError = 0;
-  end;
-
   procedure searchPath;
   var
     pathvar: string;
@@ -89,12 +81,14 @@ implementation
     getErrorMessage := value;
   end;
 
-  function compile(const filename: TFilename; var errorMsg: string): boolean;
+  function compile(const path: TPath; const filename: TFilename; var errorMsg: string): boolean;
   var 
     cmdLine: string;
     result: boolean;
   begin
-    cmdLine := filename + ' -Q';
+    cmdLine := path + '\' + filename;
+    if path<>'.' then cmdLine := cmdLine + ' -E' + path + '\BIN';
+    cmdLine := cmdLine + ' -Q';
     cmdLine := cmdLine + ' >' + C_TEMP_FILE;
     result := run(TPC_PATH + C_TPC_EXECUTABLE, cmdLine, C_HIDE_COMPILER_OUTPUT) = 0;
     if not result then
@@ -102,9 +96,9 @@ implementation
     else
       errorMsg := '';
     if result then 
-      log(filename + C_STR_SUCCESS)
+      log(path + '\' + filename + C_STR_SUCCESS)
     else begin
-      log(filename + C_STR_FAILED);
+      log(path + '\' + filename + C_STR_FAILED);
       log(errorMsg);
     end;
     compile := result;
@@ -134,7 +128,7 @@ implementation
     writeln(f, 'implementation');
     writeln(f, 'end.');
     close(f);
-    compile(filename, errorMsg);
+    compile('.', filename, errorMsg);
   end;
 
   procedure deleteDynamicUnit;
@@ -159,6 +153,11 @@ implementation
       log(C_STR_PACKAGE_TO_BUILD + C_STR_CURRENT_DIR);
     log(C_STR_BUILD_ALL);
 
+    if not directoryExists(basedir + '\BIN') then 
+    begin
+      createDirectory(basedir + '\BIN');
+      log(C_STR_CREATED_BIN_DIR);
+    end;
     readModifyRecords(basedir, previousRec);
     createDynamicUnit;
 
@@ -169,8 +168,7 @@ implementation
     begin
       with dirInfo do 
       begin
-        path := baseDir + '\' + name;
-        compileSuccess := compile(path, errorMsg);
+        compileSuccess := compile(baseDir, name, errorMsg);
       end;
       findNext(dirInfo);
       fileFound := DOSError = 0;
