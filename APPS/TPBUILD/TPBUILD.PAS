@@ -22,8 +22,8 @@ uses
 
 begin
   writeln(C_STR_WELCOME);
-  if getTPCPath <> '' then 
-    log(C_STR_TPC_LOCATION + getTPCPath)
+  if TPC_PATH <> '' then 
+    log(C_STR_TPC_LOCATION + TPC_PATH)
   else 
     error(C_STR_TPC_NOT_INSTALLED);
   buildAll('example');

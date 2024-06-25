@@ -8,19 +8,18 @@ interface
 
   const
     C_HIDE_COMPILER_OUTPUT = false;
-    C_TEMP_FILE = 'FILE.TMP';
-    C_DYNAMIC_UNIT_NAME = 'AUTOUNIT';
+
+  var 
+    TPC_PATH: TPath;
 
   procedure buildAll(const baseDir: string);
-  function getTPCPath: TPath;
 
 implementation
 
   const
     C_TPC_EXECUTABLE = 'tpc.exe';
-
-  var 
-    TPC_PATH: TPath;
+    C_TEMP_FILE = 'FILE.TMP';
+    C_DYNAMIC_UNIT_NAME = 'AUTOUNIT';
 
   { Private }
   
@@ -164,11 +163,6 @@ implementation
     end;
     deleteDynamicUnit;
     if compileSuccess then log(C_STR_BUILD_SUCCESS) else error(C_STR_BUILD_FAILED);
-  end;
-
-  function getTPCPath: TPath;
-  begin
-    getTPCPath := TPC_PATH;
   end;
 
 begin
