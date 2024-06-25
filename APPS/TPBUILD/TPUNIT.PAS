@@ -4,7 +4,7 @@ unit
 interface
 
   uses
-    dos, execute, tputil, tpstring;
+    dos, tputil, tpstring;
 
   const
     C_HIDE_COMPILER_OUTPUT = false;
@@ -55,17 +55,6 @@ implementation
       if (TPC_PATH = '') and fileExists(path + '\', C_TPC_EXECUTABLE) then 
         TPC_PATH := path + '\';
     end;
-  end;
-
-  function run(const cmd, cmdLine: string; hide: boolean): integer;
-  begin
-    swapVectors;
-    if hide then
-      exec(cmd, cmdLine + '> NUL')
-    else
-      exec(cmd, cmdLine);
-    if DOSError <> 0 then run := 1000 + DOSError else run := DOSExitCode;
-    swapVectors;
   end;
 
   function getErrorMessage: string;

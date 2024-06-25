@@ -4,7 +4,7 @@ unit
 interface
 
   uses
-    tpstring, dos;
+    tpstring, dos, execute;
 
   const
     C_MAX_MODIFY_RECORDS = 100;
@@ -29,6 +29,7 @@ interface
   procedure log(msg: string);
   procedure readModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
   procedure saveModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
+  function run(const cmd, cmdLine: string; hide: boolean): integer;
   procedure deleteFile(const filename: TFilename);
   function fileExists(const path: TPath; const filename: TFilename): boolean;
   function directoryExists(const dir: TPath): boolean;
@@ -80,6 +81,17 @@ implementation
       close(f);
       log(C_STR_SAVE_MODIFIED_RECORDS);
     end;
+  end;
+
+  function run(const cmd, cmdLine: string; hide: boolean): integer;
+  begin
+    swapVectors;
+    if hide then
+      exec(cmd, cmdLine + '> NUL')
+    else
+      exec(cmd, cmdLine);
+    if DOSError <> 0 then run := 1000 + DOSError else run := DOSExitCode;
+    swapVectors;
   end;
 
   procedure deleteFile(const filename: TFilename);
