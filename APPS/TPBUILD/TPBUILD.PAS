@@ -12,19 +12,32 @@
 
   The purpose of TPBUILD is not just to build a program but do it easily,
   fast, and with descriptive messages. 
+
+  Features:
+
+  * builds programs
+  * places binaries in a specific folder
+
+  Future features:
+
+  * only builds the units that have been modified since last build
+  * a file called build.cfg contains info for the project. For instance
+    * what 'packages' (directories) must be included
+    * whether it should recompile everything always or not
+    * what files must be built
+    * where the build binaries must be generated
+  * treates directories as packages
 }
 {$M $4000,0,0 }
 
 uses
-  tpstring,
+  tpstr_en,
   tpunit,
   tputil;
 
 begin
   writeln(C_STR_WELCOME);
-  if TPC_PATH <> '' then 
-    log(C_STR_TPC_LOCATION + TPC_PATH)
-  else 
-    error(C_STR_TPC_NOT_INSTALLED);
+  if TPC_PATH = '' then error(C_STR_TPC_NOT_INSTALLED);
+  log(C_STR_TPC_LOCATION + TPC_PATH);
   buildAll('example');
 end.

@@ -1,5 +1,8 @@
+{
+  This unit contains all the text strings used by TPBUILD
+}
 unit
-  tpstring;
+  tpstr_en;
 
 interface
 

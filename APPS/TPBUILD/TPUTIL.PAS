@@ -1,34 +1,19 @@
+{
+  This unit contains constants, types and methods that COULD be used
+  in other programs because they are general enough
+}
 unit
   tputil;
 
 interface
-
-  uses
-    tpstring, dos, execute;
-
-  const
-    C_MAX_MODIFY_RECORDS = 100;
-    C_MODIFY_RECORDS_FILENAME = 'MODIFY.REC';
 
   type
     TPath = string[50];
 
     TFilename = string[12];
 
-    TModifyRecord = packed record
-      filename: TFilename;
-      time: longint;
-    end;
-
-    TModifyRecords = record
-      recs: array [0..C_MAX_MODIFY_RECORDS - 1] of TModifyRecord;
-      count: word;
-    end;
-
   procedure error(msg: string);
   procedure log(msg: string);
-  procedure readModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
-  procedure saveModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
   function run(const cmd, cmdLine: string; hide: boolean): integer;
   procedure deleteFile(const filename: TFilename);
   function fileExists(const path: TPath; const filename: TFilename): boolean;
@@ -36,6 +21,9 @@ interface
   procedure createDirectory(const dir: TPath);
 
 implementation
+
+  uses
+    tpstr_en, dos, execute;
 
   procedure error(msg: string);
   begin
@@ -46,41 +34,6 @@ implementation
   procedure log(msg: string);
   begin
     writeln('[-] ', msg);
-  end;
-
-  procedure readModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
-  var
-    f: file of TModifyRecord;
-  begin
-    assign(f, basedir + '\' + C_MODIFY_RECORDS_FILENAME);
-    {$I-} reset(f); {$I+}
-    if IOResult = 0 then
-    begin
-      with modifyRecords do
-        while not eof(f) and (count<C_MAX_MODIFY_RECORDS) do 
-        begin
-          read(f, recs[count]);
-          inc(count);
-        end;
-      close(f);
-      log(C_STR_YES_MODIFIED_RECORDS);
-    end else
-      log(C_STR_NO_MODIFIED_RECORDS);
-  end;
-
-  procedure saveModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
-  var
-    f: file of TModifyRecord;
-    i: word;
-  begin
-    assign(f, basedir + '\' + C_MODIFY_RECORDS_FILENAME);
-    {$I-} rewrite(f); {$I+}
-    if IOResult = 0 then
-    begin
-      with modifyRecords do for i:= 1 to count do write(f, recs[i]);
-      close(f);
-      log(C_STR_SAVE_MODIFIED_RECORDS);
-    end;
   end;
 
   function run(const cmd, cmdLine: string; hide: boolean): integer;
