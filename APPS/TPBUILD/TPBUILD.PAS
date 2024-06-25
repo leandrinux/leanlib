@@ -31,7 +31,7 @@
 {$M $4000,0,0 }
 
 uses
-  tpstr_en,
+  tpstr_en, tpstr_es,
   tpunit,
   tputil;
 

@@ -18,7 +18,8 @@ interface
 implementation
 
   uses
-    dos, tpstr_en;
+    dos, 
+    tpstr_en, tpstr_es;
 
   const
     C_HIDE_COMPILER_OUTPUT = false;

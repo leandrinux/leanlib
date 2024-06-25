@@ -23,7 +23,8 @@ interface
 implementation
 
   uses
-    tpstr_en, dos, execute;
+    dos, execute,
+    tpstr_en, tpstr_es;
 
   procedure error(msg: string);
   begin
