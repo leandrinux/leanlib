@@ -3,36 +3,18 @@ unit
 
 interface
 
+  uses
+    dos, execute, tputil, tpstring;
+
   const
     C_HIDE_COMPILER_OUTPUT = false;
-    C_MODIFY_RECORDS_FILENAME = 'modify.rec';
-    C_TEMP_FILE = 'file.tmp';
-    C_MAX_MODIFY_RECORDS = 100;
+    C_TEMP_FILE = 'FILE.TMP';
+    C_DYNAMIC_UNIT_NAME = 'AUTOUNIT';
 
-  type
-    TPath = string[50];
-
-    TFilename = string[12];
-
-    TModifyRecord = packed record
-      filename: TFilename;
-      time: longint;
-    end;
-
-    TModifyRecords = record
-      recs: array [0..C_MAX_MODIFY_RECORDS - 1] of TModifyRecord;
-      count: word;
-    end;
-
-  procedure error(msg: string);
-  procedure log(msg: string);
   procedure buildAll(const baseDir: string);
   function getTPCPath: TPath;
 
 implementation
-
-  uses
-    dos, execute, tpstring;
 
   const
     C_TPC_EXECUTABLE = 'tpc.exe';
@@ -107,22 +89,6 @@ implementation
     getErrorMessage := value;
   end;
 
-  procedure deleteFile(const filename: TFilename);
-  var
-    regs: Registers;
-    p: pointer;
-    asciiz: array [0..12] of char;
-    i: byte;
-  begin
-    regs.ah := $41;
-    regs.ds := seg(asciiz);
-    regs.dx := ofs(asciiz);
-    p := Ptr(seg(filename), ofs(filename) + 1);
-    move(p^, asciiz, length(filename));
-    asciiz[length(filename)] := #0;
-    msdos(regs);
-  end;
-
   function compile(const filename: TFilename; var errorMsg: string): boolean;
   var 
     cmdLine: string;
@@ -135,56 +101,47 @@ implementation
       errorMsg := getErrorMessage
     else
       errorMsg := '';
+    if result then 
+      log(filename + C_STR_SUCCESS)
+    else begin
+      log(filename + C_STR_FAILED);
+      log(errorMsg);
+    end;
     compile := result;
     deleteFile(C_TEMP_FILE);
   end;
 
   { Public }
 
-  procedure error(msg: string);
+  procedure createDynamicUnit;
+  var 
+    f: text;
+    h, min, s, ms: word;
+    y, m, d, dw: word;
+    filename, errorMsg: string;
   begin
-    writeln('[X] ERROR: ', msg);
-    halt(1);
+    getTime(h,min,s,ms);
+    getDate(y,m,d,dw);
+    log(C_STR_DYNAMIC_UNIT_CREATE);
+    filename := C_DYNAMIC_UNIT_NAME + '.PAS';
+    assign(f, filename);
+    rewrite(f);
+    writeln(f, 'unit ', C_DYNAMIC_UNIT_NAME, ';');
+    writeln(f, 'interface');
+    writeln(f, 'const');
+    writeln(f, '  C_BUILD_TIME = ''', h, ':', min, ':', s, '.', ms, ''';');
+    writeln(f, '  C_BUILD_DATE = ''', y, '/', m, '/', d, ''';');
+    writeln(f, 'implementation');
+    writeln(f, 'end.');
+    close(f);
+    compile(filename, errorMsg);
   end;
 
-  procedure log(msg: string);
+  procedure deleteDynamicUnit;
   begin
-    writeln('[-] ', msg);
-  end;
-
-  procedure readModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
-  var
-    f: file of TModifyRecord;
-  begin
-    assign(f, basedir + '\' + C_MODIFY_RECORDS_FILENAME);
-    {$I-} reset(f); {$I+}
-    if IOResult = 0 then
-    begin
-      with modifyRecords do
-        while not eof(f) and (count<C_MAX_MODIFY_RECORDS) do 
-        begin
-          read(f, recs[count]);
-          inc(count);
-        end;
-      close(f);
-      log(C_STR_YES_MODIFIED_RECORDS);
-    end else
-      log(C_STR_NO_MODIFIED_RECORDS);
-  end;
-
-  procedure saveModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
-  var
-    f: file of TModifyRecord;
-    i: word;
-  begin
-    assign(f, basedir + '\' + C_MODIFY_RECORDS_FILENAME);
-    {$I-} rewrite(f); {$I+}
-    if IOResult = 0 then
-    begin
-      with modifyRecords do for i:= 1 to count do write(f, recs[i]);
-      close(f);
-      log(C_STR_SAVE_MODIFIED_RECORDS);
-    end;
+    log(C_STR_DYNAMIC_UNIT_DELETE);
+    deleteFile(C_DYNAMIC_UNIT_NAME + '.PAS');
+    deleteFile(C_DYNAMIC_UNIT_NAME + '.TPU');
   end;
 
   procedure buildAll(const baseDir: string);
@@ -203,8 +160,8 @@ implementation
     log(C_STR_BUILD_ALL);
 
     readModifyRecords(basedir, previousRec);
+    createDynamicUnit;
 
-    { start building }
     findFirst(baseDir + '\*.PAS', archive, dirInfo);
     fileFound := DOSError = 0;
     compileSuccess := true;
@@ -214,16 +171,11 @@ implementation
       begin
         path := baseDir + '\' + name;
         compileSuccess := compile(path, errorMsg);
-        if compileSuccess then 
-          log(path + C_STR_SUCCESS)
-        else begin
-          log(path + C_STR_FAILED);
-          log(errorMsg);
-        end;
       end;
       findNext(dirInfo);
       fileFound := DOSError = 0;
     end;
+    deleteDynamicUnit;
     if compileSuccess then log(C_STR_BUILD_SUCCESS) else error(C_STR_BUILD_FAILED);
   end;
 

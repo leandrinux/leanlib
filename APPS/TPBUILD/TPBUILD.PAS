@@ -17,7 +17,8 @@
 
 uses
   tpstring,
-  tpunit;
+  tpunit,
+  tputil;
 
 begin
   writeln(C_STR_WELCOME);

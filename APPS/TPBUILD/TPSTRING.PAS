@@ -5,7 +5,7 @@ interface
 
   const
     C_STR_VERSION = '0.1';
-    C_STR_WELCOME = 'TPBuild ' + C_STR_VERSION + ' made by LRT in (2024)';
+    C_STR_WELCOME = 'TPBuild ' + C_STR_VERSION + ' made by LRT in 2024';
     C_STR_TPC_NOT_INSTALLED = 'TPC not installed or not set in the DOS path';
     C_STR_TPC_LOCATION = 'Turbo Pascal compiler location: ';
     C_STR_PACKAGE_TO_BUILD = 'Package to build: ';
@@ -18,6 +18,8 @@ interface
     C_STR_SAVE_MODIFIED_RECORDS = 'modified records saved';
     C_STR_BUILD_SUCCESS = 'Build successful!';
     C_STR_BUILD_FAILED = 'Build failed!';
+    C_STR_DYNAMIC_UNIT_CREATE = 'Creating dynamic unit';
+    C_STR_DYNAMIC_UNIT_DELETE = 'Deleting dynamic unit';
 
 implementation
 
