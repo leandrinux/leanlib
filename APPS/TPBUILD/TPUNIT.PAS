@@ -16,7 +16,7 @@ implementation
     tptpc,
     tpautou,
     tptexts,
-    DOS;
+    dos;
 
   const
     C_MAX_MODIFY_RECORDS = 100;

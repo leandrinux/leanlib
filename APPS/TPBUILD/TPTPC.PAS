@@ -14,9 +14,8 @@ interface
   var
     TPC_PATH: TPath;
 
-  procedure searchCompilerPath;
+  procedure initCompiler;
   function compile(const path: TPath; const filename: TFilename; var errorMsg: string): boolean;
-  function getErrorMessage: string;
 
 implementation
 
@@ -62,6 +61,19 @@ implementation
     end;
   end;
 
+  function getErrorMessage: string;
+  var
+    f: text;
+    value: string;
+  begin
+    assign(f, C_TEMP_FILE);
+    reset(f);
+    readln(f, value);
+    readln(f, value);
+    close(f);
+    getErrorMessage := value;
+  end;
+
   function compile(const path: TPath; const filename: TFilename; var errorMsg: string): boolean;
   var 
     cmdLine: string;
@@ -86,19 +98,11 @@ implementation
     deleteFile(C_TEMP_FILE);
   end;
 
-  function getErrorMessage: string;
-  var
-    f: text;
-    value: string;
+  procedure initCompiler;
   begin
-    assign(f, C_TEMP_FILE);
-    reset(f);
-    readln(f, value);
-    readln(f, value);
-    close(f);
-    getErrorMessage := value;
+    searchCompilerPath;
+    if TPC_PATH = '' then error(C_STR_TPC_NOT_INSTALLED);  
+    log(C_STR_TPC_LOCATION + TPC_PATH);
   end;
 
-begin
-  searchCompilerPath;
 end.

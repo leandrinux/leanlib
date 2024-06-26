@@ -43,7 +43,6 @@ const
 
 begin
   writeln(strformat(C_STR_WELCOME, C_VERSION));
-  if TPC_PATH = '' then error(C_STR_TPC_NOT_INSTALLED);
-  log(C_STR_TPC_LOCATION + TPC_PATH);
+  initCompiler;
   buildAll('example');
 end.
