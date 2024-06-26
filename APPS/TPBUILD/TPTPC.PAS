@@ -11,6 +11,7 @@ interface
   uses 
     tputil,
     tptexts,
+    tpconfig,
     dos;
 
   var
@@ -76,9 +77,11 @@ implementation
   var 
     cmdLine: string;
     result: boolean;
+    i: byte;
   begin
-    cmdLine := path + '\' + filename;
-    if path<>'.' then cmdLine := cmdLine + ' -E' + path + '\BIN';
+    cmdLine := path + filename;
+    cmdLine := cmdLine + ' -E' + path + 'BIN';
+    with BuildConfig.defines do for i := 0 to count-1 do cmdLine := cmdLine + ' -D' +values[i];
     cmdLine := cmdLine + ' -Q';
     cmdLine := cmdLine + ' >' + C_TEMP_FILE;
     result := run(TPC_PATH + C_TPC_EXECUTABLE, cmdLine, C_HIDE_COMPILER_OUTPUT) = 0;
@@ -87,9 +90,9 @@ implementation
     else
       errorMsg := '';
     if result then 
-      log('Building ' + path + '\' + filename + C_STR_SUCCESS)
+      log('Building ' + path + filename + C_STR_SUCCESS)
     else begin
-      log('Building ' + path + '\' + filename + C_STR_FAILED);
+      log('Building ' + path + filename + C_STR_FAILED);
       log(errorMsg);
     end;
     compile := result;

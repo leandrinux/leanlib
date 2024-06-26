@@ -12,6 +12,7 @@ interface
     tptexts,
     tputil,
     tptpc,
+    tpconfig,
     dos;
 
   const
@@ -32,7 +33,7 @@ implementation
     getTime(h,min,s,ms);
     getDate(y,m,d,dw);
     log(C_STR_DYNAMIC_UNIT_CREATE);
-    filename := C_DYNAMIC_UNIT_NAME + '.PAS';
+    filename := BuildConfig.basedir + C_DYNAMIC_UNIT_NAME + '.PAS';
     assign(f, filename);
     rewrite(f);
     writeln(f, 'unit ', C_DYNAMIC_UNIT_NAME, ';');
@@ -43,14 +44,16 @@ implementation
     writeln(f, 'implementation');
     writeln(f, 'end.');
     close(f);
-    compile('.', filename, errorMsg);
   end;
 
   procedure deleteDynamicUnit;
+  var
+    filename: string;
   begin
     log(C_STR_DYNAMIC_UNIT_DELETE);
-    deleteFile(C_DYNAMIC_UNIT_NAME + '.PAS');
-    deleteFile(C_DYNAMIC_UNIT_NAME + '.TPU');
+    filename := BuildConfig.basedir + C_DYNAMIC_UNIT_NAME;
+    deleteFile(filename + '.PAS');
+    deleteFile(filename + '.TPU');
   end;
 
 end.

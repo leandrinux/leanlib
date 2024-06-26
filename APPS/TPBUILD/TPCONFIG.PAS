@@ -21,9 +21,13 @@ interface
   type
     TToken = string[15];
 
-    TTokens = array[0..C_CONFIG_MAX_TOKENS-1] of TToken;
+    TTokens = record
+      values: array[0..C_CONFIG_MAX_TOKENS-1] of TToken;
+      count: byte;
+    end;
 
-    TBuildConfig = record 
+    TBuildConfig = record
+      baseDir: TPath;
       requires: TTokens;
       builds: TTokens;
       defines: TTokens;
@@ -66,7 +70,6 @@ implementation
   
   procedure skipSpaces;
   begin
-    readChar;
     while not eof(f) and (ch in C_SKIP_CHARS) do readChar;
   end;
 
@@ -85,8 +88,27 @@ implementation
   end;
 
   procedure readTokens(var tokens: TTokens);
+  var
+    token: TToken;
   begin
-    while not eof(f) and (ch<>',') do read(f, ch);
+    readChar;
+    tokens.count := 0;
+    while not eof(f) and (ch<>'[') do
+    begin
+      token := '';
+      skipSpaces;
+      while not eof(f) and (ch<>C_LF) and (ch<>'[') do 
+      begin
+        if ch <> C_CR then token := token + ch;  
+        readChar;
+      end;
+      if eof(f) and (ch <> C_CR) then token := token + ch;  
+      if token<>'' then
+      begin
+        tokens.values[tokens.count] := token;
+        inc(tokens.count);
+      end;
+    end;
   end;
 
   procedure readSection(const name: TToken; var tokens: TTokens);
@@ -104,18 +126,24 @@ implementation
     readTokens(tokens);
   end;
 
+  procedure writeTokens(const tokens:TTokens);
+  var 
+    i: byte;
+  begin
+    for i:=0 to tokens.count-1 do writeln(tokens.values[i]);
+  end;
+  
   procedure readConfigFile(const basedir: TPath);
   begin
     openConfigFile(basedir);
     line := 1;
     position := 0;
+    readChar;
     with BuildConfig do
     begin
       readSection('requires', requires);
-{
-      readSection(f, 'builds', builds);
-      readSection(f, 'defines', defines);
-}
+      readSection('builds', builds);
+      readSection('defines', defines);
     end;
     close(f);
   end;

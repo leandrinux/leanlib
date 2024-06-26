@@ -56,7 +56,7 @@ implementation
   var
     regs: Registers;
     p: pointer;
-    asciiz: array [0..12] of char;
+    asciiz: array [0..255] of char;
     i: byte;
   begin
     regs.ah := $41;

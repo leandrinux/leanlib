@@ -14,13 +14,14 @@ interface
     tpautou,
     tptexts,
     tpmodify,
+    tpconfig,
     dos;
 
-  procedure buildAll(const baseDir: string);
+  procedure buildAll(baseDir: string);
 
 implementation
 
-  procedure buildAll(const baseDir: string);
+  procedure buildAll(baseDir: string);
   var 
     dirInfo: SearchRec;
     fileFound, compileSuccess: boolean;
@@ -29,21 +30,24 @@ implementation
     recordCount: word;
     errorMsg: string;
   begin
+    if (length(basedir)>0) and (basedir[length(basedir)]<>'\') then basedir := basedir + '\';
+    BuildConfig.basedir := baseDir;
+    
     if length(basedir)>0 then 
       log(C_STR_PACKAGE_TO_BUILD + baseDir)
     else
       log(C_STR_PACKAGE_TO_BUILD + C_STR_CURRENT_DIR);
     log(C_STR_BUILD_ALL);
 
-    if not directoryExists(basedir + '\BIN') then 
+    if not directoryExists(basedir + 'BIN') then 
     begin
-      createDirectory(basedir + '\BIN');
+      createDirectory(basedir + 'BIN');
       log(C_STR_CREATED_BIN_DIR);
     end;
     readModifyRecords(basedir, previousRec);
     createDynamicUnit;
 
-    findFirst(baseDir + '\*.PAS', archive, dirInfo);
+    findFirst(baseDir + '*.PAS', archive, dirInfo);
     fileFound := DOSError = 0;
     compileSuccess := true;
     while fileFound and compileSuccess do
