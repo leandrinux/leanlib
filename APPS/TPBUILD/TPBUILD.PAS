@@ -35,7 +35,8 @@
 uses
   {$IFDEF Spanish}tpstr_es,
   {$ELSE}tpstr_en,{$ENDIF}
-  tpunit, 
+  tpunit,
+  tptpc, 
   tputil;
 
 const
