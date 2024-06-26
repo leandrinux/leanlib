@@ -1,3 +1,6 @@
+uses
+  message, strings;
+  
 begin
-  writeln('Goodbye World!');
+  writeMessage(C_STR_GOODBYE_WORLD);
 end.
