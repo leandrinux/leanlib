@@ -18,7 +18,6 @@ interface
   function fileExists(const path: TPath; const filename: TFilename): boolean;
   function directoryExists(const dir: TPath): boolean;
   procedure createDirectory(const dir: TPath);
-  function strAfterNull(const args: string; index: byte): string;
   function strformat(const str, args: string): string;
 
 implementation
@@ -98,34 +97,29 @@ implementation
     msdos(regs);
   end;
 
-  function strAfterNull(const args: string; index: byte): string;
-  var
-    i, j: byte;
-    result: string;
-  begin
-    i := 1;
-    j := 0;
-    result := '';
-    while (i <= length(args)) and (j <> index) do
-    begin
-      if args[i] = #0 then inc(j);
-      inc(i);
-    end;
-    if j = index then
-      while (i <= length(args)) and (args[i]<>#0) do
-      begin
-        result := result + args[i];
-        inc(i);
-      end;
-    strAfterNull := result;
-  end;
 
   function strformat(const str, args: string): string;
   var 
+    tokens: array[0..9] of byte;
     result: string;
-    i: byte;
+    i, index: byte;
     ch: char;
   begin
+    { find tokens in args }
+    fillchar(tokens, sizeof(tokens), 0);
+    tokens[0] := 1;
+    index := 1;
+    i := 1;
+    while i<=length(args) do
+    begin
+      if args[i]=#0 then begin
+        tokens[index] := i+1;
+        inc(index);
+      end;
+      inc(i);
+    end;
+
+    { replace tokens in string }
     result := '';
     i := 1;
     while i <= length(str) do
@@ -136,8 +130,14 @@ implementation
         begin
           if (str[i+1] in ['0'..'9']) then 
           begin
-            ch := #0;
-            result := result + strAfterNull(args, ord(str[i+1]) - ord('0'));
+            ch := #0; 
+            { copy the token until next null or end of line}
+            index := tokens[ord(str[i+1]) - ord('0')];
+            while (index<>0) and (index<=length(args)) and (args[index]<>#0) do
+            begin
+              result := result + args[index];
+              inc(index);
+            end;
             inc(i);
           end else if str[i+1]='%' then 
             inc(i);
