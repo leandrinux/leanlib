@@ -17,6 +17,7 @@
 
   * builds programs
   * places binaries in a specific folder
+  * spanish and english support
 
   Future features:
 
@@ -27,16 +28,21 @@
     * what files must be built
     * where the build binaries must be generated
   * treates directories as packages
+
 }
-{$M $4000,0,0 }
+{$M $4000,0,0}
 
 uses
-  tpstr_en, tpstr_es,
-  tpunit,
+  tpstr_en,
+  {$IFDEF Spanish}tpstr_es,{$ENDIF}
+  tpunit, 
   tputil;
 
+const
+  C_VERSION = '0.2';
+
 begin
-  writeln(C_STR_WELCOME);
+  writeln(strformat(C_STR_WELCOME, C_VERSION));
   if TPC_PATH = '' then error(C_STR_TPC_NOT_INSTALLED);
   log(C_STR_TPC_LOCATION + TPC_PATH);
   buildAll('example');

@@ -18,8 +18,9 @@ interface
 implementation
 
   uses
-    dos, 
-    tpstr_en, tpstr_es;
+    tpstr_en,
+    {$IFDEF Spanish}tpstr_es,{$ENDIF}
+    DOS;
 
   const
     C_HIDE_COMPILER_OUTPUT = false;
