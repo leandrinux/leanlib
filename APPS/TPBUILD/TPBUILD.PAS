@@ -42,9 +42,13 @@ uses
 const
   C_VERSION = '0.2';
 
+var
+  basedir: TPath;
+
 begin
+  basedir := 'exaple';
   writeln(strformat(C_STR_WELCOME, C_VERSION));
   initCompiler;
-  initConfiguration;
-  buildAll('example');
+  initConfiguration(basedir);
+  buildAll(basedir);
 end.
