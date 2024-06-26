@@ -15,6 +15,7 @@ interface
   type
     TPath = string[50];
     TFilename = string[12];
+    string6 = string[6];
 
   procedure error(msg: string);
   procedure log(msg: string);
@@ -24,12 +25,14 @@ interface
   function directoryExists(const dir: TPath): boolean;
   procedure createDirectory(const dir: TPath);
   function strformat(const str, args: string): string;
+  function strToInt(s: string): integer;
+  function intToStr(i: integer): string6;
 
 implementation
 
   procedure error(msg: string);
   begin
-    writeln('[X] ERROR: ', msg);
+    writeln('[X] ', msg);
     halt(1);
   end;
 
@@ -146,6 +149,21 @@ implementation
       inc(i);
     end;
     strformat := result;
+  end;
+
+  function strToInt(s: string): integer;
+  var i, c: integer;
+  begin
+    Val(s, i, c);
+    StrToInt := i;
+  end;
+
+  function intToStr(i: integer): string6;
+  var
+    s: string6;
+  begin
+    Str(i, s);
+    IntToStr := s;
   end;
 
 end.

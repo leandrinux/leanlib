@@ -11,27 +11,118 @@ interface
     tputil,
     tptexts;
 
+  const
+    C_CONFIG_FILE_NAME = 'BUILD.CFG';
+    C_CONFIG_MAX_TOKENS = 10;
+    C_SKIP_CHARS = [#10, #13, ' '];
+    C_CR = #13;
+    C_LF = #10;
+
+  type
+    TToken = string[15];
+
+    TTokens = array[0..C_CONFIG_MAX_TOKENS-1] of TToken;
+
+    TBuildConfig = record 
+      requires: TTokens;
+      builds: TTokens;
+      defines: TTokens;
+    end;
+
+  var
+    BuildConfig: TBuildConfig;
+
   procedure initConfiguration(const basedir: TPath);
 
 implementation
 
-  const
-    C_CONFIG_FILE_NAME = 'BUILD.CFG';
+  var
+    line, position: word;
+    ch: char;
+    f: text;
 
   procedure openConfigFile(const basedir: TPath);
-  var
-    f: text;
   begin
     assign(f, basedir + '\' + C_CONFIG_FILE_NAME);
     {$I-} reset(f); {$I+}
     if IOResult <> 0 then error(strformat(C_STR_NO_CONFIG_FILE, C_CONFIG_FILE_NAME));
     log(C_STR_CONFIG_FILE_LOADED);
+  end;
+
+  function readChar: char;
+  begin
+    read(f, ch);
+    inc(position);
+    case ch of
+      C_LF: begin
+        inc(line);
+        position := 1;
+      end;
+      C_CR: begin end;
+    else
+      inc(position);
+    end;
+  end;
+  
+  procedure skipSpaces;
+  begin
+    readChar;
+    while not eof(f) and (ch in C_SKIP_CHARS) do readChar;
+  end;
+
+  function copyUntilCharacter(boundary: char): TToken;
+  var 
+    result: TToken;
+  begin
+    result := '';
+    readChar;
+    while not eof(f) and (ch <> boundary) do
+    begin
+      result := result + ch;
+      readChar;
+    end;
+    copyUntilCharacter := result;
+  end;
+
+  procedure readTokens(var tokens: TTokens);
+  begin
+    while not eof(f) and (ch<>',') do read(f, ch);
+  end;
+
+  procedure readSection(const name: TToken; var tokens: TTokens);
+  var
+    str: string;
+  begin
+    skipSpaces;
+    if ch<>'[' then 
+      error(
+        strformat(C_STR_CFG_SYNTAX_ERROR, C_CONFIG_FILE_NAME + #0 + intToStr(line) + #0 + intToStr(position)) +
+        strformat(C_STR_CFG_EXPECTS, '[' + #0 + ch)
+      );
+    str := copyUntilCharacter(']');
+    if str<>name then error(strformat(C_STR_CFG_EXPECTS, name + #0 + str));
+    readTokens(tokens);
+  end;
+
+  procedure readConfigFile(const basedir: TPath);
+  begin
+    openConfigFile(basedir);
+    line := 1;
+    position := 0;
+    with BuildConfig do
+    begin
+      readSection('requires', requires);
+{
+      readSection(f, 'builds', builds);
+      readSection(f, 'defines', defines);
+}
+    end;
     close(f);
   end;
     
   procedure initConfiguration(const basedir: TPath);
   begin
-    openConfigFile(basedir);
+    readConfigFile(basedir);
   end;
 
 end.

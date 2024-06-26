@@ -50,6 +50,8 @@ interface
     C_STR_CREATED_BIN_DIR = 'Creating a directory for binary files';
     C_STR_NO_CONFIG_FILE = 'The configuration file "%0" could not be found';
     C_STR_CONFIG_FILE_LOADED = 'Configuration file loaded';
+    C_STR_CFG_SYNTAX_ERROR = 'Syntax error in %0 ln %1 pos %2. ';
+    C_STR_CFG_EXPECTS = 'Expects "%0", got "%1"';
 
     {$ENDIF}
 
