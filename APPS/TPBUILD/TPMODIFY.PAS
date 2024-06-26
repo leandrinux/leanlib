@@ -1,22 +1,17 @@
 {
-  This unit contains constants, types and methods that are exclusive
-  for the operation of TPBUILD
+  this unit's responsibility is to keep track of which files
+  have already been compiled and have not been modified since
+  then in order to avoid recompiling them again and speed up
+  the whole process
 }
 unit 
-  tpunit;
+  tpmodify;
 
 interface
 
-  procedure buildAll(const baseDir: string);
-
-implementation
-
   uses
     tputil,
-    tptpc,
-    tpautou,
-    tptexts,
-    dos;
+    tptexts;
 
   const
     C_MAX_MODIFY_RECORDS = 100;
@@ -32,6 +27,11 @@ implementation
       recs: array [0..C_MAX_MODIFY_RECORDS - 1] of TModifyRecord;
       count: word;
     end;
+
+  procedure readModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
+  procedure saveModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
+
+implementation
 
   procedure readModifyRecords(const basedir: string; var modifyRecords: TModifyRecords);
   var
@@ -66,47 +66,6 @@ implementation
       close(f);
       log(C_STR_SAVE_MODIFIED_RECORDS);
     end;
-  end;
-
-  { Public }
-
-  procedure buildAll(const baseDir: string);
-  var 
-    dirInfo: SearchRec;
-    fileFound, compileSuccess: boolean;
-    path: TPath;
-    previousRec, currentRec: TModifyRecords;
-    recordCount: word;
-    errorMsg: string;
-  begin
-    if length(basedir)>0 then 
-      log(C_STR_PACKAGE_TO_BUILD + baseDir)
-    else
-      log(C_STR_PACKAGE_TO_BUILD + C_STR_CURRENT_DIR);
-    log(C_STR_BUILD_ALL);
-
-    if not directoryExists(basedir + '\BIN') then 
-    begin
-      createDirectory(basedir + '\BIN');
-      log(C_STR_CREATED_BIN_DIR);
-    end;
-    readModifyRecords(basedir, previousRec);
-    createDynamicUnit;
-
-    findFirst(baseDir + '\*.PAS', archive, dirInfo);
-    fileFound := DOSError = 0;
-    compileSuccess := true;
-    while fileFound and compileSuccess do
-    begin
-      with dirInfo do 
-      begin
-        compileSuccess := compile(baseDir, name, errorMsg);
-      end;
-      findNext(dirInfo);
-      fileFound := DOSError = 0;
-    end;
-    deleteDynamicUnit;
-    if compileSuccess then log(C_STR_BUILD_SUCCESS) else error(C_STR_BUILD_FAILED);
   end;
 
 end.

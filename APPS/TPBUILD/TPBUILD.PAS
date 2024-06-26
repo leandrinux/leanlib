@@ -33,9 +33,10 @@
 {$M $4000,0,0}
 
 uses
-  tpunit,
-  tptpc, 
+  tpmain,
   tputil,
+  tptpc, 
+  tpconfig,
   tptexts;
 
 const
@@ -44,5 +45,6 @@ const
 begin
   writeln(strformat(C_STR_WELCOME, C_VERSION));
   initCompiler;
+  initConfiguration;
   buildAll('example');
 end.
