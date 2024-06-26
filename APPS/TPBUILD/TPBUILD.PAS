@@ -46,7 +46,7 @@ var
   basedir: TPath;
 
 begin
-  basedir := 'exaple';
+  basedir := 'example';
   writeln(strformat(C_STR_WELCOME, C_VERSION));
   initCompiler;
   initConfiguration(basedir);

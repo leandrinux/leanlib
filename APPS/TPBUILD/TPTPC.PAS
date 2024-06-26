@@ -87,9 +87,9 @@ implementation
     else
       errorMsg := '';
     if result then 
-      log(path + '\' + filename + C_STR_SUCCESS)
+      log('Building ' + path + '\' + filename + C_STR_SUCCESS)
     else begin
-      log(path + '\' + filename + C_STR_FAILED);
+      log('Building ' + path + '\' + filename + C_STR_FAILED);
       log(errorMsg);
     end;
     compile := result;
