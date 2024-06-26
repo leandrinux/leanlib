@@ -17,8 +17,7 @@ interface
 implementation
 
   uses
-    {$IFDEF Spanish}tpstr_es,
-    {$ELSE}tpstr_en,{$ENDIF}
+    tptexts,
     tputil,
     tptpc,
     dos;

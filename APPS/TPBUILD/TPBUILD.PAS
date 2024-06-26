@@ -33,11 +33,10 @@
 {$M $4000,0,0}
 
 uses
-  {$IFDEF Spanish}tpstr_es,
-  {$ELSE}tpstr_en,{$ENDIF}
   tpunit,
   tptpc, 
-  tputil;
+  tputil,
+  tptexts;
 
 const
   C_VERSION = '0.2';

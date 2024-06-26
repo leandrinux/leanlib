@@ -23,9 +23,9 @@ interface
 implementation
 
   uses
-    {$IFDEF Spanish}tpstr_es,
-    {$ELSE}tpstr_en,{$ENDIF}
-    dos, execute;
+    tptexts,
+    dos, 
+    execute;
 
   procedure error(msg: string);
   begin

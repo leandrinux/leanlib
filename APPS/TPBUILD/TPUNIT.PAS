@@ -12,11 +12,10 @@ interface
 implementation
 
   uses
-    {$IFDEF Spanish}tpstr_es,
-    {$ELSE}tpstr_en,{$ENDIF}
     tputil,
     tptpc,
     tpautou,
+    tptexts,
     DOS;
 
   const
