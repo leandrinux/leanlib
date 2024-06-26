@@ -9,7 +9,6 @@ interface
 
   type
     TPath = string[50];
-
     TFilename = string[12];
 
   procedure error(msg: string);
@@ -19,12 +18,15 @@ interface
   function fileExists(const path: TPath; const filename: TFilename): boolean;
   function directoryExists(const dir: TPath): boolean;
   procedure createDirectory(const dir: TPath);
+  function strAfterNull(const args: string; index: byte): string;
+  function strformat(const str, args: string): string;
 
 implementation
 
   uses
-    dos, execute,
-    tpstr_en, tpstr_es;
+    tpstr_en,
+    {$IFDEF Spanish}tpstr_es,{$ENDIF}
+    dos, execute;
 
   procedure error(msg: string);
   begin
@@ -94,6 +96,56 @@ implementation
     move(p^, asciiz, length(dir));
     asciiz[length(dir)] := #0;
     msdos(regs);
+  end;
+
+  function strAfterNull(const args: string; index: byte): string;
+  var
+    i, j: byte;
+    result: string;
+  begin
+    i := 1;
+    j := 0;
+    result := '';
+    while (i <= length(args)) and (j <> index) do
+    begin
+      if args[i] = #0 then inc(j);
+      inc(i);
+    end;
+    if j = index then
+      while (i <= length(args)) and (args[i]<>#0) do
+      begin
+        result := result + args[i];
+        inc(i);
+      end;
+    strAfterNull := result;
+  end;
+
+  function strformat(const str, args: string): string;
+  var 
+    result: string;
+    i: byte;
+    ch: char;
+  begin
+    result := '';
+    i := 1;
+    while i <= length(str) do
+    begin
+      ch := str[i];
+      if (str[i] = '%') then
+        if (i+1<=length(str)) then
+        begin
+          if (str[i+1] in ['0'..'9']) then 
+          begin
+            ch := #0;
+            result := result + strAfterNull(args, ord(str[i+1]) - ord('0'));
+            inc(i);
+          end else if str[i+1]='%' then 
+            inc(i);
+        end;
+      if ch <> #0 then result := result + ch;
+      inc(i);
+    end;
+    strformat := result;
   end;
 
 end.
