@@ -1,3 +1,4 @@
 {
-    "files.encoding": "cp437"
+    "files.encoding": "cp437",
+    "files.eol": "\r\n"
 }
