@@ -8,6 +8,12 @@ unit
 
 interface
 
+  uses
+    tptexts,
+    tputil,
+    tptpc,
+    dos;
+
   const
     C_DYNAMIC_UNIT_NAME = 'AUTOUNIT';
 
@@ -15,12 +21,6 @@ interface
   procedure deleteDynamicUnit;
 
 implementation
-
-  uses
-    tptexts,
-    tputil,
-    tptpc,
-    dos;
 
   procedure createDynamicUnit;
   var 

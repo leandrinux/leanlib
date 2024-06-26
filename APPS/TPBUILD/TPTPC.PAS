@@ -9,7 +9,9 @@ unit
 interface
 
   uses 
-    tputil;
+    tputil,
+    tptexts,
+    dos;
 
   var
     TPC_PATH: TPath;
@@ -18,10 +20,6 @@ interface
   function compile(const path: TPath; const filename: TFilename; var errorMsg: string): boolean;
 
 implementation
-
-  uses
-    tptexts,
-    dos;
 
   const
     C_HIDE_COMPILER_OUTPUT = false;

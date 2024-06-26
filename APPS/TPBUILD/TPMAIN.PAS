@@ -8,10 +8,6 @@ unit
 
 interface
 
-  procedure buildAll(const baseDir: string);
-
-implementation
-
   uses
     tputil,
     tptpc,
@@ -20,7 +16,9 @@ implementation
     tpmodify,
     dos;
 
-  { Public }
+  procedure buildAll(const baseDir: string);
+
+implementation
 
   procedure buildAll(const baseDir: string);
   var 

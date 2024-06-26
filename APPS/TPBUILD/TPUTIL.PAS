@@ -7,6 +7,11 @@ unit
 
 interface
 
+  uses
+    tptexts,
+    dos, 
+    execute;
+
   type
     TPath = string[50];
     TFilename = string[12];
@@ -21,11 +26,6 @@ interface
   function strformat(const str, args: string): string;
 
 implementation
-
-  uses
-    tptexts,
-    dos, 
-    execute;
 
   procedure error(msg: string);
   begin
