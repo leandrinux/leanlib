@@ -18,8 +18,8 @@ interface
 implementation
 
   uses
-    tpstr_en,
-    {$IFDEF Spanish}tpstr_es,{$ENDIF}
+    {$IFDEF Spanish}tpstr_es,
+    {$ELSE}tpstr_en,{$ENDIF}
     DOS;
 
   const

@@ -33,8 +33,8 @@
 {$M $4000,0,0}
 
 uses
-  tpstr_en,
-  {$IFDEF Spanish}tpstr_es,{$ENDIF}
+  {$IFDEF Spanish}tpstr_es,
+  {$ELSE}tpstr_en,{$ENDIF}
   tpunit, 
   tputil;
 
