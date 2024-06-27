@@ -45,12 +45,35 @@ implementation
   function compileAll: boolean;
   var
     fileFound, success: boolean;
+    packageDir: TPath;
     errorMsg: string;
     i: byte;
+    dirInfo: SearchRec;
   begin
     with BuildConfig do
     begin
       success := true;
+      
+      { make the required packages }
+      log(C_STR_BUILD_DEPENDENCIES);
+      i := 0;
+      while (i<requires.count) and success do
+      begin
+        packageDir := baseDir + requires.values[i] + '\';
+        findFirst(packageDir + '*.PAS' , archive, dirInfo);
+        fileFound:= DOSError = 0;
+        while fileFound and success do
+        begin
+          success := compile(packageDir, dirInfo.name, errorMsg);
+          findNext(dirInfo);
+          fileFound:= DOSError = 0;
+        end;
+        inc(i);
+        fileFound := DOSError = 0;
+      end;
+
+      { make the requested builds }
+      log(C_STR_BUILD_PROGRAM);
       i := 0;
       while (i<builds.count) and success do
       begin

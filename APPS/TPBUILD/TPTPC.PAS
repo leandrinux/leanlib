@@ -80,7 +80,7 @@ implementation
     i: byte;
   begin
     cmdLine := path + filename;
-    cmdLine := cmdLine + ' -E' + path + 'BIN';
+    cmdLine := cmdLine + ' -E' + BuildConfig.basedir + 'BIN';
     with BuildConfig.defines do for i := 0 to count-1 do cmdLine := cmdLine + ' -D' +values[i];
     cmdLine := cmdLine + ' -Q';
     cmdLine := cmdLine + ' >' + C_TEMP_FILE;

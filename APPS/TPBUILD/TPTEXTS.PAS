@@ -53,7 +53,8 @@ interface
     C_STR_CFG_SYNTAX_ERROR = 'Syntax error in %0 ln %1 pos %2. ';
     C_STR_CFG_EXPECTS = 'Expects "%0", got "%1"';
     C_STR_NO_BUILD_SPECIFIED = 'No builds specified in configuration file';
-
+    C_STR_BUILD_DEPENDENCIES = 'Building dependencies...';
+    C_STR_BUILD_PROGRAM = 'Building program...';
     {$ENDIF}
 
 implementation
