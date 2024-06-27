@@ -44,22 +44,18 @@ implementation
   
   function compileAll: boolean;
   var
-    dirInfo: SearchRec;
     fileFound, success: boolean;
     errorMsg: string;
+    i: byte;
   begin
     with BuildConfig do
     begin
-      findFirst(baseDir + '*.PAS', archive, dirInfo);
-      fileFound := DOSError = 0;
       success := true;
-      while fileFound and success do
+      i := 0;
+      while (i<builds.count) and success do
       begin
-        with dirInfo do 
-        begin
-          success := compile(baseDir, name, errorMsg);
-        end;
-        findNext(dirInfo);
+        success := compile(baseDir, builds.values[i], errorMsg);
+        inc(i);
         fileFound := DOSError = 0;
       end;
     end;

@@ -144,6 +144,7 @@ implementation
       readSection('requires', requires);
       readSection('builds', builds);
       readSection('defines', defines);
+      if builds.count=0 then error(C_STR_NO_BUILD_SPECIFIED);
     end;
     close(f);
   end;
