@@ -18,19 +18,19 @@
   * builds programs
   * places binaries in a specific folder
   * spanish and english support
+  * a file called build.cfg contains info for the project. For instance
+    * what 'packages' (directories) must be included
+    * what files must be built
+    * a series of definitions used when building each file
 
   Future features:
 
   * only builds the units that have been modified since last build
-  * a file called build.cfg contains info for the project. For instance
-    * what 'packages' (directories) must be included
-    * whether it should recompile everything always or not
-    * what files must be built
-    * where the build binaries must be generated
   * treates directories as packages
 
 }
 {$M $4000,0,0}
+{$DEFINE DEBUG}
 
 uses
   tpmain,
@@ -40,13 +40,17 @@ uses
   tptexts;
 
 const
-  C_VERSION = '0.2';
+  C_VERSION = '0.3';
 
 var
   basedir: TPath;
 
-begin
-  basedir := 'example';
+begin 
+  {$IFDEF DEBUG} 
+    basedir := 'example'; 
+  {$ELSE} 
+    basedir := paramStr(1);
+  {$ENDIF}
   writeln(strformat(C_STR_WELCOME, C_VERSION));
   initCompiler;
   initConfiguration(basedir);
