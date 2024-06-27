@@ -21,46 +21,63 @@ interface
 
 implementation
 
-  procedure buildAll(baseDir: string);
-  var 
-    dirInfo: SearchRec;
-    fileFound, compileSuccess: boolean;
-    path: TPath;
-    previousRec, currentRec: TModifyRecords;
-    recordCount: word;
-    errorMsg: string;
+  procedure setBuildBaseDirectory(baseDir: string);
   begin
     if (length(basedir)>0) and (basedir[length(basedir)]<>'\') then basedir := basedir + '\';
     BuildConfig.basedir := baseDir;
-    
     if length(basedir)>0 then 
       log(C_STR_PACKAGE_TO_BUILD + baseDir)
     else
       log(C_STR_PACKAGE_TO_BUILD + C_STR_CURRENT_DIR);
     log(C_STR_BUILD_ALL);
-
-    if not directoryExists(basedir + 'BIN') then 
+  end;
+ 
+  procedure createBinDirectory;
+  begin
+    with BuildConfig do
+      if not directoryExists(basedir + 'BIN') then 
+      begin
+        createDirectory(basedir + 'BIN');
+        log(C_STR_CREATED_BIN_DIR);
+      end;
+  end;
+  
+  function compileAll: boolean;
+  var
+    dirInfo: SearchRec;
+    fileFound, success: boolean;
+    errorMsg: string;
+  begin
+    with BuildConfig do
     begin
-      createDirectory(basedir + 'BIN');
-      log(C_STR_CREATED_BIN_DIR);
+      findFirst(baseDir + '*.PAS', archive, dirInfo);
+      fileFound := DOSError = 0;
+      success := true;
+      while fileFound and success do
+      begin
+        with dirInfo do 
+        begin
+          success := compile(baseDir, name, errorMsg);
+        end;
+        findNext(dirInfo);
+        fileFound := DOSError = 0;
+      end;
     end;
+    compileAll := success;
+  end;
+
+  procedure buildAll(baseDir: string);
+  var 
+    previousRec, currentRec: TModifyRecords;
+    success: boolean;
+  begin
+    setBuildBaseDirectory(baseDir);
+    createBinDirectory;
     readModifyRecords(basedir, previousRec);
     createDynamicUnit;
-
-    findFirst(baseDir + '*.PAS', archive, dirInfo);
-    fileFound := DOSError = 0;
-    compileSuccess := true;
-    while fileFound and compileSuccess do
-    begin
-      with dirInfo do 
-      begin
-        compileSuccess := compile(baseDir, name, errorMsg);
-      end;
-      findNext(dirInfo);
-      fileFound := DOSError = 0;
-    end;
+    success := compileAll;
     deleteDynamicUnit;
-    if compileSuccess then log(C_STR_BUILD_SUCCESS) else error(C_STR_BUILD_FAILED);
+    if success then log(C_STR_BUILD_SUCCESS) else error(C_STR_BUILD_FAILED);
   end;
 
 end.
