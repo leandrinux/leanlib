@@ -12,7 +12,7 @@ interface
     tptexts;
 
   const
-    C_CONFIG_FILE_NAME = 'BUILD.CFG';
+    C_CONFIG_FILE_NAME = 'TPBUILD.CFG';
     C_CONFIG_MAX_TOKENS = 10;
     C_SKIP_CHARS = [#10, #13, ' '];
     C_CR = #13;
