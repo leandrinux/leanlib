@@ -21,6 +21,7 @@ interface
   procedure log(msg: string);
   function run(const cmd, cmdLine: string; hide: boolean): integer;
   procedure deleteFile(const filename: TFilename);
+  procedure deleteFiles(const path: TPath; filename: TFilename);
   function fileExists(const path: TPath; const filename: TFilename): boolean;
   function directoryExists(const dir: TPath): boolean;
   procedure createDirectory(const dir: TPath);
@@ -66,6 +67,18 @@ implementation
     move(p^, asciiz, length(filename));
     asciiz[length(filename)] := #0;
     msdos(regs);
+  end;
+
+  procedure deleteFiles(const path: TPath; filename: TFilename);
+  var 
+    dirInfo: SearchRec;
+  begin
+    findFirst(path + filename, Archive, dirInfo);
+    while DOSError = 0 do
+    begin
+      deleteFile(path + dirInfo.name);
+      findNext(dirInfo);
+    end;
   end;
 
   function fileExists(const path: TPath; const filename: TFilename): boolean;

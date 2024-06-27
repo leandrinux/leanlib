@@ -96,6 +96,7 @@ implementation
     createDynamicUnit;
     success := compileAll;
     deleteDynamicUnit;
+    deleteFiles(BuildConfig.basedir + 'BIN\', '*.TPU');
     if success then log(C_STR_BUILD_SUCCESS) else error(C_STR_BUILD_FAILED);
   end;
 
