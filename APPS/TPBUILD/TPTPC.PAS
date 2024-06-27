@@ -80,7 +80,9 @@ implementation
     i: byte;
   begin
     cmdLine := path + filename;
-    cmdLine := cmdLine + ' -E' + BuildConfig.basedir + 'BIN';
+    cmdLine := cmdLine + ' -E' + BuildConfig.basedir + 'BIN'; { binaries dir }
+    cmdLine := cmdLine + ' -U' + BuildConfig.basedir; { unit dir }
+    cmdLine := cmdLine + ' -B';    { build all units }
     with BuildConfig.defines do for i := 0 to count-1 do cmdLine := cmdLine + ' -D' +values[i];
     cmdLine := cmdLine + ' -Q';
     cmdLine := cmdLine + ' >' + C_TEMP_FILE;
