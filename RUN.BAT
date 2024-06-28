@@ -11,9 +11,7 @@ tpc -q -b -ec:\bin -u%currentdir% -dDEBUG %2.pas
 if errorlevel 1 goto fail
 echo.
 config -set "cpu cycles=240"
-@echo on
-\bin\timer \bin\%2.exe
-@echo off
+\leanlib\apps\timer\timer \bin\%2.exe
 echo.
 echo (program ended)
 pause
