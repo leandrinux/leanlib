@@ -5,9 +5,11 @@ interface
 
   uses
     consts, utils, types, locale, math, uclasses,
-    uobject, uexc, ustream, ufstream, ustdout;
+    uobject, uexc, ustream, ufstream, ucstream, ustdout;
 
   type
+    TBuilderBuffer = array[0..1023] of char;
+
     PBuilder = ^TBuilder;
     TBuilder = object (TObject)
     public
@@ -23,12 +25,10 @@ interface
     private
       _source: PStream;
       _message: PStream;
-      _line: string;
       _nestedCommentBlocks: byte;
-      procedure log(const msg: string);
-      procedure logln(const msg: string);
-      procedure cleanComments;
-      procedure processLine;
+      _line: string;
+      procedure processBuffer;
+      procedure cleanComments(const buffer: TBuilderBuffer; bufferSize: word);
     end;
 
   const
@@ -36,82 +36,19 @@ interface
 
 implementation
 
-  { TBuilder public }
-
-  constructor TBuilder.init;
-  begin
-    inherited init;
-    _source := nil;
-    _message := nil;
-  end;
-
-  destructor TBuilder.done;
-  begin
-    if _source<>nil then _source^.release;
-    if _message<>nil then _message^.release;
-    inherited done;
-  end;
-
-  function TBuilder.getClassName: string;
-  begin
-    getClassName := 'TBuilder';
-  end;
-
-  function TBuilder.getClassId: word;
-  begin
-    getClassId := C_CLASS_ID_BUILDER;
-  end;
-
-  procedure TBuilder.build;
-  begin
-    logln('[-] Building');
-    _nestedCommentBlocks := 0;
-    while not _source^.isEOF do processLine;
-  end;
-
-  procedure TBuilder.setSourceStream(stream: PStream);
-  begin
-    if _source<>nil then _source^.release;
-    _source := stream;
-    _source^.retain;
-  end;
-
-  procedure TBuilder.setSourceFileStream(filename: string);
-  var
-    stream: PFileStream;
-  begin
-    stream := new(PFileStream, initWithPath(filename, EFileReadOnly));
-    setSourceStream(stream);
-  end;
-
-  procedure TBuilder.setMessageStream(stream: PStream);
-  begin
-    if _message<>nil then _message^.release;
-    _message := stream;
-    _message^.retain;
-  end;
-
-  procedure TBuilder.setStandardMessageOutput;
-  var
-    stream: PStdOutput;
-  begin
-    stream := new(PStdOutput, init);
-    setMessageStream(stream);
-  end;
-
   { TBuilder private }
 
-  procedure TBuilder.log(const msg: string);
+  procedure TBuilder.processBuffer;
+  var 
+    buffer: TBuilderBuffer;
+    bufferSize: word;
   begin
-    if _message<>nil then _message^.write(incptr(@msg, 1), length(msg));
+    bufferSize := _source^.read(@buffer, sizeof(TBuilderBuffer));
+    {cleanComments(buffer, bufferSize);}
+    if bufferSize>0 then _message^.write(@buffer, bufferSize);
   end;
 
-  procedure TBuilder.logln(const msg: string);
-  begin
-    if _message<>nil then _message^.writeln(msg);
-  end;
-
-  procedure TBuilder.cleanComments;
+  procedure TBuilder.cleanComments(const buffer: TBuilderBuffer; bufferSize: word);
   var
     isDone: boolean;
     i: byte;
@@ -156,11 +93,72 @@ implementation
     end;
   end;
 
-  procedure TBuilder.processLine;
+  { TBuilder public }
+
+  constructor TBuilder.init;
   begin
-    _line := _source^.readln;
-    cleanComments;
-    if length(_line)>0 then writeln(_line);
+    inherited init;
+    _source := nil;
+    _message := nil;
+  end;
+
+  destructor TBuilder.done;
+  begin
+    if _source<>nil then _source^.release;
+    if _message<>nil then _message^.release;
+    inherited done;
+  end;
+
+  function TBuilder.getClassName: string;
+  begin
+    getClassName := 'TBuilder';
+  end;
+
+  function TBuilder.getClassId: word;
+  begin
+    getClassId := C_CLASS_ID_BUILDER;
+  end;
+
+  procedure TBuilder.build;
+  begin
+    _message^.writeln('[-] Building');
+    _nestedCommentBlocks := 0;
+    while not _source^.isEOF do processBuffer;
+  end;
+
+  procedure TBuilder.setSourceStream(stream: PStream);
+  begin
+    if _source<>nil then _source^.release;
+    _source := stream;
+    _source^.retain;
+  end;
+
+  procedure TBuilder.setSourceFileStream(filename: string);
+  var
+    fileStream: PFileStream;
+    cachedStream: PCachedStream;
+  begin
+    fileStream := new(PFileStream, initWithPath(filename, EFileReadOnly));
+{
+    cachedStream := new(PCachedStream, initWithStream(fileStream, 4096));
+    fileStream^.release;
+}
+    setSourceStream(fileStream);
+  end;
+
+  procedure TBuilder.setMessageStream(stream: PStream);
+  begin
+    if _message<>nil then _message^.release;
+    _message := stream;
+    _message^.retain;
+  end;
+
+  procedure TBuilder.setStandardMessageOutput;
+  var
+    stream: PStdOutput;
+  begin
+    stream := new(PStdOutput, init);
+    setMessageStream(stream);
   end;
 
   { Other }
