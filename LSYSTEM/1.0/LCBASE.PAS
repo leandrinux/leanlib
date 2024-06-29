@@ -13,13 +13,11 @@ interface
 
   const
     C_LASMC_VERSION = '0.1';
-    C_READ_BUFFER_SIZE = 1024;
-    C_STATE_STACK_SIZE = 4;
     C_SPACE = ' ';
     C_CR    = #13;
     C_LF    = #10;
     C_TAB   = #09;
-    C_SPACING_CHARS = [C_SPACE, C_TAB, C_LF, C_CR];
+
     C_MOV = $01; C_ADD = $02; C_SUB = $03; C_MUL = $04;
     C_DIV = $05; C_CMP = $06; C_SHL = $07; C_SHR = $08;
     C_FADD = $09; C_FSUB = $0A; C_FMUL = $0B; C_FDIV = $0C;
@@ -66,12 +64,6 @@ interface
       value: TUInt32;
     end;
 
-    TFileBuffer = record
-      data: array[0..C_READ_BUFFER_SIZE-1] of char; { data in buffer }
-      size: word;                                   { how many bytes of valid data in buffer }
-      position: word;                               { current position within buffer }
-    end;
-
     EState = (                          { code parsing states}
       EStateStart,                      { parsing starts here }
       EStateEnd,                        { parsing ends here }
@@ -84,37 +76,6 @@ interface
       EStateCommentUntilLineBreak,      { skipping everything until the next line break }
       EStateCommentUntilDelimiter       { skipping everything until a comment block ending tag is found }
     );
-
-    TStateStack = record
-      values: array [0..C_STATE_STACK_SIZE-1] of EState;
-      count: word;
-      state: EState;
-    end;
-
-    TInstructionData = record
-      name: TInstructionName;           { the name of the instruction as written in code }
-      param0: string;                   { the first parameter as written in code }
-      param1: string;                   { the second parameter as written in code }
-      paramType0: EParameterType;       { type of the first parameter }
-      paramType1: EParameterType;       { type of the second parameter }
-      paramValue0: TUInt32;             { binary value for first parameter }
-      paramValue1: TUInt32;             { binary value for second parameter }
-      opcode: byte;                     { the operation code that matches the specified instruction }
-      expectedParamCount: byte;         { how many arguments this instruction requires }
-    end;
-
-    TBuild = record
-      sourceFileName: string;           { name of the file being compiled }
-      sourceFile: file;                 { source file handle }
-      isOpen: boolean;                  { indicates if file is open correctly }
-      ch: char;                         { the character being currently examined }
-      lineNumber: longint;              { current line number }
-      lineCharacter: word;              { char number being evaluated in current line }
-      instructionCount: longint;        { how many instructions have been built }
-      fileBuffer: TFileBuffer;          { data buffer used to read file }
-      stack: TStateStack;               { stack of machine states }
-      instructionData: TInstructionData { the instruction and arguments retrieved from the line }
-    end;
 
   const
     C_REGISTER_INFO: TRegisterInfoArray = (
@@ -183,81 +144,12 @@ interface
       (name: 'in'; code:C_IN; count:2)
     );  
 
-  var
-    build: TBuild;
-
-  procedure initBuild(const filename: string);
-  function readChar: char;
-  procedure raise(const msg: string);
-  procedure message(const msg: string);
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
   function guessParameterType(const token: string): EParameterType;
-  procedure validateParams;
+  function getBitSize(const param: string; paramType:EParameterType): byte;
 
 implementation
-
-  procedure initBuild(const filename: string);
-  begin
-    with build do
-    begin
-      sourceFileName := filename;
-      instructionCount := 0;
-      lineNumber := 1;
-      lineCharacter := 1;
-      fillChar(fileBuffer, sizeof(TFileBuffer), 0);
-      stack.count := 0;
-      stack.state := EStateStart;
-      fileBuffer.position := 0;
-      fileBuffer.size := 0;
-      instructionData.name := '';
-      instructionData.param0 := '';
-      instructionData.param1 := '';
-    end;
-  end;
-
-  function loadBuffer: boolean;
-  begin
-    loadBuffer := false;
-    with build, fileBuffer do
-    begin
-      if eof(sourceFile) then exit;
-      blockread(sourceFile, data, C_READ_BUFFER_SIZE, size);
-      position := 0;
-      loadBuffer := true;
-    end;
-  end;
-
-  function readChar: char;
-  begin
-    readChar := #0;
-    with build, fileBuffer do
-    begin
-      if (position = size) and not loadBuffer then exit;
-      if size = 0 then exit;
-      readChar := data[position];
-      inc(position);
-      inc(lineCharacter);
-    end;
-  end;
-  
-  procedure raise(const msg: string);
-  begin
-    with build do
-    begin
-      write('[X] Error: ', msg);
-      if isOpen then
-        writeln(' at line ', lineNumber,', position ', lineCharacter)
-      else
-        writeln;
-      halt(1);
-    end;
-  end;
-
-  procedure message(const msg: string);
-  begin
-    writeln('[-] ', msg);
-  end;
 
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   var
@@ -319,7 +211,10 @@ implementation
   begin
     result := 0;
     if not any2int(param, value) then 
-      raise ('literal argument could not be recognized');
+    begin
+      writeln('literal argument could not be recognized');
+      exit;
+    end;
     if (value and $FFFF0000) <> 0 then 
       result := 32
     else if (value and $FF00) <> 0 then 
@@ -334,7 +229,10 @@ implementation
     code, bitSize: byte;
   begin
     if not getRegisterInfoByName(param, code, bitSize) then
-      raise ('register argument could not be recognized');
+    begin
+      writeln ('register argument could not be recognized');
+      exit;
+    end;
     getRegisterBitSize := bitSize;
   end;
 
@@ -351,7 +249,7 @@ implementation
     end;
     getBitSize := result;
   end;
-
+(*
   procedure validateParams;
   const 
     { these instructions do not support a literal as first parameter }
@@ -406,5 +304,5 @@ implementation
 
     end;
   end;
-
+*)
 end.

@@ -12,9 +12,12 @@ interface
 
     TSentence = record
       labelName: TString30;
-      operationName: TString30;
+      opname: TString30;
       param0: TString30;
       param1: TString30;
+      opcode: byte;
+      paramType0: EParameterType;
+      paramType1: EParameterType;
     end;
 
     PBuilder = ^TBuilder;
@@ -42,7 +45,7 @@ interface
       function loadSourceCode: boolean;
       procedure readChar(var current, lookAhead: char);
       procedure readSentence(var sentence: TSentence);
-      procedure validateSentence(const sentence: TSentence);
+      procedure validateSentence(var sentence: TSentence);
     end;
 
   const
@@ -87,7 +90,11 @@ implementation
     _nestedCommentBlocks := 0;
     _lineNumber := 0;
     _linePosition := 1;
-    if not loadSourceCode then raise('Could not read source code');
+    if not loadSourceCode then 
+    begin
+      writeln('Could not read source code');
+      halt(1);
+    end;
     while _sourceCount < _sourceCodeSize do
     begin
       readSentence(sentence);
@@ -231,7 +238,7 @@ implementation
             end;
             ' ', #0: begin
               sentence.labelName := '';
-              sentence.operationName := token;
+              sentence.opname := token;
               token := '';
               if ch = #0 then
                 state := EStateSuccess
@@ -251,7 +258,7 @@ implementation
           case ch of
             C_LF, C_CR: begin end;
             ' ': begin
-              sentence.operationName := token;
+              sentence.opname := token;
               token := '';
               state := EStateSkipSpaces;
               nextState := EStateReadFirstParam;
@@ -307,7 +314,7 @@ implementation
         with sentence do
         begin
           write(labelName, ':');
-          write(operationName, ', ');
+          write(opname, ', ');
           write(param0, ', ');
           writeln(param1);
         end;
@@ -320,20 +327,76 @@ implementation
     end;
   end;
 
-  procedure TBuilder.validateSentence(const sentence: TSentence);
+  procedure TBuilder.validateSentence(var sentence: TSentence);
+  const 
+    { these instructions do not support a literal as first parameter }
+    C_OPCODES_NO_FIRST_LITERAL: set of byte = 
+      [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
+       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL];
+
+    { these instructions do not support a literal as second parameter }
+    C_OPCODES_NO_SECOND_LITERAL: set of byte = 
+      [C_JE, C_JG, C_JL];
+
+    { these instructions cannot have a register in the first parameter and a
+      literal on the second, where the register has a smaller bitsize than the literal }
+    C_OPCODES_LITERAL_BITSIZE_CHK: set of byte =
+      [ C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
+        C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, 
+        C_OR, C_NOT, C_XOR ];
   var
-    opcode, count: byte;
+    count: byte;
     success: boolean;
     sentenceParamCount: byte;
   begin
-    success := getOpcodeInfoByName(sentence.operationName, opcode, count);
-    if not success then 
-      raise('unrecognized operation at line ' + intToStr(_lineNumber));
-    sentenceParamCount := 0;
-    if sentence.param0 <> '' then inc(sentenceParamCount);
-    if sentence.param1 <> '' then inc(sentenceParamCount);
-    if sentenceParamCount <> count then
-      raise('operation expects ' + intToStr(count) + ' parameters');
+    with sentence do 
+    begin
+      { validate operation name exists }
+      success := getOpcodeInfoByName(opname, opcode, count);
+      if not success then 
+      begin
+        writeln('unrecognized operation at line ' + intToStr(_lineNumber));
+        halt(1);
+      end;
+
+      { validate number of arguments } 
+      sentenceParamCount := 0;
+      if param0 <> '' then inc(sentenceParamCount);
+      if param1 <> '' then inc(sentenceParamCount);
+      if sentenceParamCount <> count then
+      begin
+        writeln('operation expects ' + intToStr(count) + ' parameters');
+        halt(1);
+      end;
+
+      { get parameter types }
+      paramType0 := guessParameterType(param0);
+      paramType1 := guessParameterType(param1);
+
+      { check valid parameters according to operation }
+      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
+      begin
+        writeln('instruction ' + opname + ' does not support a literal as first parameter');
+        halt(1);
+      end;
+
+      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (paramType1 = EParameterTypeLiteral) then
+      begin
+        writeln('instruction ' + opname + ' does not support a literal as second parameter');
+        halt(1);
+      end;
+
+      { check that the left size bit size is equal or greater than the right size bit size }
+      if (paramType0 = EParameterTypeRegister) 
+          and (paramType1 in [EParameterTypeLiteral, EParameterTypeRegister]) 
+          and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
+          and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
+      begin
+        writeln('register in first parameter cannot fit literal or register on the second parameter');
+        halt(1);
+      end;
+    end;
   end;
 
 end.
