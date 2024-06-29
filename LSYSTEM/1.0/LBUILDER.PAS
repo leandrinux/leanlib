@@ -306,10 +306,10 @@ implementation
       begin
         with sentence do
         begin
-          write('label:', labelName);
-          write('   operation:', operationName);
-          write('   first:', param0);
-          writeln('   second:', param1);
+          write(labelName, ':');
+          write(operationName, ', ');
+          write(param0, ', ');
+          writeln(param1);
         end;
       end;
 
@@ -324,11 +324,16 @@ implementation
   var
     opcode, count: byte;
     success: boolean;
+    sentenceParamCount: byte;
   begin
     success := getOpcodeInfoByName(sentence.operationName, opcode, count);
     if not success then 
       raise('unrecognized operation at line ' + intToStr(_lineNumber));
-    
+    sentenceParamCount := 0;
+    if sentence.param0 <> '' then inc(sentenceParamCount);
+    if sentence.param1 <> '' then inc(sentenceParamCount);
+    if sentenceParamCount <> count then
+      raise('operation expects ' + intToStr(count) + ' parameters');
   end;
 
 end.
