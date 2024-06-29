@@ -10,7 +10,7 @@ var
 begin
   write('LASMC lsystem assembly compiler v', C_LASMC_VERSION);
   writeln(' - ', C_BUILD_DATE, ' ', C_BUILD_TIME);
-  filename := 'demo.asm';
+  filename := 'demo1.asm';
   if filename='' then 
     raise('no source file specified')
   else
