@@ -162,10 +162,10 @@ implementation
         inc(_lineNumber);
         _linePosition := 1;
       end;
-
+{
       if ord(current)>30 then write(current, ' ');
       write(ord(current), ': ');
-
+}
       if _sourceCount = _sourceCodeSize then  
         lookAhead := #0
       else begin
@@ -198,28 +198,26 @@ implementation
     state := EStateStart;
     while (state <> EStateSuccess) and (state <> EStateFailure) do
     begin
-      readln;
       case state of
         EStateStart:
         begin
-          writeln('EStateStart');
           errorMessage := '';
           token := '';
           state := EStateSkipSpaces;
           nextState := EStateReadOperationOrLabel;
+          readChar(ch, lookAhead);
         end;
 
         EStateSkipSpaces:
         begin
-          writeln('EStateSkipSpaces');
-          readChar(ch, lookAhead);
-          if lookAhead<>' ' then state := nextState;
+          if ch<>' ' then 
+            state := nextState
+          else
+            readChar(ch, lookAhead);
         end;
 
         EStateReadOperationOrLabel:
         begin
-          writeln('EStateReadOperationOrLabel');
-          readChar(ch, lookAhead);
           case ch of
             C_LF, C_CR: begin end;
             ':': begin
@@ -237,12 +235,11 @@ implementation
           else
             token := token + ch;
           end;
+          readChar(ch, lookAhead);
         end;
 
         EStateReadOperation:
         begin
-          writeln('EStateReadOperation');
-          readChar(ch, lookAhead);
           case ch of
             C_LF, C_CR: begin end;
             ' ': begin
@@ -254,15 +251,14 @@ implementation
           else
             token := token + ch;
           end;
+          readChar(ch, lookAhead);
         end;
 
         EStateReadFirstParam:
         begin
-          writeln('EStateReadFirstParam');
-          readChar(ch, lookAhead);
           case ch of
             C_LF, C_CR: begin end;
-            ' ': begin
+            ',': begin
               sentence.param0 := token;
               token := '';
               state := EStateSkipSpaces;
@@ -271,12 +267,11 @@ implementation
           else
             token := token + ch;
           end;
+          readChar(ch, lookAhead);
         end;
 
         EStateReadSecondParam:
         begin
-          writeln('EStateReadSecondParam');
-          readChar(ch, lookAhead);
           case ch of
             C_LF: begin end;
             C_CR, #0: begin
@@ -287,10 +282,11 @@ implementation
           else
             token := token + ch;
           end;
+          readChar(ch, lookAhead);
         end;
       end;
     end;
-    
+
     case state of
       EStateSuccess:
       begin
@@ -300,7 +296,7 @@ implementation
           write('label:', labelName);
           write(' operation:', operationName);
           write(' first:', param0);
-          write(' second:', param1);
+          writeln(' second:', param1);
         end;
       end;
 
