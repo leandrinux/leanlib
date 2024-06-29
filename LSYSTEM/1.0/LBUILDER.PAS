@@ -42,6 +42,7 @@ interface
       function loadSourceCode: boolean;
       procedure readChar(var current, lookAhead: char);
       procedure readSentence(var sentence: TSentence);
+      procedure validateSentence(const sentence: TSentence);
     end;
 
   const
@@ -84,10 +85,13 @@ implementation
   begin
     _message^.writeln('[-] Building');
     _nestedCommentBlocks := 0;
+    _lineNumber := 0;
+    _linePosition := 1;
     if not loadSourceCode then raise('Could not read source code');
     while _sourceCount < _sourceCodeSize do
     begin
       readSentence(sentence);
+      validateSentence(sentence);
     end;      
   end;
 
@@ -294,6 +298,17 @@ implementation
         writeln('EStateFailure');
       end;
     end;
+  end;
+
+  procedure TBuilder.validateSentence(const sentence: TSentence);
+  var
+    opcode, count: byte;
+    success: boolean;
+  begin
+    success := getOpcodeInfoByName(sentence.operationName, opcode, count);
+    if not success then 
+      raise('unrecognized operation at line ' + intToStr(_lineNumber));
+    
   end;
 
 end.
