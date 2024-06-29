@@ -1,0 +1,1 @@
+first: mov ax, 56
