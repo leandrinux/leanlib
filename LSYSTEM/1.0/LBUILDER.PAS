@@ -199,7 +199,7 @@ implementation
 
         EStateSkipSpaces:
         begin
-          if ch<>' ' then 
+          if not (ch in [' ', C_CR, C_LF, #9]) then 
             state := nextState
           else
             readChar(ch, lookAhead);
@@ -264,7 +264,7 @@ implementation
         begin
           case ch of
             C_CR: begin end;
-            C_LF, #0: begin
+            ' ', C_LF, #0: begin
               sentence.param1 := token;
               token := '';
               state := EStateSuccess;
