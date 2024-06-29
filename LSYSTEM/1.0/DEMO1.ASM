@@ -2,6 +2,8 @@
     mov eax, 56 
 pepe:
     mul fx, fx
-    add eax, 13 
+    call lala
+    add eax, 13
+    ret 
     xor edx, edx
-    ret ax, ax
+    ret

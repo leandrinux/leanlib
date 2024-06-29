@@ -174,6 +174,7 @@ implementation
     EState = (
       EStateStart,
       EStateSkipSpaces,
+      EStateSkipSpacesAndCRLF,
       EStateReadOperationOrLabel,
       EStateReadOperation,
       EStateReadFirstParam,
@@ -194,14 +195,23 @@ implementation
       case state of
         EStateStart:
         begin
+          fillchar(sentence, sizeof(sentence), 0);
           errorMessage := '';
           token := '';
-          state := EStateSkipSpaces;
+          state := EStateSkipSpacesAndCRLF;
           nextState := EStateReadOperationOrLabel;
           readChar(ch, lookAhead);
         end;
 
         EStateSkipSpaces:
+        begin
+          if not (ch in [' ', #9]) then 
+            state := nextState
+          else
+            readChar(ch, lookAhead);
+        end;
+
+        EStateSkipSpacesAndCRLF:
         begin
           if not (ch in [' ', C_CR, C_LF, #9]) then 
             state := nextState
@@ -212,19 +222,23 @@ implementation
         EStateReadOperationOrLabel:
         begin
           case ch of
-            C_LF, C_CR: begin end;
+            C_CR, C_LF: begin end;
             ':': begin
               sentence.labelName := token;
               token := '';
-              state := EStateSkipSpaces;
+              state := EStateSkipSpacesAndCRLF;
               nextState := EStateReadOperation;
             end;
-            ' ': begin
+            ' ', #0: begin
               sentence.labelName := '';
               sentence.operationName := token;
               token := '';
-              state := EStateSkipSpaces;
-              nextState := EStateReadFirstParam;
+              if ch = #0 then
+                state := EStateSuccess
+              else begin
+                state := EStateSkipSpaces;
+                nextState := EStateReadFirstParam;
+              end;
             end;
           else
             token := token + ch;
@@ -251,7 +265,13 @@ implementation
         EStateReadFirstParam:
         begin
           case ch of
-            C_LF, C_CR: begin end;
+            C_LF:
+            begin
+              sentence.param0 := token;
+              token := '';
+              state := EStateSuccess;
+            end;
+            C_CR: begin end;
             ',': begin
               sentence.param0 := token;
               token := '';
