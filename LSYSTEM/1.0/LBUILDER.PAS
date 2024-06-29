@@ -84,14 +84,11 @@ implementation
   begin
     _message^.writeln('[-] Building');
     _nestedCommentBlocks := 0;
-    if loadSourceCode then
+    if not loadSourceCode then raise('Could not read source code');
+    while _sourceCount < _sourceCodeSize do
     begin
-      while _sourceCount < _sourceCodeSize do
-      begin
-        readSentence(sentence);
-      end;
-    end else 
-      raise('Could not read source code');
+      readSentence(sentence);
+    end;      
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
@@ -145,8 +142,6 @@ implementation
   end;
 
   procedure TBuilder.readChar(var current, lookAhead: char);
-  var
-    next: PChar;
   begin
     if _sourceCount = _sourceCodeSize then  
     begin
@@ -162,17 +157,11 @@ implementation
         inc(_lineNumber);
         _linePosition := 1;
       end;
-{
-      if ord(current)>30 then write(current, ' ');
-      write(ord(current), ': ');
-}
+
       if _sourceCount = _sourceCodeSize then  
         lookAhead := #0
-      else begin
-        next := _sourcePos;
-        inc(next);
-        lookAhead := next^;
-      end;
+      else
+        lookAhead := _sourcePos^;
     end;
   end;
 
@@ -230,7 +219,8 @@ implementation
               sentence.labelName := '';
               sentence.operationName := token;
               token := '';
-              state := EStateReadFirstParam;
+              state := EStateSkipSpaces;
+              nextState := EStateReadFirstParam;
             end;
           else
             token := token + ch;
@@ -273,8 +263,8 @@ implementation
         EStateReadSecondParam:
         begin
           case ch of
-            C_LF: begin end;
-            C_CR, #0: begin
+            C_CR: begin end;
+            C_LF, #0: begin
               sentence.param1 := token;
               token := '';
               state := EStateSuccess;
@@ -282,7 +272,7 @@ implementation
           else
             token := token + ch;
           end;
-          readChar(ch, lookAhead);
+          if ch<>C_LF then readChar(ch, lookAhead);
         end;
       end;
     end;
@@ -290,13 +280,12 @@ implementation
     case state of
       EStateSuccess:
       begin
-        writeln('EStateSuccess');
         with sentence do
         begin
           write('label:', labelName);
-          write(' operation:', operationName);
-          write(' first:', param0);
-          writeln(' second:', param1);
+          write('   operation:', operationName);
+          write('   first:', param0);
+          writeln('   second:', param1);
         end;
       end;
 
