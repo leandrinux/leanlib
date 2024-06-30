@@ -3,6 +3,11 @@ uses
   lcbase,
   lbuilder;
 
+const
+  C_BUILDER_CONFIG : TBuilderConfig = (
+    isVerbose: true
+  );
+
 var 
   filename: string;
   builder: PBuilder;
@@ -21,6 +26,7 @@ begin
     begin
       setSourceFileStream(filename);
       setStandardMessageOutput;
+      setConfig(C_BUILDER_CONFIG);
       build;
       release;
     end;

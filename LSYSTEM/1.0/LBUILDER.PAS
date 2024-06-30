@@ -9,6 +9,9 @@ interface
     lcommon, lcbase;
 
   type
+    TBuilderConfig = record
+      isVerbose: boolean;
+    end;
 
     TSentence = record
       labelName: TString30;
@@ -29,6 +32,7 @@ interface
       procedure setSourceFileStream(filename: string);
       procedure setMessageStream(stream: PStream);
       procedure setStandardMessageOutput;
+      procedure setConfig(const builderConfig: TBuilderConfig);
       procedure build;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
@@ -42,10 +46,12 @@ interface
       _sourceCount: word;          { how many bytes of the source code we've read }
       _lineNumber: word;           { what is the current source code line }
       _linePosition: word;         { what is the current character within the current line }
+      _config: TBuilderConfig;     { other configuration settings }
       function loadSourceCode: boolean;
       procedure readChar(var current, lookAhead: char);
       procedure readSentence(var sentence: TSentence);
       procedure validateSentence(var sentence: TSentence);
+      procedure printSentence(const sentence: TSentence);
     end;
 
   const
@@ -62,6 +68,7 @@ implementation
     _message := nil;
     _sourceCode := nil;
     _sourceCodeSize := 0;
+    fillChar(_config, sizeof(TBuilderConfig), 0);
   end;
 
   destructor TBuilder.done;
@@ -101,6 +108,7 @@ implementation
     begin
       readSentence(sentence);
       validateSentence(sentence);
+      if _config.isVerbose then printSentence(sentence);
       inc(count);
     end;
     writeln('[-] ', count, ' sentences processed.')
@@ -134,6 +142,11 @@ implementation
   begin
     stream := new(PStdOutput, init);
     setMessageStream(stream);
+  end;
+
+  procedure TBuilder.setConfig(const builderConfig: TBuilderConfig);
+  begin
+    _config := builderConfig;
   end;
 
   { TBuilder private }
@@ -311,17 +324,6 @@ implementation
         end;
       end;
     end;
-
-    case state of
-      EStateSuccess:
-      begin
-      end;
-
-      EStateFailure:
-      begin
-        writeln('EStateFailure');
-      end;
-    end;
   end;
 
   procedure TBuilder.validateSentence(var sentence: TSentence);
@@ -393,6 +395,27 @@ implementation
         writeln('register in first parameter cannot fit literal or register on the second parameter');
         halt(1);
       end;
+    end;
+  end;
+
+  procedure TBuilder.printSentence(const sentence: TSentence);
+  const 
+    C_PARAM_TYPES : array[EParameterType] of string[10] = (
+      'unknown', 'literal', 'register', 'address', 'pointer', 'symbol'
+    );
+  begin
+    with sentence do 
+    begin
+      write(opname, ' (', opcode, ')');
+      if param0 = '' then
+        writeln   
+      else 
+        write(', ', param0, ' (', C_PARAM_TYPES[paramType0], ')');
+
+      if param1 = '' then
+        writeln   
+      else 
+        writeln(', ', param1, ' (', C_PARAM_TYPES[paramType1], ')');
     end;
   end;
 
