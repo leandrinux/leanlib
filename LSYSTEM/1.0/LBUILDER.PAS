@@ -85,6 +85,7 @@ implementation
   procedure TBuilder.build;
   var
     sentence: TSentence;
+    count: word;
   begin
     _message^.writeln('[-] Building');
     _nestedCommentBlocks := 0;
@@ -95,11 +96,14 @@ implementation
       writeln('Could not read source code');
       halt(1);
     end;
+    count := 0;
     while _sourceCount < _sourceCodeSize do
     begin
       readSentence(sentence);
       validateSentence(sentence);
-    end;      
+      inc(count);
+    end;
+    writeln('[-] ', count, ' sentences processed.')
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
@@ -311,13 +315,6 @@ implementation
     case state of
       EStateSuccess:
       begin
-        with sentence do
-        begin
-          write(labelName, ':');
-          write(opname, ', ');
-          write(param0, ', ');
-          writeln(param1);
-        end;
       end;
 
       EStateFailure:
