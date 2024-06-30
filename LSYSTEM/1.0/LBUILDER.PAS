@@ -6,7 +6,10 @@ interface
   uses
     consts, utils, types, locale, math, uclasses,
     uobject, uexc, ustream, ufstream, ucstream, ustdout,
-    lcommon, lcbase;
+    lcommon, lcbase, srccode;
+
+  const
+    C_CLASS_ID_BUILDER = $F00F;
 
   type
     TBuilderConfig = record
@@ -37,25 +40,14 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
-      _source: PStream;            { stream used to read the source code }
+      _sourceStream: PStream;  { stream used to read the source code }
+      _sourceCode: PSourceCode;    { object containing the full source code to be compiled }
       _message: PStream;           { stream used by the compiler to output progress messages }
-      _nestedCommentBlocks: byte;  { how many nested comment blocks we've counted so far }
-      _sourceCode: PChar;          { start of the full source code in memory }
-      _sourceCodeSize: word;       { how big the source code is }
-      _sourcePos: PChar;           { pointer to the current position in the source code }
-      _sourceCount: word;          { how many bytes of the source code we've read }
-      _lineNumber: word;           { what is the current source code line }
-      _linePosition: word;         { what is the current character within the current line }
       _config: TBuilderConfig;     { other configuration settings }
-      function loadSourceCode: boolean;
-      procedure readChar(var current, lookAhead: char);
       procedure readSentence(var sentence: TSentence);
       procedure validateSentence(var sentence: TSentence);
       procedure printSentence(const sentence: TSentence);
     end;
-
-  const
-    C_CLASS_ID_BUILDER = $F00F;
 
 implementation
  
@@ -64,18 +56,17 @@ implementation
   constructor TBuilder.init;
   begin
     inherited init;
-    _source := nil;
-    _message := nil;
-    _sourceCode := nil;
-    _sourceCodeSize := 0;
     fillChar(_config, sizeof(TBuilderConfig), 0);
+    _sourceStream := nil;
+    _sourceCode := nil;
+    _message := nil;
   end;
 
   destructor TBuilder.done;
   begin
-    if _sourceCodeSize > 0 then freeMem(_sourceCode, _sourceCodeSize);
-    if _source<>nil then _source^.release;
-    if _message<>nil then _message^.release;
+    if _sourceStream<>nil then _sourceStream^.release;
+    if _sourceCode <> nil then _sourceCode^.release;
+    if _message<>nil then _message^.release;    
     inherited done;
   end;
 
@@ -95,16 +86,15 @@ implementation
     count: word;
   begin
     _message^.writeln('[-] Building');
-    _nestedCommentBlocks := 0;
-    _lineNumber := 0;
-    _linePosition := 1;
-    if not loadSourceCode then 
+    if _sourceCode <> nil then _sourceCode^.release;
+    _sourceCode := new(PSourceCode, initWithStream(_sourceStream));
+    if not _sourceCode^.isValid then 
     begin
       writeln('Could not read source code');
       halt(1);
     end;
     count := 0;
-    while _sourceCount < _sourceCodeSize do
+    while not _sourceCode^.isReadComplete do
     begin
       readSentence(sentence);
       validateSentence(sentence);
@@ -116,9 +106,9 @@ implementation
 
   procedure TBuilder.setSourceStream(stream: PStream);
   begin
-    if _source<>nil then _source^.release;
-    _source := stream;
-    _source^.retain;
+    if _sourceStream<>nil then _sourceStream^.release;
+    _sourceStream := stream;
+    _sourceStream^.retain;
   end;
 
   procedure TBuilder.setSourceFileStream(filename: string);
@@ -151,48 +141,6 @@ implementation
 
   { TBuilder private }
 
-  function TBuilder.loadSourceCode: boolean;
-  var 
-    result: boolean;
-  begin
-    if _source^.getSize > $FFFF then 
-      result := false
-    else begin
-      _sourceCodeSize := _source^.getSize;
-      getMem(_sourceCode, _sourceCodeSize);
-      _source^.read(_sourceCode, _sourceCodeSize);
-      writeln('[-] ',_sourceCodeSize, ' bytes of source code read');
-      _sourcePos := _sourceCode;
-      _sourceCount := 0;
-      result := true;
-    end;
-    loadSourceCode := result;
-  end;
-
-  procedure TBuilder.readChar(var current, lookAhead: char);
-  begin
-    if _sourceCount = _sourceCodeSize then  
-    begin
-      current := #0;
-      lookAhead := #0;
-    end else
-    begin
-      current := _sourcePos^;
-      inc(_sourcePos); 
-      inc(_sourceCount);
-      if current = C_LF then
-      begin
-        inc(_lineNumber);
-        _linePosition := 1;
-      end;
-
-      if _sourceCount = _sourceCodeSize then  
-        lookAhead := #0
-      else
-        lookAhead := _sourcePos^;
-    end;
-  end;
-
   procedure TBuilder.readSentence(var sentence: TSentence);
   type
     EState = (
@@ -224,7 +172,7 @@ implementation
           token := '';
           state := EStateSkipSpacesAndCRLF;
           nextState := EStateReadOperationOrLabel;
-          readChar(ch, lookAhead);
+          _sourceCode^.readChar(ch, lookAhead);
         end;
 
         EStateSkipSpaces:
@@ -232,7 +180,7 @@ implementation
           if not (ch in [' ', #9]) then 
             state := nextState
           else
-            readChar(ch, lookAhead);
+            _sourceCode^.readChar(ch, lookAhead);
         end;
 
         EStateSkipSpacesAndCRLF:
@@ -240,7 +188,7 @@ implementation
           if not (ch in [' ', C_CR, C_LF, #9]) then 
             state := nextState
           else
-            readChar(ch, lookAhead);
+            _sourceCode^.readChar(ch, lookAhead);
         end;
 
         EStateReadOperationOrLabel:
@@ -267,7 +215,7 @@ implementation
           else
             token := token + ch;
           end;
-          readChar(ch, lookAhead);
+          _sourceCode^.readChar(ch, lookAhead);
         end;
 
         EStateReadOperation:
@@ -283,7 +231,7 @@ implementation
           else
             token := token + ch;
           end;
-          readChar(ch, lookAhead);
+          _sourceCode^.readChar(ch, lookAhead);
         end;
 
         EStateReadFirstParam:
@@ -305,7 +253,7 @@ implementation
           else
             token := token + ch;
           end;
-          readChar(ch, lookAhead);
+          _sourceCode^.readChar(ch, lookAhead);
         end;
 
         EStateReadSecondParam:
@@ -320,7 +268,7 @@ implementation
           else
             token := token + ch;
           end;
-          if ch<>C_LF then readChar(ch, lookAhead);
+          if ch<>C_LF then _sourceCode^.readChar(ch, lookAhead);
         end;
       end;
     end;
@@ -355,7 +303,7 @@ implementation
       success := getOpcodeInfoByName(opname, opcode, count);
       if not success then 
       begin
-        writeln('unrecognized operation at line ' + intToStr(_lineNumber));
+        writeln('unrecognized operation at line ', _sourceCode^.lineNumber);
         halt(1);
       end;
 

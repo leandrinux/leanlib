@@ -5,7 +5,7 @@ uses
 
 const
   C_BUILDER_CONFIG : TBuilderConfig = (
-    isVerbose: true
+    isVerbose: false
   );
 
 var 
