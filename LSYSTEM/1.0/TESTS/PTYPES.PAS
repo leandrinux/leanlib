@@ -6,7 +6,7 @@ var
   ptype: EParameterType;
 begin
   write(literal,' ...');
-  ptype := guessParameterType(literal);
+  ptype := getParameterType(literal);
   if ptype = expected then 
     writeln('ok')
   else begin

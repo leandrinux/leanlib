@@ -147,7 +147,7 @@ interface
 
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
-  function guessParameterType(const token: string): EParameterType;
+  function getParameterType(const token: string): EParameterType;
   function getBitSize(const param: string; paramType:EParameterType): byte;
 
 implementation
@@ -198,7 +198,7 @@ implementation
     isValidSymbol := i>length(token);
   end;
 
-  function guessParameterType(const token: string): EParameterType;
+  function getParameterType(const token: string): EParameterType;
   const
     C_SET_LITERALS: set of char = ['+', '-', '0'..'9', '$', '#', ''''];
   var 
@@ -211,15 +211,15 @@ implementation
       address = [$A000], [0xA48A]
       pointer = [AX]+2, [EDX]-5, [DS]
     *)
-    guessParameterType := EParameterTypeUnknown;
+    getParameterType := EParameterTypeUnknown;
     if length(token)<1 then exit;
     if token[1] in C_SET_LITERALS then
-      guessParameterType := EParameterTypeLiteral
+      getParameterType := EParameterTypeLiteral
     else if token[1] = '[' then
     begin
       if length(token)<3 then exit;
       if token[2] in C_SET_LITERALS then
-        guessParameterType := EParameterTypeAddress
+        getParameterType := EParameterTypeAddress
       else begin
         i := pos('+', token);
         if i=0 then i := pos('-', token);
@@ -228,14 +228,14 @@ implementation
         else
           reg := copy(token, 2, i-2);
         if isValidRegister(reg) then 
-          guessParameterType := EParameterTypePointer
+          getParameterType := EParameterTypePointer
         else if isValidSymbol(token) then
-          guessParameterType := EParameterTypeSymbol;
+          getParameterType := EParameterTypeSymbol;
       end;
     end else if isValidRegister(token) then
-      guessParameterType := EParameterTypeRegister
+      getParameterType := EParameterTypeRegister
     else
-      guessParameterType := EParameterTypeSymbol
+      getParameterType := EParameterTypeSymbol
 ;    
   end;
 

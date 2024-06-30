@@ -368,8 +368,8 @@ implementation
       end;
 
       { get parameter types }
-      paramType0 := guessParameterType(param0);
-      paramType1 := guessParameterType(param1);
+      paramType0 := getParameterType(param0);
+      paramType1 := getParameterType(param1);
 
       { check valid parameters according to operation }
       if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
