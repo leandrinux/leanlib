@@ -55,7 +55,8 @@ interface
       EParameterTypeLiteral,
       EParameterTypeRegister,
       EParameterTypeAddress,
-      EParameterTypePointer
+      EParameterTypePointer,
+      EParameterTypeSymbol
     );
 
     TParameterInfo = record
