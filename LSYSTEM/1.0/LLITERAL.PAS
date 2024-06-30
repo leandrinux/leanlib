@@ -36,8 +36,8 @@ implementation
     result := hex2int(s, value);
     if not result then result := oct2int(s, value);
     if not result then result := bin2int(s, value);
-    if not result then result := chr2int(s, value);
     if not result then result := dec2int(s, value);
+    if not result then result := chr2int(s, value);
     if not result then result := str2single(s, TFloat32(value));
     any2int := result;
   end;
@@ -101,7 +101,7 @@ implementation
     clean := '';
     for i := 1 to length(s) do if s[i]<>C_NUMBER_SPACER then clean := clean + s[i];
     val(clean, value, code);
-    dec2int := code <> 0;
+    dec2int := code = 0;
   end;
   
   function hex2int(const s: string; var value: TUInt32): boolean;
