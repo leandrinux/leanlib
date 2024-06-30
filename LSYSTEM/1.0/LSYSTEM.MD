@@ -277,7 +277,7 @@ Instructions are case insensitive. They can have 1 or 2 arguments, or none at al
 Supported literal values are
 
 * 8-bit ASCII chars: represented between quotes. For instance 'a' which represents the 8-bit number 97.
-* Integer constants: represented as 1, #2, $3 and 0x4. No prefix means it's a decimal constant, # means it's octal and $ or 0x means it's hexadecimal. Decimal literals can have a minus sign  (-) for convenience to represent negative numbers.
+* Integer constants: represented as 1, #2, \$3 and 0x4. No prefix means it's a decimal constant, # means it's octal and $ or 0x means it's hexadecimal. Decimal literals can have a minus sign  (-) for convenience to represent negative numbers.
 * 32-bit floating point numbers: always in decimal and containing a dot. 3.1415 is a float literal. 3.0 is a float value, but plain 3 is an integer.
 
 #### Memory references
@@ -293,7 +293,7 @@ There are several registers that you can use together with instructions. For a f
 
 Pointer values are memory references, but instead of defining them as fixed values, we can use the value stored in a register. This allows registers to function as pointers. For instance, `[AX]` represents the value stored in memory at the position pointed by the AX register. You can use any register except DS or SS.
 
-You can also add a constant that will be substracted or added to the memory location specified by that register. To do this just add it next to it. For instance `[AX]+2` is a memory reference that is 2 words ahead from the position specified by AX.
+You can also add a constant that will be substracted or added to the memory location specified by that register. To do this just add it next to it. For instance `[AX+2]` is a memory reference that is 2 words ahead from the position specified by AX.
 
 Pointer values only work with registers. If you want to use the address located in a memory position you first need to load that memory position into a register, then use the register.
 
