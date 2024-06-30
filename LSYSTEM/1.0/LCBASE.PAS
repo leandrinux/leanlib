@@ -178,10 +178,32 @@ implementation
     getRegisterInfoByName := true;
   end;
 
+  function isValidRegister(const token: string): boolean;
+  var
+    i: byte;
+  begin
+    i := 0;
+    while (i<C_REGISTER_COUNT) and (C_REGISTER_INFO[i].name<>token) do inc(i);
+    isValidRegister := i<C_REGISTER_COUNT;
+  end;
+
+  function isValidSymbol(const token: string): boolean;
+  const
+    C_VALID_TOKEN_CHARS = ['A'..'Z','a'..'z','_'];
+  var
+    i: byte;
+  begin
+    i := 1;
+    while (i<=length(token)) and (token[i] in C_VALID_TOKEN_CHARS) do inc(i);
+    isValidSymbol := i>length(token);
+  end;
+
   function guessParameterType(const token: string): EParameterType;
   const
     C_SET_LITERALS: set of char = ['+', '-', '0'..'9', '$', '#', ''''];
-    C_SET_REGISTERS: set of char = ['a', 'b', 'c', 'd', 'e', 'i', 's'];
+  var 
+    reg: string[3];
+    i: byte;
   begin
     (*
       literals = 0, 1, 2, -23, $7, 0xAA, $A000, 0oAA, 0b0010, #77, 'a', 7.8, -4.3
@@ -193,16 +215,28 @@ implementation
     if length(token)<1 then exit;
     if token[1] in C_SET_LITERALS then
       guessParameterType := EParameterTypeLiteral
-    else if token[1] in C_SET_REGISTERS then
-      guessParameterType := EParameterTypeRegister
     else if token[1] = '[' then
     begin
       if length(token)<3 then exit;
       if token[2] in C_SET_LITERALS then
         guessParameterType := EParameterTypeAddress
-      else if token[2] in C_SET_REGISTERS then 
-        guessParameterType := EParameterTypePointer;
-    end;    
+      else begin
+        i := pos('+', token);
+        if i=0 then i := pos('-', token);
+        if i=0 then
+          reg := copy(token, 2, length(token)-2)
+        else
+          reg := copy(token, 2, i-2);
+        if isValidRegister(reg) then 
+          guessParameterType := EParameterTypePointer
+        else if isValidSymbol(token) then
+          guessParameterType := EParameterTypeSymbol;
+      end;
+    end else if isValidRegister(token) then
+      guessParameterType := EParameterTypeRegister
+    else
+      guessParameterType := EParameterTypeSymbol
+;    
   end;
 
   function getLiteralBitSize(const param: string): byte;

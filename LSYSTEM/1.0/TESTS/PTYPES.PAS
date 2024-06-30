@@ -2,12 +2,15 @@ uses
   lcbase;
 
 procedure testParamType(const literal: string; expected:EParameterType);
+var
+  ptype: EParameterType;
 begin
   write(literal,' ...');
-  if guessParameterType(literal) = expected then 
+  ptype := guessParameterType(literal);
+  if ptype = expected then 
     writeln('ok')
   else begin
-    writeln('failed!');
+    writeln('failed! expected ', ord(expected), ', got ', ord(ptype));
     halt(1);
   end;
 end;
@@ -53,6 +56,7 @@ begin
   testParamType('[#60]', EParameterTypeAddress);
   testParamType('[0xFAFA]', EParameterTypeAddress);
   testParamType('[0b0010101]', EParameterTypeAddress);
+  {testParamType('[video]', EParameterTypeAddress);}
 
   testParamType('[ax]', EParameterTypePointer);
   testParamType('[edx]', EParameterTypePointer);
@@ -60,13 +64,10 @@ begin
   testParamType('[ds+1]', EParameterTypePointer);
   testParamType('[ds+0xFA]', EParameterTypePointer);
   testParamType('[ds-10]', EParameterTypePointer);
-
-  
-{
+ 
   testParamType('lalala', EParameterTypeSymbol);
   testParamType('axa', EParameterTypeSymbol);
   testParamType('eaxsd', EParameterTypeSymbol);
 
   testParamType('[ds]+1', EParameterTypeUnknown);
-}
 end.
