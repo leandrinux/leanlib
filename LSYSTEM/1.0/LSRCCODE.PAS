@@ -4,7 +4,7 @@
   while also allowing to look ahead one character in advance
 }
 unit
-  srccode;
+  lsrccode;
 
 interface
 

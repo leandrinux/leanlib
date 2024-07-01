@@ -1,0 +1,265 @@
+{
+  this unit performs the parsing of sentences and other
+  components of the source code
+}
+unit
+  lparser;
+
+interface
+
+  uses
+    consts, utils, uclasses, types, locale,
+    uobject, uexc, lcbase, lsrccode;
+
+  const
+    C_CLASS_ID_Parser = $F011;
+
+  type
+    PParser = ^TParser;
+    TParser = object (TObject)
+    public
+      constructor initWithSourceCode(sourceCode: PSourceCode);
+      destructor done; virtual;
+      function getClassName: string; virtual;
+      function getClassId: word; virtual;
+      procedure readSentence(var sentence: TSentence);
+      procedure validateSentence(var sentence: TSentence);
+    private
+      _sourceCode: PSourceCode;
+    end;
+
+implementation
+
+  { TParser public }
+
+  constructor TParser.initWithSourceCode(sourceCode: PSourceCode);
+  begin
+    inherited init;
+    _sourceCode := sourceCode;
+    _sourceCode^.retain;
+  end;
+
+  destructor TParser.done;
+  begin
+    _sourceCode^.release;
+    inherited done;
+  end;
+
+  function TParser.getClassName: string;
+  begin
+    getClassName := 'TParser';
+  end;
+
+  function TParser.getClassId: word;
+  begin
+    getClassId := C_CLASS_ID_Parser;
+  end;
+
+  procedure TParser.readSentence(var sentence: TSentence);
+  type
+    EState = (
+      EStateStart,
+      EStateSkipSpaces,
+      EStateSkipSpacesAndCRLF,
+      EStateReadOperationOrLabel,
+      EStateReadOperation,
+      EStateReadFirstParam,
+      EStateReadSecondParam,
+      EStateSuccess,
+      EStateFailure
+    );
+  var
+    ch, lookAhead: char;
+    state: EState;
+    nextState: EState;
+    token: string;
+    errorMessage: string;
+  begin
+    state := EStateStart;
+    while (state <> EStateSuccess) and (state <> EStateFailure) do
+    begin
+      case state of
+        EStateStart:
+        begin
+          fillchar(sentence, sizeof(sentence), 0);
+          errorMessage := '';
+          token := '';
+          state := EStateSkipSpacesAndCRLF;
+          nextState := EStateReadOperationOrLabel;
+          _sourceCode^.readChar(ch, lookAhead);
+        end;
+
+        EStateSkipSpaces:
+        begin
+          if not (ch in [' ', #9]) then 
+            state := nextState
+          else
+            _sourceCode^.readChar(ch, lookAhead);
+        end;
+
+        EStateSkipSpacesAndCRLF:
+        begin
+          if not (ch in [' ', C_CR, C_LF, #9]) then 
+            state := nextState
+          else
+            _sourceCode^.readChar(ch, lookAhead);
+        end;
+
+        EStateReadOperationOrLabel:
+        begin
+          case ch of
+            C_CR, C_LF: begin end;
+            ':': begin
+              sentence.labelName := token;
+              token := '';
+              state := EStateSkipSpacesAndCRLF;
+              nextState := EStateReadOperation;
+            end;
+            ' ', #0: begin
+              sentence.labelName := '';
+              sentence.opname := token;
+              token := '';
+              if ch = #0 then
+                state := EStateSuccess
+              else begin
+                state := EStateSkipSpaces;
+                nextState := EStateReadFirstParam;
+              end;
+            end;
+          else
+            token := token + ch;
+          end;
+          _sourceCode^.readChar(ch, lookAhead);
+        end;
+
+        EStateReadOperation:
+        begin
+          case ch of
+            C_LF, C_CR: begin end;
+            ' ': begin
+              sentence.opname := token;
+              token := '';
+              state := EStateSkipSpaces;
+              nextState := EStateReadFirstParam;
+            end;
+          else
+            token := token + ch;
+          end;
+          _sourceCode^.readChar(ch, lookAhead);
+        end;
+
+        EStateReadFirstParam:
+        begin
+          case ch of
+            C_LF:
+            begin
+              sentence.param0 := token;
+              token := '';
+              state := EStateSuccess;
+            end;
+            C_CR: begin end;
+            ',': begin
+              sentence.param0 := token;
+              token := '';
+              state := EStateSkipSpaces;
+              nextState := EStateReadSecondParam;
+            end;
+          else
+            token := token + ch;
+          end;
+          _sourceCode^.readChar(ch, lookAhead);
+        end;
+
+        EStateReadSecondParam:
+        begin
+          case ch of
+            C_CR: begin end;
+            ' ', C_LF, #0: begin
+              sentence.param1 := token;
+              token := '';
+              state := EStateSuccess;
+            end;
+          else
+            token := token + ch;
+          end;
+          if ch<>C_LF then _sourceCode^.readChar(ch, lookAhead);
+        end;
+      end;
+    end;
+  end;
+
+  procedure TParser.validateSentence(var sentence: TSentence);
+  const 
+    { these instructions do not support a literal as first parameter }
+    C_OPCODES_NO_FIRST_LITERAL: set of byte = 
+      [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
+       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL];
+
+    { these instructions do not support a literal as second parameter }
+    C_OPCODES_NO_SECOND_LITERAL: set of byte = 
+      [C_JE, C_JG, C_JL];
+
+    { these instructions cannot have a register in the first parameter and a
+      literal on the second, where the register has a smaller bitsize than the literal }
+    C_OPCODES_LITERAL_BITSIZE_CHK: set of byte =
+      [ C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
+        C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, 
+        C_OR, C_NOT, C_XOR ];
+  var
+    count: byte;
+    success: boolean;
+    sentenceParamCount: byte;
+  begin
+    with sentence do 
+    begin
+      { validate operation name exists }
+      success := getOpcodeInfoByName(opname, opcode, count);
+      if not success then 
+      begin
+        writeln('unrecognized operation at line ', _sourceCode^.lineNumber);
+        halt(1);
+      end;
+
+      { validate number of arguments } 
+      sentenceParamCount := 0;
+      if param0 <> '' then inc(sentenceParamCount);
+      if param1 <> '' then inc(sentenceParamCount);
+      if sentenceParamCount <> count then
+      begin
+        writeln('operation expects ' + intToStr(count) + ' parameters');
+        halt(1);
+      end;
+
+      { get parameter types }
+      paramType0 := getParameterType(param0);
+      paramType1 := getParameterType(param1);
+
+      { check valid parameters according to operation }
+      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
+      begin
+        writeln('instruction ' + opname + ' does not support a literal as first parameter');
+        halt(1);
+      end;
+
+      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (paramType1 = EParameterTypeLiteral) then
+      begin
+        writeln('instruction ' + opname + ' does not support a literal as second parameter');
+        halt(1);
+      end;
+
+      { check that the left size bit size is equal or greater than the right size bit size }
+      if (paramType0 = EParameterTypeRegister) 
+          and (paramType1 in [EParameterTypeLiteral, EParameterTypeRegister]) 
+          and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
+          and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
+      begin
+        writeln('register in first parameter cannot fit literal or register on the second parameter');
+        halt(1);
+      end;
+    end;
+  end;
+
+  { Other }
+
+end.

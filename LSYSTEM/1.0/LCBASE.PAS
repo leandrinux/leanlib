@@ -65,18 +65,15 @@ interface
       value: TUInt32;
     end;
 
-    EState = (                          { code parsing states}
-      EStateStart,                      { parsing starts here }
-      EStateEnd,                        { parsing ends here }
-      EStateSkipSpacesAndLineBreaks,    { skipping empty spaces and line breaks }
-      EStateSkipSpaces,                 { skipping spaces only }
-      EStateReadInstruction,            { reading instruction name }
-      EStateReadParam0,                 { reading first parameter }
-      EStateReadParam1,                 { reading second parameter }
-      EStateBuildBinaryInstruction,     { builds binary code based on collected instruction data }
-      EStateCommentUntilLineBreak,      { skipping everything until the next line break }
-      EStateCommentUntilDelimiter       { skipping everything until a comment block ending tag is found }
-    );
+    TSentence = record
+      labelName: TString30;
+      opname: TString30;
+      param0: TString30;
+      param1: TString30;
+      opcode: byte;
+      paramType0: EParameterType;
+      paramType1: EParameterType;
+    end;
 
   const
     C_REGISTER_INFO: TRegisterInfoArray = (
