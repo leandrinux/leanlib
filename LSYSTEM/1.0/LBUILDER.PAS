@@ -6,7 +6,7 @@ interface
   uses
     consts, utils, types, locale, math, uclasses, strings,
     uobject, uexc, ustream, ufstream, ucstream, ustdout,
-    lcommon, lcbase, lsrccode, lparser, ltexts;
+    lcommon, lcbase, lsrccode, lparser, ltexts, lbinary, lsymbols;
 
   const
     C_CLASS_ID_BUILDER = $F00F;
@@ -64,22 +64,30 @@ implementation
   var
     sentence: TSentence;
     count: word;
-    sourceCode: PSourceCode;    { object containing the full source code to be compiled }
-    parser: PParser;
+    sourceCode: PSourceCode;    { contains the full source code to be compiled }
+    binary: PBinary;            { contains the full binary code and data }
+    parser: PParser;            { reads and validates the source code }
+    symbols: PSymbols;          { keeps track of the symbols like labels or defines }
   begin
     message(strformatn(C_STR_BUILDING, ''));
     if sourceCode <> nil then sourceCode^.release;
     sourceCode := new(PSourceCode, initWithStream(_sourceStream));
     if not sourceCode^.isValid then error(C_STR_READ_ERROR);
     parser := new(PParser, initWithSourceCode(sourceCode));
+    binary := new(PBinary, init);
+    symbols := new(PSymbols, init);
     count := 0;
     while not sourceCode^.isReadComplete do
     begin
       parser^.readSentence(sentence);
       parser^.validateSentence(sentence);
+      symbols^.replaceSymbols(sentence);
       if _config.isVerbose then printSentence(sentence);
+      binary^.addSentence(sentence);
       inc(count);
     end;
+    symbols^.release;
+    binary^.release;
     parser^.release;
     sourceCode^.release;
     message(strformatn(C_STR_SENTENCES_PROC, intToStr(count)));

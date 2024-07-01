@@ -1,8 +1,11 @@
 uses
   lcommon,
-  lliteral,
   lcbase,
-  lbuilder;
+  lliteral,
+  lbuilder,
+  lparser,
+  lsrccode,
+  ltexts;
 
 begin
 end.
