@@ -30,8 +30,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
-      _sourceStream: PStream;  { stream used to read the source code }
-      _sourceCode: PSourceCode;    { object containing the full source code to be compiled }
+      _sourceStream: PStream;      { stream used to read the source code }
       _message: PStream;           { stream used by the compiler to output progress messages }
       _config: TBuilderConfig;     { other configuration settings }
       procedure printSentence(const sentence: TSentence);
@@ -46,14 +45,12 @@ implementation
     inherited init;
     fillChar(_config, sizeof(TBuilderConfig), 0);
     _sourceStream := nil;
-    _sourceCode := nil;
     _message := nil;
   end;
 
   destructor TBuilder.done;
   begin
     if _sourceStream<>nil then _sourceStream^.release;
-    if _sourceCode <> nil then _sourceCode^.release;
     if _message<>nil then _message^.release;    
     inherited done;
   end;
@@ -72,19 +69,20 @@ implementation
   var
     sentence: TSentence;
     count: word;
+    sourceCode: PSourceCode;    { object containing the full source code to be compiled }
     parser: PParser;
   begin
     _message^.writeln('[-] Building');
-    if _sourceCode <> nil then _sourceCode^.release;
-    _sourceCode := new(PSourceCode, initWithStream(_sourceStream));
-    if not _sourceCode^.isValid then 
+    if sourceCode <> nil then sourceCode^.release;
+    sourceCode := new(PSourceCode, initWithStream(_sourceStream));
+    if not sourceCode^.isValid then 
     begin
       writeln('Could not read source code');
       halt(1);
     end;
-    parser := new(PParser, initWithSourceCode(_sourceCode));
+    parser := new(PParser, initWithSourceCode(sourceCode));
     count := 0;
-    while not _sourceCode^.isReadComplete do
+    while not sourceCode^.isReadComplete do
     begin
       parser^.readSentence(sentence);
       parser^.validateSentence(sentence);
@@ -92,6 +90,7 @@ implementation
       inc(count);
     end;
     parser^.release;
+    sourceCode^.release;
     writeln('[-] ', count, ' sentences processed.')
   end;
 
