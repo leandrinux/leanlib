@@ -4,9 +4,9 @@ unit
 interface
 
   uses
-    consts, utils, types, locale, math, uclasses,
+    consts, utils, types, locale, math, uclasses, strings,
     uobject, uexc, ustream, ufstream, ucstream, ustdout,
-    lcommon, lcbase, lsrccode, lparser;
+    lcommon, lcbase, lsrccode, lparser, ltexts;
 
   const
     C_CLASS_ID_BUILDER = $F00F;
@@ -23,15 +23,12 @@ interface
       destructor done; virtual;
       procedure setSourceStream(stream: PStream);
       procedure setSourceFileStream(filename: string);
-      procedure setMessageStream(stream: PStream);
-      procedure setStandardMessageOutput;
       procedure setConfig(const builderConfig: TBuilderConfig);
       procedure build;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
       _sourceStream: PStream;      { stream used to read the source code }
-      _message: PStream;           { stream used by the compiler to output progress messages }
       _config: TBuilderConfig;     { other configuration settings }
       procedure printSentence(const sentence: TSentence);
     end;
@@ -45,13 +42,11 @@ implementation
     inherited init;
     fillChar(_config, sizeof(TBuilderConfig), 0);
     _sourceStream := nil;
-    _message := nil;
   end;
 
   destructor TBuilder.done;
   begin
     if _sourceStream<>nil then _sourceStream^.release;
-    if _message<>nil then _message^.release;    
     inherited done;
   end;
 
@@ -72,14 +67,10 @@ implementation
     sourceCode: PSourceCode;    { object containing the full source code to be compiled }
     parser: PParser;
   begin
-    _message^.writeln('[-] Building');
+    message(strformatn(C_STR_BUILDING, ''));
     if sourceCode <> nil then sourceCode^.release;
     sourceCode := new(PSourceCode, initWithStream(_sourceStream));
-    if not sourceCode^.isValid then 
-    begin
-      writeln('Could not read source code');
-      halt(1);
-    end;
+    if not sourceCode^.isValid then error(C_STR_READ_ERROR);
     parser := new(PParser, initWithSourceCode(sourceCode));
     count := 0;
     while not sourceCode^.isReadComplete do
@@ -91,7 +82,7 @@ implementation
     end;
     parser^.release;
     sourceCode^.release;
-    writeln('[-] ', count, ' sentences processed.')
+    message(strformatn(C_STR_SENTENCES_PROC, intToStr(count)));
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
@@ -109,21 +100,6 @@ implementation
     setSourceStream(fileStream);
   end;
 
-  procedure TBuilder.setMessageStream(stream: PStream);
-  begin
-    if _message<>nil then _message^.release;
-    _message := stream;
-    _message^.retain;
-  end;
-
-  procedure TBuilder.setStandardMessageOutput;
-  var
-    stream: PStdOutput;
-  begin
-    stream := new(PStdOutput, init);
-    setMessageStream(stream);
-  end;
-
   procedure TBuilder.setConfig(const builderConfig: TBuilderConfig);
   begin
     _config := builderConfig;
@@ -137,18 +113,14 @@ implementation
       'unknown', 'literal', 'register', 'address', 'pointer', 'symbol'
     );
   begin
-    with sentence do 
+    with sentence do
     begin
-      write(opname, ' (', opcode, ')');
-      if param0 = '' then
-        writeln   
-      else 
-        write(', ', param0, ' (', C_PARAM_TYPES[paramType0], ')');
-
-      if param1 = '' then
-        writeln   
-      else 
-        writeln(', ', param1, ' (', C_PARAM_TYPES[paramType1], ')');
+      message(strformatn(C_STR_SENTENCE_OPERATION, opname + #0 + intToStr(opcode)));
+      if param0 <> '' then
+        message(strformatn(C_STR_SENTENCE_PARAMETER, param0 + #0 + C_PARAM_TYPES[paramType0]));
+      if param1 <> '' then
+        message(strformatn(C_STR_SENTENCE_PARAMETER, param1 + #0 + C_PARAM_TYPES[paramType1]));
+      message(C_CR + C_LF);
     end;
   end;
 

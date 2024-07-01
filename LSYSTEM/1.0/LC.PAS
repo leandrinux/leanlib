@@ -1,7 +1,6 @@
 uses
-  ats,
-  lcbase,
-  lbuilder;
+  ats, strings,
+  lcommon, lcbase, lbuilder, ltexts;
 
 const
   C_BUILDER_CONFIG : TBuilderConfig = (
@@ -13,19 +12,16 @@ var
   builder: PBuilder;
 
 begin
-  write('LASMC lsystem assembly compiler v', C_LASMC_VERSION);
-  writeln(' - ', C_BUILD_DATE, ' ', C_BUILD_TIME);
+  message(strformatn(C_STR_BANNER, C_LASMC_VERSION));
+  message(strformatn(C_STR_BUILD_TS, C_BUILD_DATE + #0 + C_BUILD_TIME));
   filename := 'demo1.asm';
   if filename='' then 
-  begin
-    writeln('no source file specified');
-    halt(1);
-  end else begin
+    error(C_STR_NO_SOURCE_FILE)
+  else begin
     builder := new(PBuilder, init);
     with builder^ do
     begin
       setSourceFileStream(filename);
-      setStandardMessageOutput;
       setConfig(C_BUILDER_CONFIG);
       build;
       release;
