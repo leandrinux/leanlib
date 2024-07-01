@@ -21,6 +21,7 @@ interface
   type
     TString3 = string[3];
     TString5 = string[5];
+    TString30 = string[30];
     TFloat32 = single;
     TUInt8 = byte;
     TUInt16 = word;

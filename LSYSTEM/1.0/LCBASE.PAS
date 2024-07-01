@@ -13,13 +13,11 @@ interface
 
   const
     C_LASMC_VERSION = '0.1';
-    C_READ_BUFFER_SIZE = 1024;
-    C_STATE_STACK_SIZE = 4;
     C_SPACE = ' ';
     C_CR    = #13;
     C_LF    = #10;
     C_TAB   = #09;
-    C_SPACING_CHARS = [C_SPACE, C_TAB, C_LF, C_CR];
+
     C_MOV = $01; C_ADD = $02; C_SUB = $03; C_MUL = $04;
     C_DIV = $05; C_CMP = $06; C_SHL = $07; C_SHR = $08;
     C_FADD = $09; C_FSUB = $0A; C_FMUL = $0B; C_FDIV = $0C;
@@ -57,7 +55,8 @@ interface
       EParameterTypeLiteral,
       EParameterTypeRegister,
       EParameterTypeAddress,
-      EParameterTypePointer
+      EParameterTypePointer,
+      EParameterTypeSymbol
     );
 
     TParameterInfo = record
@@ -66,54 +65,14 @@ interface
       value: TUInt32;
     end;
 
-    TFileBuffer = record
-      data: array[0..C_READ_BUFFER_SIZE-1] of char; { data in buffer }
-      size: word;                                   { how many bytes of valid data in buffer }
-      position: word;                               { current position within buffer }
-    end;
-
-    EState = (                          { code parsing states}
-      EStateStart,                      { parsing starts here }
-      EStateEnd,                        { parsing ends here }
-      EStateSkipSpacesAndLineBreaks,    { skipping empty spaces and line breaks }
-      EStateSkipSpaces,                 { skipping spaces only }
-      EStateReadInstruction,            { reading instruction name }
-      EStateReadParam0,                 { reading first parameter }
-      EStateReadParam1,                 { reading second parameter }
-      EStateBuildBinaryInstruction,     { builds binary code based on collected instruction data }
-      EStateCommentUntilLineBreak,      { skipping everything until the next line break }
-      EStateCommentUntilDelimiter       { skipping everything until a comment block ending tag is found }
-    );
-
-    TStateStack = record
-      values: array [0..C_STATE_STACK_SIZE-1] of EState;
-      count: word;
-      state: EState;
-    end;
-
-    TInstructionData = record
-      name: TInstructionName;           { the name of the instruction as written in code }
-      param0: string;                   { the first parameter as written in code }
-      param1: string;                   { the second parameter as written in code }
-      paramType0: EParameterType;       { type of the first parameter }
-      paramType1: EParameterType;       { type of the second parameter }
-      paramValue0: TUInt32;             { binary value for first parameter }
-      paramValue1: TUInt32;             { binary value for second parameter }
-      opcode: byte;                     { the operation code that matches the specified instruction }
-      expectedParamCount: byte;         { how many arguments this instruction requires }
-    end;
-
-    TBuild = record
-      sourceFileName: string;           { name of the file being compiled }
-      sourceFile: file;                 { source file handle }
-      isOpen: boolean;                  { indicates if file is open correctly }
-      ch: char;                         { the character being currently examined }
-      lineNumber: longint;              { current line number }
-      lineCharacter: word;              { char number being evaluated in current line }
-      instructionCount: longint;        { how many instructions have been built }
-      fileBuffer: TFileBuffer;          { data buffer used to read file }
-      stack: TStateStack;               { stack of machine states }
-      instructionData: TInstructionData { the instruction and arguments retrieved from the line }
+    TSentence = record
+      labelName: TString30;
+      opname: TString30;
+      param0: TString30;
+      param1: TString30;
+      opcode: byte;
+      paramType0: EParameterType;
+      paramType1: EParameterType;
     end;
 
   const
@@ -183,105 +142,12 @@ interface
       (name: 'in'; code:C_IN; count:2)
     );  
 
-  var
-    build: TBuild;
-
-  procedure initBuild(const filename: string);
-  function readChar: char;
-  procedure raise(const msg: string);
-  procedure message(const msg: string);
-  procedure pushState(var stack: TStateStack; value: EState);
-  procedure popState(var stack: TStateStack);
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   function getRegisterInfoByName(const name:TRegisterName; var code, bitSize: byte): boolean;
-  function guessParameterType(const token: string): EParameterType;
-  procedure validateParams;
+  function getParameterType(const token: string): EParameterType;
+  function getBitSize(const param: string; paramType:EParameterType): byte;
 
 implementation
-
-  procedure initBuild(const filename: string);
-  begin
-    with build do
-    begin
-      sourceFileName := filename;
-      instructionCount := 0;
-      lineNumber := 1;
-      lineCharacter := 1;
-      fillChar(fileBuffer, sizeof(TFileBuffer), 0);
-      stack.count := 0;
-      stack.state := EStateStart;
-      fileBuffer.position := 0;
-      fileBuffer.size := 0;
-      instructionData.name := '';
-      instructionData.param0 := '';
-      instructionData.param1 := '';
-    end;
-  end;
-
-  function loadBuffer: boolean;
-  begin
-    loadBuffer := false;
-    with build, fileBuffer do
-    begin
-      if eof(sourceFile) then exit;
-      blockread(sourceFile, data, C_READ_BUFFER_SIZE, size);
-      position := 0;
-      loadBuffer := true;
-    end;
-  end;
-
-  function readChar: char;
-  begin
-    readChar := #0;
-    with build, fileBuffer do
-    begin
-      if (position = size) and not loadBuffer then exit;
-      if size = 0 then exit;
-      readChar := data[position];
-      inc(position);
-      inc(lineCharacter);
-    end;
-  end;
-  
-  procedure raise(const msg: string);
-  begin
-    with build do
-    begin
-      write('[X] Error: ', msg);
-      if isOpen then
-        writeln(' at line ', lineNumber,', position ', lineCharacter)
-      else
-        writeln;
-      halt(1);
-    end;
-  end;
-
-  procedure message(const msg: string);
-  begin
-    writeln('[-] ', msg);
-  end;
-
-  procedure pushState(var stack: TStateStack; value: EState);
-  begin
-    with stack do
-      if stack.count = C_STATE_STACK_SIZE then
-        raise('State stack overflow')
-      else begin
-        stack.values[stack.count] := value;
-        count := count + 1;
-      end;
-  end;
-
-  procedure popState(var stack: TStateStack);
-  begin
-    with stack do
-      if count = 0 then
-        raise('State stack empty')
-      else begin
-        count := count - 1;
-        state := values[count];
-      end;  
-  end;
 
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
   var
@@ -309,10 +175,32 @@ implementation
     getRegisterInfoByName := true;
   end;
 
-  function guessParameterType(const token: string): EParameterType;
+  function isValidRegister(const token: string): boolean;
+  var
+    i: byte;
+  begin
+    i := 0;
+    while (i<C_REGISTER_COUNT) and (C_REGISTER_INFO[i].name<>token) do inc(i);
+    isValidRegister := i<C_REGISTER_COUNT;
+  end;
+
+  function isValidSymbol(const token: string): boolean;
+  const
+    C_VALID_TOKEN_CHARS = ['A'..'Z','a'..'z','_'];
+  var
+    i: byte;
+  begin
+    i := 1;
+    while (i<=length(token)) and (token[i] in C_VALID_TOKEN_CHARS) do inc(i);
+    isValidSymbol := i>length(token);
+  end;
+
+  function getParameterType(const token: string): EParameterType;
   const
     C_SET_LITERALS: set of char = ['+', '-', '0'..'9', '$', '#', ''''];
-    C_SET_REGISTERS: set of char = ['a', 'b', 'c', 'd', 'e', 'i', 's'];
+  var 
+    reg: string[3];
+    i: byte;
   begin
     (*
       literals = 0, 1, 2, -23, $7, 0xAA, $A000, 0oAA, 0b0010, #77, 'a', 7.8, -4.3
@@ -320,20 +208,32 @@ implementation
       address = [$A000], [0xA48A]
       pointer = [AX]+2, [EDX]-5, [DS]
     *)
-    guessParameterType := EParameterTypeUnknown;
+    getParameterType := EParameterTypeUnknown;
     if length(token)<1 then exit;
     if token[1] in C_SET_LITERALS then
-      guessParameterType := EParameterTypeLiteral
-    else if token[1] in C_SET_REGISTERS then
-      guessParameterType := EParameterTypeRegister
+      getParameterType := EParameterTypeLiteral
     else if token[1] = '[' then
     begin
       if length(token)<3 then exit;
       if token[2] in C_SET_LITERALS then
-        guessParameterType := EParameterTypeAddress
-      else if token[2] in C_SET_REGISTERS then 
-        guessParameterType := EParameterTypePointer;
-    end;    
+        getParameterType := EParameterTypeAddress
+      else begin
+        i := pos('+', token);
+        if i=0 then i := pos('-', token);
+        if i=0 then
+          reg := copy(token, 2, length(token)-2)
+        else
+          reg := copy(token, 2, i-2);
+        if isValidRegister(reg) then 
+          getParameterType := EParameterTypePointer
+        else if isValidSymbol(token) then
+          getParameterType := EParameterTypeSymbol;
+      end;
+    end else if isValidRegister(token) then
+      getParameterType := EParameterTypeRegister
+    else
+      getParameterType := EParameterTypeSymbol
+;    
   end;
 
   function getLiteralBitSize(const param: string): byte;
@@ -343,7 +243,10 @@ implementation
   begin
     result := 0;
     if not any2int(param, value) then 
-      raise ('literal argument could not be recognized');
+    begin
+      writeln('literal argument "', param, '" could not be recognized');
+      exit;
+    end;
     if (value and $FFFF0000) <> 0 then 
       result := 32
     else if (value and $FF00) <> 0 then 
@@ -358,7 +261,10 @@ implementation
     code, bitSize: byte;
   begin
     if not getRegisterInfoByName(param, code, bitSize) then
-      raise ('register argument could not be recognized');
+    begin
+      writeln ('register argument could not be recognized');
+      exit;
+    end;
     getRegisterBitSize := bitSize;
   end;
 
@@ -374,61 +280,6 @@ implementation
       result := 0;
     end;
     getBitSize := result;
-  end;
-
-  procedure validateParams;
-  const 
-    { these instructions do not support a literal as first parameter }
-    C_OPCODES_NO_FIRST_LITERAL: set of byte = 
-      [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
-       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
-       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL];
-
-    { these instructions do not support a literal as second parameter }
-    C_OPCODES_NO_SECOND_LITERAL: set of byte = 
-      [C_JE, C_JG, C_JL];
-
-    { these instructions cannot have a register in the first parameter and a
-      literal on the second, where the register has a smaller bitsize than the literal }
-    C_OPCODES_LITERAL_BITSIZE_CHK: set of byte =
-      [ C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
-        C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, 
-        C_OR, C_NOT, C_XOR ];
-
-  var 
-    paramCount: byte;
-  begin
-    with build.instructionData do
-    begin
-      paramCount := 0;
-
-      { check the number of given parameters }
-      if length(param0)>0 then inc(paramCount);
-      if length(param1)>0 then inc(paramCount);
-      if paramCount<>expectedParamCount then
-        raise('instruction ' + name + 
-          ' expects ' + intToStr(expectedParamCount) + 
-          ' parameters, but it got ' + intToStr(paramCount)
-        );
-        
-      { check the parameter types are correct }
-      paramType0 := guessParameterType(param0);
-      paramType1 := guessParameterType(param1);
-
-      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
-        raise('instruction ' + name + ' does not support a literal as first parameter');
-
-      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (paramType1 = EParameterTypeLiteral) then
-        raise('instruction ' + name + ' does not support a literal as second parameter');
-
-      { check that the left size bit size is equal or greater than the right size bit size }
-      if (paramType0 = EParameterTypeRegister) 
-         and (paramType1 in [EParameterTypeLiteral, EParameterTypeRegister]) 
-         and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
-         and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
-        raise('register in first parameter cannot fit literal or register on the second parameter');
-
-    end;
   end;
 
 end.

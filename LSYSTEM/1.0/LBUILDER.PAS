@@ -5,9 +5,17 @@ interface
 
   uses
     consts, utils, types, locale, math, uclasses,
-    uobject, uexc, ustream, ufstream, ustdout;
+    uobject, uexc, ustream, ufstream, ucstream, ustdout,
+    lcommon, lcbase, lsrccode, lparser;
+
+  const
+    C_CLASS_ID_BUILDER = $F00F;
 
   type
+    TBuilderConfig = record
+      isVerbose: boolean;
+    end;
+
     PBuilder = ^TBuilder;
     TBuilder = object (TObject)
     public
@@ -17,38 +25,33 @@ interface
       procedure setSourceFileStream(filename: string);
       procedure setMessageStream(stream: PStream);
       procedure setStandardMessageOutput;
+      procedure setConfig(const builderConfig: TBuilderConfig);
       procedure build;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
-      _source: PStream;
-      _message: PStream;
-      _line: string;
-      _nestedCommentBlocks: byte;
-      procedure log(const msg: string);
-      procedure logln(const msg: string);
-      procedure cleanComments;
-      procedure processLine;
+      _sourceStream: PStream;      { stream used to read the source code }
+      _message: PStream;           { stream used by the compiler to output progress messages }
+      _config: TBuilderConfig;     { other configuration settings }
+      procedure printSentence(const sentence: TSentence);
     end;
 
-  const
-    C_CLASS_ID_BUILDER = $F00F;
-
 implementation
-
+ 
   { TBuilder public }
 
   constructor TBuilder.init;
   begin
     inherited init;
-    _source := nil;
+    fillChar(_config, sizeof(TBuilderConfig), 0);
+    _sourceStream := nil;
     _message := nil;
   end;
 
   destructor TBuilder.done;
   begin
-    if _source<>nil then _source^.release;
-    if _message<>nil then _message^.release;
+    if _sourceStream<>nil then _sourceStream^.release;
+    if _message<>nil then _message^.release;    
     inherited done;
   end;
 
@@ -63,25 +66,47 @@ implementation
   end;
 
   procedure TBuilder.build;
+  var
+    sentence: TSentence;
+    count: word;
+    sourceCode: PSourceCode;    { object containing the full source code to be compiled }
+    parser: PParser;
   begin
-    logln('[-] Building');
-    _nestedCommentBlocks := 0;
-    while not _source^.isEOF do processLine;
+    _message^.writeln('[-] Building');
+    if sourceCode <> nil then sourceCode^.release;
+    sourceCode := new(PSourceCode, initWithStream(_sourceStream));
+    if not sourceCode^.isValid then 
+    begin
+      writeln('Could not read source code');
+      halt(1);
+    end;
+    parser := new(PParser, initWithSourceCode(sourceCode));
+    count := 0;
+    while not sourceCode^.isReadComplete do
+    begin
+      parser^.readSentence(sentence);
+      parser^.validateSentence(sentence);
+      if _config.isVerbose then printSentence(sentence);
+      inc(count);
+    end;
+    parser^.release;
+    sourceCode^.release;
+    writeln('[-] ', count, ' sentences processed.')
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
   begin
-    if _source<>nil then _source^.release;
-    _source := stream;
-    _source^.retain;
+    if _sourceStream<>nil then _sourceStream^.release;
+    _sourceStream := stream;
+    _sourceStream^.retain;
   end;
 
   procedure TBuilder.setSourceFileStream(filename: string);
   var
-    stream: PFileStream;
+    fileStream: PFileStream;
   begin
-    stream := new(PFileStream, initWithPath(filename, EFileReadOnly));
-    setSourceStream(stream);
+    fileStream := new(PFileStream, initWithPath(filename, EFileReadOnly));
+    setSourceStream(fileStream);
   end;
 
   procedure TBuilder.setMessageStream(stream: PStream);
@@ -99,70 +124,32 @@ implementation
     setMessageStream(stream);
   end;
 
+  procedure TBuilder.setConfig(const builderConfig: TBuilderConfig);
+  begin
+    _config := builderConfig;
+  end;
+
   { TBuilder private }
 
-  procedure TBuilder.log(const msg: string);
+  procedure TBuilder.printSentence(const sentence: TSentence);
+  const 
+    C_PARAM_TYPES : array[EParameterType] of string[10] = (
+      'unknown', 'literal', 'register', 'address', 'pointer', 'symbol'
+    );
   begin
-    if _message<>nil then _message^.write(incptr(@msg, 1), length(msg));
-  end;
-
-  procedure TBuilder.logln(const msg: string);
-  begin
-    if _message<>nil then _message^.writeln(msg);
-  end;
-
-  procedure TBuilder.cleanComments;
-  var
-    isDone: boolean;
-    i: byte;
-  begin
-    i := 0;
-    isDone := false;
-    while (not isDone) and (not _source^.isEOF) and (i<=length(_line)) do
+    with sentence do 
     begin
-      if (_line[i]='/') then
-      begin
-        if (i<length(_line)) then
-        begin
-          if (_line[i+1] = '/') then
-          begin
-            { found a comment until EoL }
-            { we clean the line and return }
-            _line := copy(_line, 1, i-1);
-            isDone := true;
-          end else if (_line[i+1] = '*') then
-          begin
-            { we found a comment block start }
-            inc(_nestedCommentBlocks);
-            _line := copy(_line, 1, i-1);
-            isDone := true;
-          end;
-        end;
-      end else 
-        if (_line[i]='*') and (i<length(_line)) and (_line[i+1] = '/') then
-        begin
-          { we found a comment block end }
-          _line := copy(_line, i+2, length(_line)-i-2);
-          dec(_nestedCommentBlocks);
-          i := 0;
-          isDone := true;
-        end;
-      inc(i);
-    end;
-    if (_nestedCommentBlocks>0) then
-    begin
-      if (i>length(_line)) then 
-        _line := '';
+      write(opname, ' (', opcode, ')');
+      if param0 = '' then
+        writeln   
+      else 
+        write(', ', param0, ' (', C_PARAM_TYPES[paramType0], ')');
+
+      if param1 = '' then
+        writeln   
+      else 
+        writeln(', ', param1, ' (', C_PARAM_TYPES[paramType1], ')');
     end;
   end;
-
-  procedure TBuilder.processLine;
-  begin
-    _line := _source^.readln;
-    cleanComments;
-    if length(_line)>0 then writeln(_line);
-  end;
-
-  { Other }
 
 end.

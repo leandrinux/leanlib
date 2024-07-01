@@ -54,7 +54,7 @@ implementation
     i: word;
   begin
     p := buffer;
-    for i:=1 to count do
+    for i:=count-1 downto 0 do
     begin
       system.write(p^);
       inc(p);
