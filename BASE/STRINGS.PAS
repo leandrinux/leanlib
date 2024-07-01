@@ -38,6 +38,16 @@ interface
   }
   function strformat(format: string; args: pstr): string;
 
+  {
+    a different implementation of the strformat function. This one
+    expects each argument to be tagged as %0, %1, %2 and so on up 
+    until %9. Each element is added to the args string, delimited
+    by a null character.
+    requires less memory than strformat and does not require to
+    think in pointers.
+  }
+  function strformatn(const str, args: string): string;
+
 implementation
 
   function padw(w: word; ch: char; count: byte): string5;
@@ -179,6 +189,56 @@ implementation
       end;
     end;
     strformat := str;
+  end;
+
+  function strformatn(const str, args: string): string;
+  var 
+    tokens: array[0..9] of byte;
+    result: string;
+    i, index: byte;
+    ch: char;
+  begin
+    { find tokens in args }
+    fillchar(tokens, sizeof(tokens), 0);
+    tokens[0] := 1;
+    index := 1;
+    i := 1;
+    while i<=length(args) do
+    begin
+      if args[i]=#0 then begin
+        tokens[index] := i+1;
+        inc(index);
+      end;
+      inc(i);
+    end;
+
+    { replace tokens in string }
+    result := '';
+    i := 1;
+    while i <= length(str) do
+    begin
+      ch := str[i];
+      if (str[i] = '%') then
+        if (i+1<=length(str)) then
+        begin
+          if (str[i+1] in ['0'..'9']) then 
+          begin
+            ch := #0; 
+            { copy the token until next null or end of line}
+            index := tokens[ord(str[i+1]) - ord('0')];
+            while (index<>0) and (index<=length(args)) and (args[index]<>#0) do
+            begin
+              result := result + args[index];
+              inc(index);
+            end;
+            inc(i);
+          end else if str[i+1]='%' then 
+            inc(i);
+        end;
+      if ch <> #0 then result := result + ch;
+      inc(i);
+    end;
+    strformatn := result;
   end;
 
 end.
