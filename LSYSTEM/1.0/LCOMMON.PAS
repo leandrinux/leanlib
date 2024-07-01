@@ -39,6 +39,20 @@ interface
       param1: TUInt32;
     end;
 
+  procedure message(const str: string);
+  procedure error(const str: string);
+
 implementation
+
+  procedure message(const str: string);
+  begin
+    writeln('[-] ', str);
+  end;
+
+  procedure error(const str: string);
+  begin
+    writeln('[X] ', str);
+    halt(1);
+  end;
 
 end.
