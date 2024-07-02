@@ -50,20 +50,20 @@ A lsystem virtual CPU instruction is made of three components: a header and two 
      |--------------|--------------|--------------|
      |    Header    |    Param0    |    Param1    |
      |--------------|--------------|--------------|
-     0              16             48             80
+     80             48             16             0
 
 Instruction sizes are fixed, so instructions like `MOV` that take two arguments and others like `RET` that take none require the same space in memory. Instructions are placed in the code segment, with starts at position 0 of the memory space. 
 
 The 32-bit header field is made of two parts: the first byte which contains the opcode of the instruction that must be performed by the CPU, and the final byte which contain extra information such as the type of each parameter.
     
     |------------------------|-----------|-----------|
-    |        Opcode          | Param0    | Param1    |
+    |        Opcode          | Param1    | Param0    |
     |------------------------|-----------|-----------|
-    0                        8           12          15
+    15                       8           4           0
 
-    0 .. 7  : 8-bit operation code
-    8 - 11  : Param0 type
-    12 - 15 : Param1 type
+    0 - 3   : Param0 type
+    4 - 7   : Param1 type
+    8 .. 15 : 8-bit operation code
 
 The 4-bit parameter type values are defined as follows:
 
@@ -83,13 +83,13 @@ When a parameter is an address, the full 32 bit value stored in the parameter fi
 
 When a parameter is pointer, the parameter value is formed as follows:
 
-    |---------------|------------------------|------------------|
-    |    Constant   |         Unused         |     Register     |
-    |     offset    |                        |       code       |
-    |---------------|------------------------|------------------|
-     0             7 8                    26  27  28  29  30  31  	
+    |--------------------------|---------------|-----------------|
+    |    Constant              |   Unused      |    Register     |
+    |     offset               |               |      code       |
+    |--------------------------|---------------|-----------------|
+     31                     16   15          5   4   3   2   1  0
 
-The first 8 bits are a signed byte constant, therefore defined in the -128..127 range. The register code field contains the same 5-bit value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX]+2` represents the value in memory position 12 and `[AX]-3` represents the value in memory position 7.
+The last 16 bits are a signed constant, therefore defined in the -32768..32767 range. The register code field contains the same 5-bit value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX+2]` represents the value in memory position 12 and `[AX-3]` represents the value in memory position 7.
 
 ## Instruction set 
 
@@ -153,6 +153,17 @@ The stack operations are 7 instructions allowing for stack access such as adding
 |CALL|0x45|1|No|Performs subroutine call (pushes current instruction address plus one, then jumps to specified address)|
 |RET|0x46|0|No|Pops the address from the stack and resumes execution from there|
 
+### Device bus communication
+
+The CPU can communicate with other devices by using a bus. Each device has an id.
+You can either read and write a single byte to/from a device id. The device id 0 is actually a 
+broadcast id and it allows the CPU to send a byte to all the attached devices.
+
+|Instruction|Opcode|Args|Affects CC|Description|
+|-----------|------|----|----------|-----------|
+|OUT|0x51|2|No|Sends the lower byte of $2 to the device number $1|
+|IN|0x52|2|No|Receives one byte of $2 from the device number $1|
+
 ### Parameter validation per instruction
 
 Each instruction can take up to two parameters. These parameters have four different types. But not all combinations of parameter types are valid. The following tables show the different valid combinations for each instruction. The rows represent the first parameter and the columns represent the second.
@@ -207,15 +218,6 @@ As general rule, the left parameter cannot have a smaller bit size than the righ
 #### PUSHA, POPA, RET
 
 These instructions take no arguments
-
-### Device I/O
-
-The device operations are two. They allow to send or receive messages to the device bus
-
-|Instruction|Opcode|Args|Affects CC|Description|
-|-----------|------|----|----------|-----------|
-|OUT|0x51|2|Yes|Sends the value $2 to device number $1|
-|IN|0x52|2|Yes|Receives a value from device number $1 and stores it in $2|
 
 ## Memory map
 
