@@ -68,11 +68,13 @@ interface
     TSentence = record
       labelName: TString30;
       opname: TString30;
-      param0: TString30;
-      param1: TString30;
       opcode: byte;
+      param0: TString30;
       paramType0: EParameterType;
+      param0OffsetValue: shortint;
+      param1: TString30;
       paramType1: EParameterType;
+      param1OffsetValue: shortint;
     end;
 
   const

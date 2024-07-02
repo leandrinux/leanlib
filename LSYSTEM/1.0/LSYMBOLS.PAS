@@ -8,7 +8,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc;
+    uobject, uexc, ulist, 
+    lcommon, lcbase;
 
   const
     C_CLASS_ID_Symbols = $F013;

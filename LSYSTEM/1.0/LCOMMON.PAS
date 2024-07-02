@@ -13,10 +13,10 @@ interface
     C_MASK_FLAG_ZERO = $01;      { used to know if CC indicates a zero flag }
     C_MASK_FLAG_SIGN = $02;      { used to know the sign of the last operation that affected the CC }
 
-    C_PARAM_LITERAL  = 0;        { param type value for literal parameters }
-    C_PARAM_REGISTER = 1;        { param type value for register parameters }
-    C_PARAM_ADDRESS  = 2;        { param type value for address parameters }
-    C_PARAM_INDIRECT = 3;        { param type value for indirect parameters }
+    C_PARAMETER_LITERAL  = 0;    { param type value for literal parameters }
+    C_PARAMETER_REGISTER = 1;    { param type value for register parameters }
+    C_PARAMETER_ADDRESS  = 2;    { param type value for address parameters }
+    C_PARAMETER_POINTER = 3;     { param type value for pointer parameters }
 
   type
     TString3 = string[3];
