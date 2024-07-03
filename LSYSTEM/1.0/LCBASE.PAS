@@ -141,7 +141,7 @@ interface
       (name: 'ret'; code:C_RET; count:0),
 
       (name: 'out'; code:C_OUT; count:2),
-      (name: 'in'; code:C_IN; count:2)
+      (name: 'in'; code:C_IN; count:1)
     );  
 
   function getOpcodeInfoByName(const name: TInstructionName; var code, count: byte): boolean;
