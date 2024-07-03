@@ -236,6 +236,7 @@ implementation
     i: byte;
   begin
     message(C_STR_SAVING);
+    stream^.write(@C_BINARY_SIGNATURE, sizeof(C_BINARY_SIGNATURE));
     _instructions^.moveToStart;
     instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
     while instructionBlock<>nil do

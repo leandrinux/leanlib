@@ -9,6 +9,8 @@
 # .types = ( bin );
 
 little_endian
+requires 0 "4C 53 59 53 42 49 4E"; # requires LSYSBIN
+ascii 7 signature
 
 for {set i 0} {![end]} {incr i} {
 	section "Instruction" {
