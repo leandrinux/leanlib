@@ -162,7 +162,7 @@ broadcast id and it allows the CPU to send a byte to all the attached devices.
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
 |OUT|0x51|2|No|Sends the lower byte of $2 to the device number $1|
-|IN|0x52|2|No|Receives one byte of $2 from the device number $1|
+|IN|0x52|1|No|Receives one byte from the device number $1 into AL|
 
 ### Parameter validation per instruction
 
