@@ -11,7 +11,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ulist,
-    lcommon, lcbase, lsymbols, ltexts;
+    lcommon, lcbase, lsymbols, ltexts, lliteral;
 
   const
     C_CLASS_ID_Binary = $F012;
@@ -95,6 +95,40 @@ implementation
     parameterTypeToValue := C_VALUES[parameterType];
   end;
 
+  function getParameterBinaryValue(
+    const param: TString30; 
+    paramType: EParameterType; 
+    paramOffsetValue: shortint
+  ): TUInt32;
+  var
+    result: TUInt32;
+    code, bitSize: byte;
+  begin
+    case paramType of
+      EParameterTypeLiteral, EParameterTypeAddress: 
+      begin
+        any2int(param, result);
+      end;
+
+      EParameterTypeRegister:
+      begin
+        getRegisterInfoByName(param, code, bitSize);
+        result := code;
+      end;
+
+      EParameterTypePointer:
+      begin
+        getRegisterInfoByName(param, code, bitSize);
+        result := $0000001F and code;
+      end;
+
+    else
+      {TO DO: EParameterTypeUnknown, EParameterTypeSymbol}
+      result := 0;
+    end;
+    getParameterBinaryValue := result;
+  end;
+
   { TBinary public }
 
   constructor TBinary.init;
@@ -127,19 +161,13 @@ implementation
   var
     sentenceBlock: PSentenceBlock;
   begin
-    if _sentences^.getCount = 0 then
+    sentenceBlock := PSentenceBlock(_sentences^.getLast);
+
+    if (sentenceBlock = nil) or (sentenceBlock^.count = C_SENTENCES_PER_BLOCK) then
     begin
       sentenceBlock := new(PSentenceBlock, init);
       _sentences^.addObject(sentenceBlock);
       sentenceBlock^.release;
-    end else begin
-      sentenceBlock := PSentenceBlock(_sentences^.getLast);
-      if sentenceBlock^.count = C_SENTENCES_PER_BLOCK then
-      begin
-        sentenceBlock := new(PSentenceBlock, init);
-        _sentences^.addObject(sentenceBlock);
-        sentenceBlock^.release;
-      end;
     end;
     with sentenceBlock^ do 
     begin
@@ -159,6 +187,7 @@ implementation
   procedure TBinary.make;
   var
     sentenceBlock: PSentenceBlock;
+    instructionBlock: PInstructionBlock;
     sentence: TSentence;
     instruction: TInstruction;
     i: byte;
@@ -167,6 +196,9 @@ implementation
     _sentences^.moveToStart;
     sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
     _sentences^.moveForward;
+
+    instructionBlock := PInstructionBlock(_instructions^.getLast);
+
     while sentenceBlock<>nil do
     begin
       i:=0;
@@ -177,9 +209,22 @@ implementation
           writeln(opname);
           instruction.header.opcode := opcode;
           instruction.header.params := (parameterTypeToValue(paramType1) shl 4) or parameterTypeToValue(paramType0);
-          instruction.param0 := 0; { to do }
-          instruction.param1 := 0; { to do }
+          instruction.param0 := getParameterBinaryValue(param0, paramType0, param0OffsetValue);
+          instruction.param1 := getParameterBinaryValue(param1, paramType1, param1OffsetValue);
         end;
+
+        if (instructionBlock = nil) or (instructionBlock^.count = C_INSTRUCTIONS_PER_BLOCK) then
+        begin
+          instructionBlock := new(PInstructionBlock, init);
+          _instructions^.addObject(instructionBlock);
+          instructionBlock^.release;
+        end;
+        with instructionBlock^ do
+        begin
+          items[count] := instruction;
+          count := count + 1;
+        end;
+
         inc(i);
       end;
       sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
