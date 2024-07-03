@@ -23,12 +23,15 @@ interface
       destructor done; virtual;
       procedure setSourceStream(stream: PStream);
       procedure setSourceFileStream(filename: string);
+      procedure setTargetStream(stream: PStream);
+      procedure setTargetFileStream(filename: string);
       procedure setConfig(const builderConfig: TBuilderConfig);
       procedure build;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
     private
       _sourceStream: PStream;      { stream used to read the source code }
+      _targetStream: PStream;      { stream used to write the binary code }
       _config: TBuilderConfig;     { other configuration settings }
       procedure printSentence(const sentence: TSentence);
     end;
@@ -42,11 +45,13 @@ implementation
     inherited init;
     fillChar(_config, sizeof(TBuilderConfig), 0);
     _sourceStream := nil;
+    _targetStream := nil;
   end;
 
   destructor TBuilder.done;
   begin
     if _sourceStream<>nil then _sourceStream^.release;
+    if _targetStream<>nil then _targetStream^.release;
     inherited done;
   end;
 
@@ -84,7 +89,7 @@ implementation
       inc(count);
     end;
     binary^.make;
-    binary^.save('output.bin');
+    binary^.save(_targetStream);
     binary^.release;
     parser^.release;
     sourceCode^.release;
@@ -98,12 +103,27 @@ implementation
     _sourceStream^.retain;
   end;
 
+  procedure TBuilder.setTargetStream(stream: PStream);
+  begin
+    if _targetStream<>nil then _targetStream^.release;
+    _targetStream := stream;
+    _targetStream^.retain;
+  end;
+
   procedure TBuilder.setSourceFileStream(filename: string);
   var
     fileStream: PFileStream;
   begin
     fileStream := new(PFileStream, initWithPath(filename, EFileReadOnly));
     setSourceStream(fileStream);
+  end;
+
+  procedure TBuilder.setTargetFileStream(filename: string);
+  var
+    fileStream: PFileStream;
+  begin
+    fileStream := new(PFileStream, initWithPath(filename, EFileCreate));
+    setTargetStream(fileStream);
   end;
 
   procedure TBuilder.setConfig(const builderConfig: TBuilderConfig);

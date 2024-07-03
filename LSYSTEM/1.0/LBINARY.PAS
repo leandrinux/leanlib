@@ -10,7 +10,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc, ulist,
+    uobject, uexc, ulist, ustream,
     lcommon, lcbase, lsymbols, ltexts, lliteral;
 
   const
@@ -42,7 +42,7 @@ interface
       procedure addData(data: pointer; size: longint);
       procedure addMetadata(const key: EMetadataKey; const value: TMetadataEntry);
       procedure make;
-      procedure save(const filename: string);
+      procedure save(stream: PStream);
     private
       _symbols: PSymbols;          { keeps track of the symbols like labels or defines }
       _sentences: PList;           { the list of non compiled, parsed sentences }
@@ -195,7 +195,6 @@ implementation
     message(C_STR_MAKING);
     _sentences^.moveToStart;
     sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
-    _sentences^.moveForward;
 
     instructionBlock := PInstructionBlock(_instructions^.getLast);
 
@@ -206,7 +205,6 @@ implementation
       begin
         with sentenceBlock^.items[i] do
         begin
-          writeln(opname);
           instruction.header.opcode := opcode;
           instruction.header.params := (parameterTypeToValue(paramType1) shl 4) or parameterTypeToValue(paramType0);
           instruction.param0 := getParameterBinaryValue(param0, paramType0, param0OffsetValue);
@@ -227,14 +225,32 @@ implementation
 
         inc(i);
       end;
-      sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
       _sentences^.moveForward;
+      sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
     end;
   end;
 
-  procedure TBinary.save(const filename: string);
+  procedure TBinary.save(stream: PStream);
+  var
+    instructionBlock: PInstructionBlock;
+    i: byte;
   begin
     message(C_STR_SAVING);
+    _instructions^.moveToStart;
+    instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
+    while instructionBlock<>nil do
+      with instructionBlock^ do
+      begin
+        i := 0;
+        while i<count do
+        begin
+          stream^.write(@items[i], sizeof(TInstruction));
+          inc(i);
+        end;      
+        _instructions^.moveForward;  
+        instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
+      end;
+    
   end;
 
   { TBinary private }

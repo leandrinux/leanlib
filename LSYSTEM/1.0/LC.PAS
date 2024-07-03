@@ -14,14 +14,15 @@ var
 begin
   message(strformatn(C_STR_BANNER, C_LASMC_VERSION));
   message(strformatn(C_STR_BUILD_TS, C_BUILD_DATE + #0 + C_BUILD_TIME));
-  filename := 'demo1.asm';
+  filename := 'examples\demo1';
   if filename='' then 
     error(C_STR_NO_SOURCE_FILE)
   else begin
     builder := new(PBuilder, init);
     with builder^ do
     begin
-      setSourceFileStream(filename);
+      setSourceFileStream(filename + '.asm');
+      setTargetFileStream(filename + '.bin');
       setConfig(C_BUILDER_CONFIG);
       build;
       release;
