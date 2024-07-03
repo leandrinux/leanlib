@@ -8,8 +8,8 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
-    uobject, uexc, lcbase, lsrccode;
+    consts, utils, uclasses, types, locale, strings,
+    uobject, uexc, lcbase, lsrccode, ltexts;
 
   const
     C_CLASS_ID_Parser = $F011;
@@ -191,21 +191,25 @@ implementation
   procedure TParser.validateSentence(var sentence: TSentence);
   const 
     { these instructions do not support a literal as first parameter }
-    C_OPCODES_NO_FIRST_LITERAL: set of byte = 
-      [C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
-       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
-       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL];
+    C_OPCODES_NO_FIRST_LITERAL: set of byte = [
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+      C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
+      C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL
+    ];
 
     { these instructions do not support a literal as second parameter }
-    C_OPCODES_NO_SECOND_LITERAL: set of byte = 
-      [C_JE, C_JG, C_JL];
+    C_OPCODES_NO_SECOND_LITERAL: set of byte = [
+      C_JE, C_JG, C_JL
+    ];
 
     { these instructions cannot have a register in the first parameter and a
       literal on the second, where the register has a smaller bitsize than the literal }
-    C_OPCODES_LITERAL_BITSIZE_CHK: set of byte =
-      [ C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
-        C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, 
-        C_OR, C_NOT, C_XOR ];
+    C_OPCODES_LITERAL_BITSIZE_CHK: set of byte = [ 
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
+      C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, 
+      C_OR, C_NOT, C_XOR
+    ];
+
   var
     count: byte;
     success: boolean;
@@ -217,7 +221,7 @@ implementation
       success := getOpcodeInfoByName(opname, opcode, count);
       if not success then 
       begin
-        writeln('unrecognized operation at line ', _sourceCode^.lineNumber);
+        writeln(strformatn(C_STR_UNRECOGNIZED_OPERATION, intToStr(_sourceCode^.lineNumber)));
         halt(1);
       end;
 
@@ -226,8 +230,8 @@ implementation
       if param0 <> '' then inc(sentenceParamCount);
       if param1 <> '' then inc(sentenceParamCount);
       if sentenceParamCount <> count then
-      begin
-        writeln('operation expects ' + intToStr(count) + ' parameters');
+      begin      
+        writeln(strformatn(C_STR_OPERATION_EXPECTS_N_PARAM, intToStr(count)));
         halt(1);
       end;
 
@@ -238,13 +242,13 @@ implementation
       { check valid parameters according to operation }
       if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
       begin
-        writeln('instruction ' + opname + ' does not support a literal as first parameter');
+        writeln(strformatn(C_STR_1ST_LITERAL_UNSUPPORTED, opname));
         halt(1);
       end;
 
       if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (paramType1 = EParameterTypeLiteral) then
       begin
-        writeln('instruction ' + opname + ' does not support a literal as second parameter');
+        writeln(strformatn(C_STR_2ND_LITERAL_UNSUPPORTED, opname));
         halt(1);
       end;
 
@@ -254,9 +258,19 @@ implementation
           and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
           and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
       begin
-        writeln('register in first parameter cannot fit literal or register on the second parameter');
+        writeln(C_STR_REGISTER_CANT_FIT);
         halt(1);
       end;
+
+      { check that the second parameter of OUT is 8-bit and no more }
+      if (opcode = C_OUT) and ( 
+        (paramType1 <> EParameterTypeRegister) or (getBitSize(param1, paramType1)<>8) 
+      ) then
+      begin
+        writeln(C_STR_OUT_EXPECTS_8BIT);
+        halt(1);
+      end;
+
     end;
   end;
 

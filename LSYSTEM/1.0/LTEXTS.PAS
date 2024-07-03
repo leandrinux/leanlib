@@ -17,6 +17,12 @@ interface
     C_STR_SENTENCE_PARAMETER = '   param %0 (%1)';
     C_STR_MAKING = 'making object file';
     C_STR_SAVING = 'saving object file';
+    C_STR_UNRECOGNIZED_OPERATION = 'unrecognized operation at line %0';
+    C_STR_OPERATION_EXPECTS_N_PARAM = 'operation expects %0 parameters';
+    C_STR_1ST_LITERAL_UNSUPPORTED = 'operation %0 does not support a literal as first parameter';
+    C_STR_2ND_LITERAL_UNSUPPORTED = 'operation %0 does not support a literal as second parameter';
+    C_STR_REGISTER_CANT_FIT = 'register in first parameter cannot fit literal or register on the second parameter';
+    C_STR_OUT_EXPECTS_8BIT = 'OUT expects an 8-bit register as second parameter';
 
 implementation
 
