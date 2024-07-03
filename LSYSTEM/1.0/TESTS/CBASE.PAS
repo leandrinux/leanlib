@@ -2,7 +2,7 @@ uses
   lcbase;
 
   procedure testGetOpcodeInfoByName;
-    procedure test(name: TOpcodeName; expectedCode, expectedCount: byte);
+    procedure test(name: TInstructionName; expectedCode, expectedCount: byte);
     var
       code, count: byte;
     begin
@@ -52,7 +52,7 @@ uses
     procedure test(token: string; expectedType:EParameterType);
     begin
       write('> ', token, ' ...');
-      if guessParameterType(token) <> expectedType then 
+      if getParameterType(token) <> expectedType then 
       begin
         writeln('fail'); 
         halt(1);
