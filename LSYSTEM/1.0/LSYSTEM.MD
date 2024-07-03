@@ -57,7 +57,7 @@ Instruction sizes are fixed, so instructions like `MOV` that take two arguments 
 The 32-bit header field is made of two parts: the first byte which contains the opcode of the instruction that must be performed by the CPU, and the final byte which contain extra information such as the type of each parameter.
     
     |------------------------|-----------|-----------|
-    |        Opcode          | Param1    | Param0    |
+    |        Opcode          | Param0    | Param1    |
     |------------------------|-----------|-----------|
     15                       8           4           0
 

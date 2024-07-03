@@ -206,7 +206,7 @@ implementation
         with sentenceBlock^.items[i] do
         begin
           instruction.header.opcode := opcode;
-          instruction.header.params := (parameterTypeToValue(paramType1) shl 4) or parameterTypeToValue(paramType0);
+          instruction.header.params := (parameterTypeToValue(paramType0) shl 4) or parameterTypeToValue(paramType1);
           instruction.param0 := getParameterBinaryValue(param0, paramType0, param0OffsetValue);
           instruction.param1 := getParameterBinaryValue(param1, paramType1, param1OffsetValue);
         end;
