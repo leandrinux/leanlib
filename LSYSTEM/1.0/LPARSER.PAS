@@ -153,13 +153,13 @@ implementation
           case ch of
             C_LF:
             begin
-              sentence.param0 := token;
+              sentence.args[0].stringValue := token;
               token := '';
               state := EStateSuccess;
             end;
             C_CR: begin end;
             ',': begin
-              sentence.param0 := token;
+              sentence.args[0].stringValue := token;
               token := '';
               state := EStateSkipSpaces;
               nextState := EStateReadSecondParam;
@@ -175,7 +175,7 @@ implementation
           case ch of
             C_CR: begin end;
             ' ', C_LF, #0: begin
-              sentence.param1 := token;
+              sentence.args[1].stringValue := token;
               token := '';
               state := EStateSuccess;
             end;
@@ -186,13 +186,13 @@ implementation
         end;
       end;
     end;
+
     if state = EStateSuccess then
-      with sentence do
-      begin
-        paramType0 := getParameterType(param0);
-        paramType1 := getParameterType(param1);
-        parsePointers(sentence);
-      end;
+    begin
+      with sentence.args[0] do argType := getParameterType(stringValue);
+      with sentence.args[1] do argType := getParameterType(stringValue);
+      parsePointers(sentence);
+    end;
   end;
 
   procedure TParser.validateSentence(var sentence: TSentence);
@@ -234,8 +234,8 @@ implementation
 
       { validate number of arguments } 
       sentenceParamCount := 0;
-      if param0 <> '' then inc(sentenceParamCount);
-      if param1 <> '' then inc(sentenceParamCount);
+      if args[0].stringValue <> '' then inc(sentenceParamCount);
+      if args[1].stringValue <> '' then inc(sentenceParamCount);
       if sentenceParamCount <> count then
       begin      
         writeln(strformatn(C_STR_OPERATION_EXPECTS_N_PARAM, intToStr(count)));
@@ -243,23 +243,23 @@ implementation
       end;
 
       { check valid parameters according to operation }
-      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
+      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (args[0].argType = EParameterTypeLiteral) then
       begin
         writeln(strformatn(C_STR_1ST_LITERAL_UNSUPPORTED, opname));
         halt(1);
       end;
 
-      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (paramType1 = EParameterTypeLiteral) then
+      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (args[1].argType = EParameterTypeLiteral) then
       begin
         writeln(strformatn(C_STR_2ND_LITERAL_UNSUPPORTED, opname));
         halt(1);
       end;
 
       { check that the left size bit size is equal or greater than the right size bit size }
-      if (paramType0 = EParameterTypeRegister) 
-          and (paramType1 in [EParameterTypeLiteral, EParameterTypeRegister]) 
+      if (args[0].argType = EParameterTypeRegister) 
+          and (args[1].argType in [EParameterTypeLiteral, EParameterTypeRegister]) 
           and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
-          and (getBitSize(param0, paramType0) < getBitSize(param1, paramType1)) then
+          and (getBitSize(args[0].stringValue, args[0].argType) < getBitSize(args[1].stringValue, args[1].argType)) then
       begin
         writeln(C_STR_REGISTER_CANT_FIT);
         halt(1);
@@ -267,7 +267,7 @@ implementation
 
       { check that the second parameter of OUT is 8-bit and no more }
       if (opcode = C_OUT) and ( 
-        (paramType1 <> EParameterTypeRegister) or (getBitSize(param1, paramType1)<>8) 
+        (args[1].argType <> EParameterTypeRegister) or (getBitSize(args[1].stringValue, args[1].argType)<>8) 
       ) then
       begin
         writeln(C_STR_OUT_EXPECTS_8BIT);
@@ -281,8 +281,8 @@ implementation
   begin
     with sentence do 
     begin
-      if paramType0 = EParameterTypePointer then parsePointer(param0, paramOffset0);
-      if paramType1 = EParameterTypePointer then parsePointer(param1, paramOffset0);
+      with args[0] do if argType = EParameterTypePointer then parsePointer(stringValue, offset);
+      with args[1] do if argType = EParameterTypePointer then parsePointer(stringValue, offset);
     end;
   end;
 

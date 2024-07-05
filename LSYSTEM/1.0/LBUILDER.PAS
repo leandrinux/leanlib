@@ -142,10 +142,10 @@ implementation
     with sentence do
     begin
       message(strformatn(C_STR_SENTENCE_OPERATION, opname + #0 + intToStr(opcode)));
-      if param0 <> '' then
-        message(strformatn(C_STR_SENTENCE_PARAMETER, param0 + #0 + C_PARAM_TYPES[paramType0]));
-      if param1 <> '' then
-        message(strformatn(C_STR_SENTENCE_PARAMETER, param1 + #0 + C_PARAM_TYPES[paramType1]));
+      with args[0] do if stringValue <> '' then
+        message(strformatn(C_STR_SENTENCE_PARAMETER, stringValue + #0 + C_PARAM_TYPES[argType]));
+      with args[1] do if stringValue <> '' then
+        message(strformatn(C_STR_SENTENCE_PARAMETER, stringValue + #0 + C_PARAM_TYPES[argType]));
       message(C_CR + C_LF);
     end;
   end;

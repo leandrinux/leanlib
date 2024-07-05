@@ -95,31 +95,27 @@ implementation
     parameterTypeToValue := C_VALUES[parameterType];
   end;
 
-  function getParameterBinaryValue(
-    const param: TString30; 
-    paramType: EParameterType; 
-    paramOffset: TInt16
-  ): TUInt32;
+  function getParameterBinaryValue(const arg: TSentenceArgument): TUInt32;
   var
     result: TUInt32;
     code, bitSize: byte;
   begin
-    case paramType of
+    case arg.argType of
       EParameterTypeLiteral, EParameterTypeAddress: 
       begin
-        any2int(param, result);
+        any2int(arg.stringValue, result);
       end;
 
       EParameterTypeRegister:
       begin
-        getRegisterInfoByName(param, code, bitSize);
+        getRegisterInfoByName(arg.stringValue, code, bitSize);
         result := code;
       end;
 
       EParameterTypePointer:
       begin
-        getRegisterInfoByName(param, code, bitSize);
-        result := (paramOffset shr 16) and code;
+        getRegisterInfoByName(arg.stringValue, code, bitSize);
+        result := (arg.offset shr 16) and code;
       end;
 
     else
@@ -206,9 +202,11 @@ implementation
         with sentenceBlock^.items[i] do
         begin
           instruction.header.opcode := opcode;
-          instruction.header.params := (parameterTypeToValue(paramType0) shl 4) or parameterTypeToValue(paramType1);
-          instruction.param0 := getParameterBinaryValue(param0, paramType0, paramOffset0);
-          instruction.param1 := getParameterBinaryValue(param1, paramType1, paramOffset1);
+          instruction.header.params := 
+             (parameterTypeToValue(args[0].argType) shl 4) 
+             or parameterTypeToValue(args[1].argType);
+          instruction.param0 := getParameterBinaryValue(args[0]);
+          instruction.param1 := getParameterBinaryValue(args[1]);
         end;
 
         if (instructionBlock = nil) or (instructionBlock^.count = C_INSTRUCTIONS_PER_BLOCK) then

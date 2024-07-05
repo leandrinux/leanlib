@@ -65,16 +65,17 @@ interface
       value: TUInt32;
     end;
 
+    TSentenceArgument = record
+      stringValue: TString30;
+      argType: EParameterType;
+      offset: TInt16;
+    end;
+
     TSentence = record
       labelName: TString30;
       opname: TString30;
       opcode: byte;
-      param0: TString30;
-      paramType0: EParameterType;
-      paramOffset0: TInt16;
-      param1: TString30;
-      paramType1: EParameterType;
-      paramOffset1: TInt16;
+      args: array[0..1] of TSentenceArgument;
     end;
 
   const
