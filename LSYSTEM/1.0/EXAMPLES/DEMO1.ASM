@@ -7,5 +7,5 @@ loop:
     add ax, 1
     add [ebx], ax
     jl 10, loop
-    mov cx, 90
-    mov [cx+$10], cx 
+    mov cx, 100
+    mov [cx+0x10], cx 

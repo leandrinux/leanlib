@@ -9,7 +9,7 @@ interface
 
   uses
     consts, utils, uclasses, types, locale, strings,
-    uobject, uexc, lcbase, lsrccode, ltexts;
+    uobject, uexc, lliteral, lcommon, lcbase, lsrccode, ltexts;
 
   const
     C_CLASS_ID_Parser = $F011;
@@ -26,6 +26,8 @@ interface
       procedure validateSentence(var sentence: TSentence);
     private
       _sourceCode: PSourceCode;
+      procedure parsePointers(var sentence: TSentence);
+      procedure parsePointer(var param: TString30; var paramOffset: TInt16);
     end;
 
 implementation
@@ -73,7 +75,6 @@ implementation
     state: EState;
     nextState: EState;
     token: string;
-    errorMessage: string;
   begin
     state := EStateStart;
     while (state <> EStateSuccess) and (state <> EStateFailure) do
@@ -82,7 +83,6 @@ implementation
         EStateStart:
         begin
           fillchar(sentence, sizeof(sentence), 0);
-          errorMessage := '';
           token := '';
           state := EStateSkipSpacesAndCRLF;
           nextState := EStateReadOperationOrLabel;
@@ -186,6 +186,13 @@ implementation
         end;
       end;
     end;
+    if state = EStateSuccess then
+      with sentence do
+      begin
+        paramType0 := getParameterType(param0);
+        paramType1 := getParameterType(param1);
+        parsePointers(sentence);
+      end;
   end;
 
   procedure TParser.validateSentence(var sentence: TSentence);
@@ -235,10 +242,6 @@ implementation
         halt(1);
       end;
 
-      { get parameter types }
-      paramType0 := getParameterType(param0);
-      paramType1 := getParameterType(param1);
-
       { check valid parameters according to operation }
       if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (paramType0 = EParameterTypeLiteral) then
       begin
@@ -271,6 +274,38 @@ implementation
         halt(1);
       end;
 
+    end;
+  end;
+
+  procedure TParser.parsePointers(var sentence: TSentence);
+  begin
+    with sentence do 
+    begin
+      if paramType0 = EParameterTypePointer then parsePointer(param0, paramOffset0);
+      if paramType1 = EParameterTypePointer then parsePointer(param1, paramOffset0);
+    end;
+  end;
+
+  procedure TParser.parsePointer(var param: TString30; var paramOffset: TInt16);
+  var 
+    i, j: byte;
+    success: boolean;
+    var token: TString30;
+    value: TUInt32;
+  begin
+    writeln('parsing param ', param);
+    j := pos(']', param);
+    i := pos('+', param);
+    if i = 0 then i := pos('-', param);
+    if i = 0 then
+    begin
+      paramOffset := 0;
+    end else begin
+      token := copy(param, i, j-i);
+      success := any2int(token, value);
+      if not success then error(C_STR_INVALID_POINTER_CONSTANT);
+      if (paramOffset<-32768) or (paramOffset>32767) then error(C_STR_INVALID_POINTER_CONSTANT_RANGE);
+      paramOffset := value;
     end;
   end;
 

@@ -23,6 +23,8 @@ interface
     C_STR_2ND_LITERAL_UNSUPPORTED = 'operation %0 does not support a literal as second parameter';
     C_STR_REGISTER_CANT_FIT = 'register in first parameter cannot fit literal or register on the second parameter';
     C_STR_OUT_EXPECTS_8BIT = 'OUT expects an 8-bit register as second parameter';
+    C_STR_INVALID_POINTER_CONSTANT = 'Invalid pointer constant';
+    C_STR_INVALID_POINTER_CONSTANT_RANGE = 'Pointer constant must be between -32768 and 32767';
 
 implementation
 

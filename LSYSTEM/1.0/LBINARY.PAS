@@ -98,7 +98,7 @@ implementation
   function getParameterBinaryValue(
     const param: TString30; 
     paramType: EParameterType; 
-    paramOffsetValue: shortint
+    paramOffset: TInt16
   ): TUInt32;
   var
     result: TUInt32;
@@ -119,7 +119,7 @@ implementation
       EParameterTypePointer:
       begin
         getRegisterInfoByName(param, code, bitSize);
-        result := $0000001F and code;
+        result := (paramOffset shr 16) and code;
       end;
 
     else
@@ -207,8 +207,8 @@ implementation
         begin
           instruction.header.opcode := opcode;
           instruction.header.params := (parameterTypeToValue(paramType0) shl 4) or parameterTypeToValue(paramType1);
-          instruction.param0 := getParameterBinaryValue(param0, paramType0, param0OffsetValue);
-          instruction.param1 := getParameterBinaryValue(param1, paramType1, param1OffsetValue);
+          instruction.param0 := getParameterBinaryValue(param0, paramType0, paramOffset0);
+          instruction.param1 := getParameterBinaryValue(param1, paramType1, paramOffset1);
         end;
 
         if (instructionBlock = nil) or (instructionBlock^.count = C_INSTRUCTIONS_PER_BLOCK) then
