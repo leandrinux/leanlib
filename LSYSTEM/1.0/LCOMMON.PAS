@@ -27,6 +27,7 @@ interface
     TFloat32 = single;
     TUInt8 = byte;
     TUInt16 = word;
+    TInt16 = integer;
     TUInt32 = longint;
     TChar = char;
 
