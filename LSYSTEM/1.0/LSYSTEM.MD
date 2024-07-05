@@ -87,9 +87,9 @@ When a parameter is pointer, the parameter value is formed as follows:
     |    Constant              |   Unused      |    Register     |
     |     offset               |               |      code       |
     |--------------------------|---------------|-----------------|
-     31                     16   15          5   4   3   2   1  0
+     31                     16  15            8  7              0          
 
-The last 16 bits are a signed constant, therefore defined in the -32768..32767 range. The register code field contains the same 5-bit value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX+2]` represents the value in memory position 12 and `[AX-3]` represents the value in memory position 7.
+The last 16 bits are a signed constant, therefore defined in the -32768..32767 range. The register code field contains the same 8-bit value from the register table previously defined. The constant is an offset that is added to the address contained in the register before the indirection. For instance, if `AX` equals 10, then `[AX]` represents the value in memory position 10, `[AX+2]` represents the value in memory position 12 and `[AX-3]` represents the value in memory position 7.
 
 ## Instruction set 
 
