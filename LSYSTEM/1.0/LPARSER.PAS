@@ -293,7 +293,6 @@ implementation
     var token: TString30;
     value: TUInt32;
   begin
-    writeln('parsing param ', param);
     j := pos(']', param);
     i := pos('+', param);
     if i = 0 then i := pos('-', param);
@@ -301,10 +300,11 @@ implementation
     begin
       paramOffset := 0;
     end else begin
-      token := copy(param, i, j-i);
+      token := copy(param, i+1, j-i-1);
       success := any2int(token, value);
       if not success then error(C_STR_INVALID_POINTER_CONSTANT);
-      if (paramOffset<-32768) or (paramOffset>32767) then error(C_STR_INVALID_POINTER_CONSTANT_RANGE);
+      if param[i] = '-' then value := -value;
+      if (value<-32768) or (value>32767) then error(C_STR_INVALID_POINTER_CONSTANT_RANGE);
       paramOffset := value;
     end;
   end;

@@ -8,4 +8,4 @@ loop:
     add [ebx], ax
     jl 10, loop
     mov cx, 100
-    mov [cx+0x10], cx 
+    mov [cx-90], cx 
