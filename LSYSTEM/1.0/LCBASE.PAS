@@ -12,7 +12,6 @@ interface
     utils;
 
   const
-    C_LASMC_VERSION = '0.1';
     C_SPACE = ' ';
     C_CR    = #13;
     C_LF    = #10;

@@ -7,7 +7,9 @@ unit
 interface
 
   const
-    C_STR_BANNER = 'LASMC lsystem assembly compiler version %0';
+    C_STR_BANNER = 'LASMC lsystem assembly compiler version %0 (%1)';
+    C_STR_LSYSTEM_VERSION = '0.1';
+    C_STR_LSYSTEM_CODENAME = 'Ragamuffin';
     C_STR_BUILD_TS = 'Built on %0 at %1';
     C_STR_NO_SOURCE_FILE = 'No source file specified!';
     C_STR_BUILDING = 'Building...';
@@ -25,6 +27,7 @@ interface
     C_STR_OUT_EXPECTS_8BIT = 'OUT expects an 8-bit register as second parameter';
     C_STR_INVALID_POINTER_CONSTANT = 'Invalid pointer constant';
     C_STR_INVALID_POINTER_CONSTANT_RANGE = 'Pointer constant must be between -32768 and 32767';
+    C_STR_UNRECOGNIZABLE_ARGUMENT = 'Unrecognizable argument "%0"';
 
 implementation
 
