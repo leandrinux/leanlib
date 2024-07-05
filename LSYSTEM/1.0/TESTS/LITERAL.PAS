@@ -14,16 +14,24 @@ var
 begin
   write('  ', s, ' - ');
   result := func(s, value);
-  if (result <> expectedSuccess) and (value <> expectedValue) then 
+  if expectedSuccess and result then
   begin
-    write('fail ');
-    if expectedSuccess then 
-      writeln('(expected ', expectedValue, ', got ', value, ')')
-    else
-      writeln('should return false');
+    if (value = expectedValue) then 
+      writeln('passed')
+    else begin
+      writeln('fail. reported success but returned wrong value');
+      halt(1);
+    end;
+  end else if expectedSuccess and (not result) then
+  begin
+    writeln('fail. expected success but returned false');
     halt(1);
-  end else
-    writeln('pass');
+  end else if (not expectedSuccess) and result then
+  begin
+    writeln('fail. expected to fail but returned success');
+    halt(1);
+  end else if (not expectedSuccess) and (not result) then
+    writeln('failed successfully');
 end;
 
 procedure testFloat32(const s: string; expectedSuccess: boolean; expectedValue: TFloat32);
@@ -137,6 +145,7 @@ begin
   testValue(f, '_', false, 0);
   testValue(f, '___', false, 0);
   testValue(f, '', false, 0);
+  testValue(f, '-0x10', false, 10);
 
   writeln('test for characters');
   f := chr2int;
@@ -162,6 +171,10 @@ begin
   testValue(f, '''a''', true, ord('a'));
   testValue(f, '0x1234567', true, $1234567);
   testValue(f, '0xFFFFF', true, $FFFFF);
+
+  writeln('test for any');
+  f := any2int;
+  testValue(f, '-0x10', false, 0);
 
   writeln('passed all tests!');
 end.

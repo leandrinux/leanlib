@@ -54,6 +54,7 @@ implementation
     weight := 1;
     for i := length(s) downto 3 do
     begin
+      if weight = 0 then exit;
       case s[i] of
         C_NUMBER_SPACER: continue;
         '1': inc(value, weight);
@@ -62,7 +63,6 @@ implementation
         exit
       end;
       weight := weight shl 1;
-      if weight = 0 then exit;
     end;
     bin2int := true;
   end;
@@ -148,7 +148,7 @@ implementation
     clean := '';
     for i := 1 to length(s) do if s[i]<>C_NUMBER_SPACER then clean := clean + s[i];
     val(clean, value, code);
-    str2single := code <> 0;
+    str2single := code = 0;
   end;
 
 end.
