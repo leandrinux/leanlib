@@ -71,10 +71,10 @@ interface
       opcode: byte;
       param0: TString30;
       paramType0: EParameterType;
-      param0OffsetValue: shortint;
+      paramOffset0: TInt16;
       param1: TString30;
       paramType1: EParameterType;
-      param1OffsetValue: shortint;
+      paramOffset1: TInt16;
     end;
 
   const
@@ -202,13 +202,13 @@ implementation
     C_SET_LITERALS: set of char = ['+', '-', '0'..'9', '$', '#', ''''];
   var 
     reg: string[3];
-    i: byte;
+    i, j: byte;
   begin
     (*
       literals = 0, 1, 2, -23, $7, 0xAA, $A000, 0oAA, 0b0010, #77, 'a', 7.8, -4.3
       registers = eax, ax, fx, cc, ah, bl
       address = [$A000], [0xA48A]
-      pointer = [AX]+2, [EDX]-5, [DS]
+      pointer = [AX+2], [EDX-5], [DS]
     *)
     getParameterType := EParameterTypeUnknown;
     if length(token)<1 then exit;
@@ -222,11 +222,12 @@ implementation
       else begin
         i := pos('+', token);
         if i=0 then i := pos('-', token);
+        j := pos(']', token);
         if i=0 then
           reg := copy(token, 2, length(token)-2)
         else
           reg := copy(token, 2, i-2);
-        if isValidRegister(reg) then 
+        if isValidRegister(reg) and (j<>0) and (j>i) then 
           getParameterType := EParameterTypePointer
         else if isValidSymbol(token) then
           getParameterType := EParameterTypeSymbol;
