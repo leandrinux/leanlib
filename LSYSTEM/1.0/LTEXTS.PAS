@@ -8,7 +8,7 @@ interface
 
   const
     C_STR_BANNER = 'LASMC lsystem assembly compiler version %0 (%1)';
-    C_STR_LSYSTEM_VERSION = '0.1';
+    C_STR_LSYSTEM_VERSION = '1.0';
     C_STR_LSYSTEM_CODENAME = 'Ragamuffin';
     C_STR_BUILD_TS = 'Built on %0 at %1';
     C_STR_NO_SOURCE_FILE = 'No source file specified!';
