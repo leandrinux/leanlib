@@ -9,7 +9,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
+    consts, utils, uclasses, types, locale, strings,
     uobject, uexc, ulist, ustream,
     lcommon, lcbase, lsymbols, ltexts, lliteral;
 
@@ -98,24 +98,32 @@ implementation
   function getParameterBinaryValue(const arg: TSentenceArgument): TUInt32;
   var
     result: TUInt32;
-    code, bitSize: byte;
+    i, j, code, bitSize: byte;
+    token: TString30;
+    success: boolean;
   begin
-    case arg.argType of
+    with arg do case argType of
       EParameterTypeLiteral, EParameterTypeAddress: 
       begin
-        any2int(arg.stringValue, result);
+        success := any2int(stringValue, result);
+        if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, stringValue));
       end;
 
       EParameterTypeRegister:
       begin
-        getRegisterInfoByName(arg.stringValue, code, bitSize);
+        success := getRegisterInfoByName(stringValue, code, bitSize);
+        if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, stringValue));
         result := code;
       end;
 
       EParameterTypePointer:
       begin
-        getRegisterInfoByName(arg.stringValue, code, bitSize);
-        result := (arg.offset shr 16) and code;
+        i := pos('[', stringValue);
+        j := pos(']', stringValue);
+        token := copy(stringValue, i+1, j-i-1);
+        success := getRegisterInfoByName(token, code, bitSize);
+        if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, stringValue));
+        result := (offset shr 16) and code;
       end;
 
     else
