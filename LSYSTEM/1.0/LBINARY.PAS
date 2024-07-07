@@ -41,6 +41,7 @@ interface
       procedure addSentence(const sentence: TSentence);
       procedure addData(data: pointer; size: longint);
       procedure addMetadata(const key: EMetadataKey; const value: TMetadataEntry);
+      procedure addDefinition(const name: TString30; value: TUInt32);
       procedure make;
       procedure save(stream: PStream);
     private
@@ -134,6 +135,11 @@ implementation
 
   procedure TBinary.addMetadata(const key: EMetadataKey; const value: TMetadataEntry);
   begin
+  end;
+
+  procedure TBinary.addDefinition(const name: TString30; value: TUInt32);
+  begin
+    _symbols^.addValue(name, value);
   end;
 
   procedure TBinary.make;

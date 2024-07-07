@@ -22,7 +22,7 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      procedure addValue(var name: TString30; value: TUInt32);
+      procedure addValue(const name: TString30; value: TUInt32);
       procedure addUnknownValue(const name: TString30; const value: TUInt32);
       function getValue(const name: TString30; var value: TUInt32): boolean;
       function getUnknownCount: word;
@@ -73,7 +73,7 @@ implementation
     getClassId := C_CLASS_ID_known;
   end;
 
-  procedure TSymbols.addValue(var name: TString30; value: TUInt32);
+  procedure TSymbols.addValue(const name: TString30; value: TUInt32);
   var
     pair: PKnownSymbol; 
   begin
