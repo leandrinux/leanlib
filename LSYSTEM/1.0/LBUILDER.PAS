@@ -75,8 +75,7 @@ implementation
   begin
     if _sourceStream = nil then error(C_STR_SOURCE_NOT_SET);
     if _targetStream = nil then error(C_STR_TARGET_NOT_SET);
-    message(strformatn(C_STR_BUILDING, ''));
-    if sourceCode <> nil then sourceCode^.release;
+    message(C_STR_BUILDING);
     sourceCode := new(PSourceCode, initWithStream(_sourceStream));
     if not sourceCode^.isValid then error(C_STR_READ_ERROR);
     parser := new(PParser, initWithSourceCode(sourceCode));
