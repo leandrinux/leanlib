@@ -36,7 +36,7 @@ implementation
     _value := nil;
  end;
 
-  constructor TString.initWithValue(value: string);;
+  constructor TString.initWithValue(value: string);
   begin
     inherited init;
     _value := nil;
