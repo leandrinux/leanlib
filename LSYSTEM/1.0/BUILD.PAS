@@ -3,7 +3,7 @@ uses
   lcbase,
   lliteral,
   lbuilder,
-  lparser,
+  lcparser,
   lsrccode,
   ltexts;
 
