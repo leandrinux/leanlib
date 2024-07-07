@@ -73,6 +73,8 @@ implementation
     binary: PBinary;            { contains the full binary code and data }
     parser: PParser;            { reads and validates the source code }
   begin
+    if _sourceStream = nil then error(C_STR_SOURCE_NOT_SET);
+    if _targetStream = nil then error(C_STR_TARGET_NOT_SET);
     message(strformatn(C_STR_BUILDING, ''));
     if sourceCode <> nil then sourceCode^.release;
     sourceCode := new(PSourceCode, initWithStream(_sourceStream));
@@ -88,12 +90,12 @@ implementation
       binary^.addSentence(sentence);
       inc(count);
     end;
+    message(strformatn(C_STR_SENTENCES_PROC, intToStr(count)));
     binary^.make;
     binary^.save(_targetStream);
     binary^.release;
     parser^.release;
     sourceCode^.release;
-    message(strformatn(C_STR_SENTENCES_PROC, intToStr(count)));
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
