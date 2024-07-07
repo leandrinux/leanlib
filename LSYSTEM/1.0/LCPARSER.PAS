@@ -3,7 +3,7 @@
   components of the source code
 }
 unit
-  lparser;
+  lcparser;
 
 interface
 
@@ -12,20 +12,20 @@ interface
     uobject, uexc, lliteral, lcommon, lcbase, lsrccode, ltexts;
 
   const
-    C_CLASS_ID_Parser = $F011;
+    C_CLASS_ID_CODE_PARSER = $F011;
 
   type
-    PParser = ^TParser;
-    TParser = object (TObject)
+    PCodeParser = ^TCodeParser;
+    TCodeParser = object (TObject)
     public
       constructor initWithSourceCode(sourceCode: PSourceCode);
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      procedure readSentence(var sentence: TSentence);
-      procedure validateSentence(var sentence: TSentence);
+      procedure parseSentence(var sentence: TSentence);
     private
       _sourceCode: PSourceCode;
+      procedure validateSentence(var sentence: TSentence);
       procedure parseArguments(var sentence: TSentence);
       procedure parseLiteral(var arg: TSentenceArgument);
       procedure parseAddress(var arg: TSentenceArgument);
@@ -35,32 +35,32 @@ interface
 
 implementation
 
-  { TParser public }
+  { TCodeParser public }
 
-  constructor TParser.initWithSourceCode(sourceCode: PSourceCode);
+  constructor TCodeParser.initWithSourceCode(sourceCode: PSourceCode);
   begin
     inherited init;
     _sourceCode := sourceCode;
     _sourceCode^.retain;
   end;
 
-  destructor TParser.done;
+  destructor TCodeParser.done;
   begin
     _sourceCode^.release;
     inherited done;
   end;
 
-  function TParser.getClassName: string;
+  function TCodeParser.getClassName: string;
   begin
-    getClassName := 'TParser';
+    getClassName := 'TCodeParser';
   end;
 
-  function TParser.getClassId: word;
+  function TCodeParser.getClassId: word;
   begin
-    getClassId := C_CLASS_ID_Parser;
+    getClassId := C_CLASS_ID_CODE_PARSER;
   end;
 
-  procedure TParser.readSentence(var sentence: TSentence);
+  procedure TCodeParser.parseSentence(var sentence: TSentence);
   type
     EState = (
       EStateStart,
@@ -191,10 +191,13 @@ implementation
     end;
 
     if state = EStateSuccess then
+    begin
       parseArguments(sentence);
+      validateSentence(sentence);
+    end;
   end;
 
-  procedure TParser.validateSentence(var sentence: TSentence);
+  procedure TCodeParser.validateSentence(var sentence: TSentence);
   const 
     { these instructions do not support a literal as first parameter }
     C_OPCODES_NO_FIRST_LITERAL: set of byte = [
@@ -276,7 +279,7 @@ implementation
     end;
   end;
 
-  procedure TParser.parseArguments(var sentence: TSentence);
+  procedure TCodeParser.parseArguments(var sentence: TSentence);
   begin
     { determine the type of each argument }
     with sentence.args[0] do argType := getParameterType(stringValue);
@@ -295,7 +298,7 @@ implementation
     end;
   end;
 
-  procedure TParser.parseLiteral(var arg: TSentenceArgument);
+  procedure TCodeParser.parseLiteral(var arg: TSentenceArgument);
   var
     success: boolean;
   begin
@@ -303,7 +306,7 @@ implementation
     if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
   end;
 
-  procedure TParser.parseAddress(var arg: TSentenceArgument);
+  procedure TCodeParser.parseAddress(var arg: TSentenceArgument);
   var
     success: boolean;
     token: TString30;
@@ -316,7 +319,7 @@ implementation
     if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
   end;
 
-  procedure TParser.parseRegister(var arg: TSentenceArgument);
+  procedure TCodeParser.parseRegister(var arg: TSentenceArgument);
   var 
     success: boolean;
     code, bitSize: byte;
@@ -326,7 +329,7 @@ implementation
     arg.registerCode := code;
   end;
 
-  procedure TParser.parsePointer(var arg: TSentenceArgument);
+  procedure TCodeParser.parsePointer(var arg: TSentenceArgument);
   var 
     param, token: TString30;
     i, j: byte;

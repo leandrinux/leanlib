@@ -6,7 +6,7 @@ interface
   uses
     consts, utils, types, locale, math, uclasses, strings,
     uobject, uexc, ustream, ufstream, ucstream, ustdout,
-    lcommon, lcbase, lsrccode, lparser, ltexts, lbinary;
+    lcommon, lcbase, lsrccode, lcparser, ltexts, lbinary;
 
   const
     C_CLASS_ID_BUILDER = $F00F;
@@ -33,7 +33,7 @@ interface
       _sourceStream: PStream;      { stream used to read the source code }
       _targetStream: PStream;      { stream used to write the binary code }
       _config: TBuilderConfig;     { other configuration settings }
-      procedure printSentence(const sentence: TSentence);
+      procedure printSentence(lineCount: word; const sentence: TSentence);
     end;
 
 implementation
@@ -71,21 +71,20 @@ implementation
     count: word;
     sourceCode: PSourceCode;    { contains the full source code to be compiled }
     binary: PBinary;            { contains the full binary code and data }
-    parser: PParser;            { reads and validates the source code }
+    parser: PCodeParser;            { reads and validates the source code }
   begin
     if _sourceStream = nil then error(C_STR_SOURCE_NOT_SET);
     if _targetStream = nil then error(C_STR_TARGET_NOT_SET);
     message(C_STR_BUILDING);
     sourceCode := new(PSourceCode, initWithStream(_sourceStream));
     if not sourceCode^.isValid then error(C_STR_READ_ERROR);
-    parser := new(PParser, initWithSourceCode(sourceCode));
+    parser := new(PCodeParser, initWithSourceCode(sourceCode));
     binary := new(PBinary, init);
     count := 0;
     while not sourceCode^.isReadComplete do
     begin
-      parser^.readSentence(sentence);
-      parser^.validateSentence(sentence);
-      if _config.isVerbose then printSentence(sentence);
+      parser^.parseSentence(sentence);
+      if _config.isVerbose then printSentence(count, sentence);
       binary^.addSentence(sentence);
       inc(count);
     end;
@@ -134,21 +133,24 @@ implementation
 
   { TBuilder private }
 
-  procedure TBuilder.printSentence(const sentence: TSentence);
+  procedure TBuilder.printSentence(lineCount: word; const sentence: TSentence);
   const 
     C_PARAM_TYPES : array[EParameterType] of string[10] = (
       'unknown', 'literal', 'register', 'address', 'pointer', 'symbol'
     );
+  var 
+    str: string;
   begin
     with sentence do
     begin
-      message(strformatn(C_STR_SENTENCE_OPERATION, opname + #0 + intToStr(opcode)));
+      str := intToStr(lineCount) + ': ';
+      str := str + opname + ' (' + intToStr(opcode) + ')';
       with args[0] do if stringValue <> '' then
-        message(strformatn(C_STR_SENTENCE_PARAMETER, stringValue + #0 + C_PARAM_TYPES[argType]));
+        str := str + ', ' + stringValue + ' (' + C_PARAM_TYPES[argType] + ')';
       with args[1] do if stringValue <> '' then
-        message(strformatn(C_STR_SENTENCE_PARAMETER, stringValue + #0 + C_PARAM_TYPES[argType]));
-      message(C_CR + C_LF);
+        str := str + ', ' + stringValue + ' (' + C_PARAM_TYPES[argType] + ')';
     end;
+    message(str);
   end;
 
 end.
