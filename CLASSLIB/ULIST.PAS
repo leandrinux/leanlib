@@ -127,8 +127,7 @@ implementation
   var
     str: PString;
   begin
-    str := new(PString, init);
-    str^.setValue(value);
+    str := new(PString, initWithValue(value));
     addObject(str);
     str^.release;
   end;

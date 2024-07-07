@@ -16,6 +16,7 @@ interface
     TString = object (TObject)
     public
       constructor init;
+      constructor initWithValue(value: string);
       destructor done; virtual;
       procedure setValue(value: string);
       function getValue: string;
@@ -33,6 +34,13 @@ implementation
   begin
     inherited init;
     _value := nil;
+ end;
+
+  constructor TString.initWithValue(value: string);;
+  begin
+    inherited init;
+    _value := nil;
+    setValue(value);
  end;
 
   destructor TString.done;
