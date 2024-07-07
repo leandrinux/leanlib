@@ -198,6 +198,13 @@ implementation
     i, index: byte;
     ch: char;
   begin
+    { if no arguments then return str and leave }
+    if args = '' then
+    begin
+      strformatn := str;
+      exit;
+    end;
+
     { find tokens in args }
     fillchar(tokens, sizeof(tokens), 0);
     tokens[0] := 1;
