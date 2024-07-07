@@ -103,32 +103,16 @@ implementation
     success: boolean;
   begin
     with arg do case argType of
-      EParameterTypeLiteral, EParameterTypeAddress: 
+      EParameterTypeLiteral, EParameterTypeAddress: result := arg.intValue;
+      EParameterTypeRegister: result := arg.registerCode;
+      EParameterTypePointer: result := (arg.offset shr 16) and arg.registerCode;
+      EParameterTypeSymbol:
       begin
-        success := any2int(stringValue, result);
-        if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, stringValue));
+        message('symbol "' + arg.stringValue + '" found, not implemented yet');
+        result := 0;
       end;
-
-      EParameterTypeRegister:
-      begin
-        success := getRegisterInfoByName(stringValue, code, bitSize);
-        if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, stringValue));
-        result := code;
-      end;
-
-      EParameterTypePointer:
-      begin
-        i := pos('[', stringValue);
-        j := pos(']', stringValue);
-        token := copy(stringValue, i+1, j-i-1);
-        success := getRegisterInfoByName(token, code, bitSize);
-        if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, stringValue));
-        result := (offset shr 16) and code;
-      end;
-
     else
-      {TO DO: EParameterTypeUnknown, EParameterTypeSymbol}
-      result := 0;
+      error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
     end;
     getParameterBinaryValue := result;
   end;
@@ -206,7 +190,7 @@ implementation
     begin
       i:=0;
       while i<sentenceBlock^.count do
-      begin
+      begin        
         with sentenceBlock^.items[i] do
         begin
           instruction.header.opcode := opcode;
@@ -216,7 +200,6 @@ implementation
           instruction.param0 := getParameterBinaryValue(args[0]);
           instruction.param1 := getParameterBinaryValue(args[1]);
         end;
-
         if (instructionBlock = nil) or (instructionBlock^.count = C_INSTRUCTIONS_PER_BLOCK) then
         begin
           instructionBlock := new(PInstructionBlock, init);
