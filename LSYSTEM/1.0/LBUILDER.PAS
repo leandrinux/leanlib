@@ -73,11 +73,11 @@ implementation
     binary: PBinary;            { contains the full binary code and data }
     parser: PCodeParser;            { reads and validates the source code }
   begin
-    if _sourceStream = nil then error(C_STR_SOURCE_NOT_SET);
-    if _targetStream = nil then error(C_STR_TARGET_NOT_SET);
-    message(C_STR_BUILDING);
+    if _sourceStream = nil then msg(EMsgFatal, C_STR_SOURCE_NOT_SET, '');
+    if _targetStream = nil then msg(EMsgFatal, C_STR_TARGET_NOT_SET, '');
+    msg(EMsgNormal, C_STR_BUILDING, '');
     sourceCode := new(PSourceCode, initWithStream(_sourceStream));
-    if not sourceCode^.isValid then error(C_STR_READ_ERROR);
+    if not sourceCode^.isValid then msg(EMsgFatal, C_STR_READ_ERROR, '');
     parser := new(PCodeParser, initWithSourceCode(sourceCode));
     binary := new(PBinary, init);
     count := 0;
@@ -88,12 +88,13 @@ implementation
       binary^.addSentence(sentence);
       inc(count);
     end;
-    message(strformatn(C_STR_SENTENCES_PROC, intToStr(count)));
+    msg(EMsgNormal, C_STR_SENTENCES_PROC, intToStr(count));
     binary^.make;
     binary^.save(_targetStream);
     binary^.release;
     parser^.release;
     sourceCode^.release;
+    msg(EMsgGood, C_STR_BUILD_SUCCESSFUL, ''); writeln;
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
@@ -150,7 +151,7 @@ implementation
       with args[1] do if stringValue <> '' then
         str := str + ', ' + stringValue + ' (' + C_PARAM_TYPES[argType] + ')';
     end;
-    message(str);
+    msg(EMsgVerbose, str, '');
   end;
 
 end.

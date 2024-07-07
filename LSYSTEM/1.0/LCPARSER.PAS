@@ -229,52 +229,36 @@ implementation
       { validate operation name exists }
       success := getOpcodeInfoByName(opname, opcode, count);
       if not success then 
-      begin
-        writeln(strformatn(C_STR_UNRECOGNIZED_OPERATION, intToStr(_sourceCode^.lineNumber)));
-        halt(1);
-      end;
+        msg(EMsgFatal, C_STR_UNRECOGNIZED_OPERATION, opname + #0 + intToStr(_sourceCode^.lineNumber));
 
       { validate number of arguments } 
       sentenceParamCount := 0;
       if args[0].stringValue <> '' then inc(sentenceParamCount);
       if args[1].stringValue <> '' then inc(sentenceParamCount);
       if sentenceParamCount <> count then
-      begin      
-        writeln(strformatn(C_STR_OPERATION_EXPECTS_N_PARAM, intToStr(count)));
-        halt(1);
-      end;
+        msg(EMsgFatal, C_STR_OPERATION_EXPECTS_N_PARAM, intToStr(count));
 
       { check valid parameters according to operation }
       if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (args[0].argType = EParameterTypeLiteral) then
-      begin
-        writeln(strformatn(C_STR_1ST_LITERAL_UNSUPPORTED, opname));
-        halt(1);
-      end;
+        msg(EMsgFatal, C_STR_1ST_LITERAL_UNSUPPORTED, opname);
 
       if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (args[1].argType = EParameterTypeLiteral) then
-      begin
-        writeln(strformatn(C_STR_2ND_LITERAL_UNSUPPORTED, opname));
-        halt(1);
-      end;
+        msg(EMsgFatal, C_STR_2ND_LITERAL_UNSUPPORTED, opname);
 
       { check that the left size bit size is equal or greater than the right size bit size }
       if (args[0].argType = EParameterTypeRegister) 
           and (args[1].argType in [EParameterTypeLiteral, EParameterTypeRegister]) 
           and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
-          and (getBitSize(args[0].stringValue, args[0].argType) < getBitSize(args[1].stringValue, args[1].argType)) then
-      begin
-        writeln(C_STR_REGISTER_CANT_FIT);
-        halt(1);
-      end;
+          and (getBitSize(args[0].stringValue, args[0].argType) < getBitSize(args[1].stringValue, args[1].argType))
+          then
+        msg(EMsgFatal, C_STR_REGISTER_CANT_FIT, '');
 
       { check that the second parameter of OUT is 8-bit and no more }
       if (opcode = C_OUT) and ( 
-        (args[1].argType <> EParameterTypeRegister) or (getBitSize(args[1].stringValue, args[1].argType)<>8) 
-      ) then
-      begin
-        writeln(C_STR_OUT_EXPECTS_8BIT);
-        halt(1);
-      end;
+        (args[1].argType <> EParameterTypeRegister) or 
+        (getBitSize(args[1].stringValue, args[1].argType)<>8)
+        ) then
+          msg(EMsgFatal, C_STR_OUT_EXPECTS_8BIT, '');
 
     end;
   end;
@@ -303,7 +287,7 @@ implementation
     success: boolean;
   begin
     success := any2int(arg.stringValue, arg.intValue);
-    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+    if not success then msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
   end;
 
   procedure TCodeParser.parseAddress(var arg: TSentenceArgument);
@@ -313,10 +297,10 @@ implementation
     i: byte;
   begin
     i := pos(']', arg.stringValue);
-    if i=0 then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+    if i=0 then msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
     token := copy(arg.stringValue, 2, i-2);
     success := any2int(token, arg.intValue);
-    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+    if not success then msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
   end;
 
   procedure TCodeParser.parseRegister(var arg: TSentenceArgument);
@@ -325,7 +309,7 @@ implementation
     code, bitSize: byte;
   begin
     success := getRegisterInfoByName(arg.stringValue, code, bitSize);
-    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+    if not success then msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
     arg.registerCode := code;
   end;
 
@@ -347,7 +331,7 @@ implementation
     while param[j]=' ' do inc(j);      
     token := copy(param, j, i-j);
     success := getRegisterInfoByName(token, code, bitSize);
-    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, token));
+    if not success then msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, token);
     arg.registerCode := code;
 
     { extract the constant value part }
@@ -357,10 +341,10 @@ implementation
       j := pos(']', param);
       token := copy(param, i+1, j-i-1);
       success := any2int(token, constantValue);
-      if not success then error(strformatn(C_STR_INVALID_POINTER_CONSTANT, token));
+      if not success then msg(EMsgFatal, C_STR_INVALID_POINTER_CONSTANT, token);
       if param[i] = '-' then constantValue := -constantValue;
       if (constantValue<-32768) or (constantValue>32767) then 
-        error(C_STR_INVALID_POINTER_CONSTANT_RANGE);
+        msg(EMsgFatal, C_STR_INVALID_POINTER_CONSTANT_RANGE, '');
       arg.offset := constantValue;
     end;
   end;

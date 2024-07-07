@@ -151,7 +151,7 @@ implementation
     i: byte;
     totalCount, instructionAddress: TUInt32;
   begin
-    message(C_STR_MAKING);
+    msg(EMsgNormal, C_STR_MAKING, '');
     _sentences^.moveToStart;
     sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
 
@@ -196,7 +196,8 @@ implementation
     end;
 
     if _symbols^.getUnknownCount > 0 then
-      error(strformatn(C_STR_UNDEFINED_SYMBOL, _symbols^.getFirstUnknownName));
+      msg(EMsgFatal, C_STR_UNDEFINED_SYMBOL, _symbols^.getFirstUnknownName);
+
   end;
 
   procedure TBinary.save(stream: PStream);
@@ -204,7 +205,7 @@ implementation
     instructionBlock: PInstructionBlock;
     i: byte;
   begin
-    message(C_STR_SAVING);
+    msg(EMsgNormal, C_STR_SAVING, '');
     stream^.write(@C_BINARY_SIGNATURE, sizeof(C_BINARY_SIGNATURE));
     _instructions^.moveToStart;
     instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
@@ -259,7 +260,7 @@ implementation
         if not success then _symbols^.addUnknownValue(arg.stringValue, param);
       end;
     else
-      error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+      msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
     end;
   end;
 

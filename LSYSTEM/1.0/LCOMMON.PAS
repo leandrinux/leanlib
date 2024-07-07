@@ -6,6 +6,9 @@ unit
 
 interface
 
+  uses
+    crt, strings;
+
   const
     C_REGISTER_COUNT = 23;       { how many registers does the CPU have }
     C_OPCODE_COUNT   = 32;       { how many operations does the CPU recognize }
@@ -42,20 +45,37 @@ interface
       param1: TUInt32;
     end;
 
-  procedure message(const str: string);
-  procedure error(const str: string);
+    EMsgKind = (
+      EMsgNormal,
+      EMsgFatal,
+      EMsgVerbose,
+      EMsgStrong,
+      EMsgWarning,
+      EMsgGood
+    );
+  
+  procedure msg(kind: EMsgKind; const str, args: string);
 
 implementation
 
-  procedure message(const str: string);
+  procedure msg(kind: EMsgKind; const str, args: string);
+  const
+    C_MSG_COLORS: array [EMsgKind] of byte = (
+      lightgray, red, darkgray, white, yellow, lightgreen
+    );
   begin
-    writeln('[-] ', str);
-  end;
-
-  procedure error(const str: string);
-  begin
-    writeln('[X] ', str);
-    halt(1);
+    textColor(C_MSG_COLORS[kind]);
+    case kind of
+       EMsgNormal: write('[-] ');
+        EMsgFatal: write('[X] ');
+      EMsgVerbose: write('[ ] ');
+       EMsgStrong: write('    ');
+      EMsgWarning: write('[!] ');
+         EMsgGood: write(' *  ');
+    end;
+    writeln(strformatn(str, args));
+    textColor(C_MSG_COLORS[EMsgNormal]);
+    if kind = EMsgFatal then halt(1);
   end;
 
 end.

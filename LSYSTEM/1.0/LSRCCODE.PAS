@@ -52,7 +52,6 @@ implementation
     getMem(_sourceCode, _sourceCodeSize);
     bytesRead := stream^.read(_sourceCode, _sourceCodeSize);
     _isValid := bytesRead = _sourceCodeSize;
-    writeln('[-] ', bytesRead, ' bytes of source code read');
     _sourcePos := _sourceCode;
     _sourceCount := 0;
     _lineNumber := 0;

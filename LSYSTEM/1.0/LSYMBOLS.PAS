@@ -75,32 +75,31 @@ implementation
 
   procedure TSymbols.addValue(const name: TString30; value: TUInt32);
   var
-    pair: PKnownSymbol; 
+    symbol: PKnownSymbol; 
   begin
-    pair := new (PKnownSymbol, init);
-    pair^.name := name;
-    pair^.value := value;
-    _known^.addObject(pair);
-    pair^.release;
-    message(strformatn(C_STR_SYMBOL_ADDED, name + #0 + intToStr(value)));
+    symbol := new(PKnownSymbol, init);
+    symbol^.name := name;
+    symbol^.value := value;
+    _known^.addObject(symbol);
+    symbol^.release;
     replaceUnknown(name, value);
   end;
 
   function TSymbols.getValue(const name: TString30; var value: TUInt32): boolean;
   var
-    pair: PKnownSymbol;
+    symbol: PKnownSymbol;
   begin
     _known^.moveToStart;
-    pair := PKnownSymbol(_known^.getObjectAtCursor);
-    while (pair<>nil) and (pair^.name <> name) do 
+    symbol := PKnownSymbol(_known^.getObjectAtCursor);
+    while (symbol<>nil) and (symbol^.name <> name) do 
     begin
       _known^.moveForward;
-      pair := PKnownSymbol(_known^.getObjectAtCursor);
+      symbol := PKnownSymbol(_known^.getObjectAtCursor);
     end;
-    if pair <> nil then
+    if symbol <> nil then
     begin
       getValue := true;
-      value := pair^.value;
+      value := symbol^.value;
     end else begin
       getValue := false;
       value := 0;
@@ -109,17 +108,27 @@ implementation
 
   procedure TSymbols.addUnknownValue(const name: TString30; const value: TUInt32);
   var
-    pair: PUnknownSymbol;
+    symbol: PUnknownSymbol;
   begin
-    pair := new(PUnknownSymbol, init);
-    pair^.name := name;
-    pair^.reference := @value;
-    _unknown^.addObject(pair);
-    pair^.release;
+    symbol := new(PUnknownSymbol, init);
+    symbol^.name := name;
+    {symbol^.reference := @value;}
+    _unknown^.addObject(symbol);
+    symbol^.release;
   end;
 
   function TSymbols.getUnknownCount: word;
+  var
+    symbol: PUnknownSymbol;
   begin
+    _unknown^.moveToStart;
+    symbol := PUnknownSymbol(_unknown^.getObjectAtCursor);
+    while symbol <> nil do
+    begin
+      _unknown^.moveForward;
+      symbol := PUnknownSymbol(_unknown^.getObjectAtCursor);
+    end;
+
     getUnknownCount := _unknown^.getCount;
   end;
 
@@ -136,19 +145,19 @@ implementation
 
   procedure TSymbols.replaceUnknown(const name: TString30; value: TUInt32);
   var
-    pair: PUnknownSymbol;
+    symbol: PUnknownSymbol;
   begin
     _unknown^.moveToStart;
-    pair := PUnknownSymbol(_unknown^.getObjectAtCursor);
-    while pair <> nil do
+    symbol := PUnknownSymbol(_unknown^.getObjectAtCursor);
+    while symbol <> nil do
     begin
-      if pair^.name = name then
+      if symbol^.name = name then
       begin
-        pair^.reference^ := value;
+        symbol^.reference^ := value;
         _unknown^.removeObjectAtCursor;
       end else
         _unknown^.moveForward;
-      pair := PUnknownSymbol(_unknown^.getObjectAtCursor);
+      symbol := PUnknownSymbol(_unknown^.getObjectAtCursor);
     end;    
   end;
 

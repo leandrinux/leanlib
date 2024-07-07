@@ -14,10 +14,10 @@ interface
     C_STR_NO_SOURCE_FILE = 'No source file specified!';
     C_STR_BUILDING = 'Reading source...';
     C_STR_READ_ERROR = 'Could not read source code!';
-    C_STR_SENTENCES_PROC = '%0 sentences read';
+    C_STR_SENTENCES_PROC = '%0 sentences processed';
     C_STR_MAKING = 'Making object file...';
     C_STR_SAVING = 'Saving...';
-    C_STR_UNRECOGNIZED_OPERATION = 'unrecognized operation at line %0';
+    C_STR_UNRECOGNIZED_OPERATION = 'unrecognized operation "%0 " at line %1';
     C_STR_OPERATION_EXPECTS_N_PARAM = 'operation expects %0 parameters';
     C_STR_1ST_LITERAL_UNSUPPORTED = 'operation %0 does not support a literal as first parameter';
     C_STR_2ND_LITERAL_UNSUPPORTED = 'operation %0 does not support a literal as second parameter';
@@ -28,8 +28,8 @@ interface
     C_STR_UNRECOGNIZABLE_ARGUMENT = 'Unrecognizable argument "%0"';
     C_STR_SOURCE_NOT_SET = 'Source stream not set';
     C_STR_TARGET_NOT_SET = 'Target stream not set';
-    C_STR_SYMBOL_ADDED = 'Added symbol "%0" with value %1';
     C_STR_UNDEFINED_SYMBOL = 'Undefined symbol "%0"';
+    C_STR_BUILD_SUCCESSFUL = 'Build successful :)';
 
 implementation
 
