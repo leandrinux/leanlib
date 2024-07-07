@@ -307,14 +307,20 @@ implementation
     getLongAt := PNumber(getObjectAt(index))^.getValue;
   end;
 
-  function TList.getStringAtCursor: string;
+  function TList.getStringAtCursor: string;    
   begin
-    getStringAtCursor := PString(getObjectAtCursor)^.getValue;
+    if _cursor <> nil then
+      getStringAtCursor := PString(_cursor^.obj)^.getValue
+    else
+      getStringAtCursor := '';
   end;
 
   function TList.getLongAtCursor: longint;
   begin
-    getLongAtCursor := PNumber(getObjectAtCursor)^.getValue;
+    if _cursor <> nil then
+      getLongAtCursor := PNumber(_cursor^.obj)^.getValue
+    else
+      getLongAtCursor := 0;
   end;
 
   function TList.getFirst: PObject;
