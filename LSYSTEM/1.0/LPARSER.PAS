@@ -26,8 +26,11 @@ interface
       procedure validateSentence(var sentence: TSentence);
     private
       _sourceCode: PSourceCode;
-      procedure parsePointers(var sentence: TSentence);
-      procedure parsePointer(var param: TString30; var paramOffset: TInt16);
+      procedure parseArguments(var sentence: TSentence);
+      procedure parseLiteral(var arg: TSentenceArgument);
+      procedure parseAddress(var arg: TSentenceArgument);
+      procedure parseRegister(var arg: TSentenceArgument);
+      procedure parsePointer(var arg: TSentenceArgument);
     end;
 
 implementation
@@ -188,11 +191,7 @@ implementation
     end;
 
     if state = EStateSuccess then
-    begin
-      with sentence.args[0] do argType := getParameterType(stringValue);
-      with sentence.args[1] do argType := getParameterType(stringValue);
-      parsePointers(sentence);
-    end;
+      parseArguments(sentence);
   end;
 
   procedure TParser.validateSentence(var sentence: TSentence);
@@ -277,35 +276,89 @@ implementation
     end;
   end;
 
-  procedure TParser.parsePointers(var sentence: TSentence);
+  procedure TParser.parseArguments(var sentence: TSentence);
   begin
-    with sentence do 
-    begin
-      with args[0] do if argType = EParameterTypePointer then parsePointer(stringValue, offset);
-      with args[1] do if argType = EParameterTypePointer then parsePointer(stringValue, offset);
+    { determine the type of each argument }
+    with sentence.args[0] do argType := getParameterType(stringValue);
+    with sentence.args[1] do argType := getParameterType(stringValue);
+
+    { according to type, interpret the value or values for each one}
+    with sentence do case args[0].argType of
+      EParameterTypeLiteral: parseLiteral(args[0]);
+      EParameterTypeAddress: parseAddress(args[0]);
+      EParameterTypeRegister: parseRegister(args[0]);
+      EParameterTypePointer: parsePointer(args[0]);
+    end;
+    with sentence do case args[1].argType of
+      EParameterTypeRegister: parseRegister(args[1]);
+      EParameterTypePointer: parsePointer(args[1]);
     end;
   end;
 
-  procedure TParser.parsePointer(var param: TString30; var paramOffset: TInt16);
-  var 
-    i, j: byte;
+  procedure TParser.parseLiteral(var arg: TSentenceArgument);
+  var
     success: boolean;
-    var token: TString30;
-    value: TUInt32;
   begin
-    j := pos(']', param);
+    success := any2int(arg.stringValue, arg.intValue);
+    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+  end;
+
+  procedure TParser.parseAddress(var arg: TSentenceArgument);
+  var
+    success: boolean;
+    token: TString30;
+    i: byte;
+  begin
+    i := pos(']', arg.stringValue);
+    if i=0 then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+    token := copy(arg.stringValue, 2, i-2);
+    success := any2int(token, arg.intValue);
+    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+  end;
+
+  procedure TParser.parseRegister(var arg: TSentenceArgument);
+  var 
+    success: boolean;
+    code, bitSize: byte;
+  begin
+    success := getRegisterInfoByName(arg.stringValue, code, bitSize);
+    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+    arg.registerCode := code;
+  end;
+
+  procedure TParser.parsePointer(var arg: TSentenceArgument);
+  var 
+    param, token: TString30;
+    i, j: byte;
+    constantValue: TUInt32;
+    code, bitSize: byte;
+    success: boolean;
+  begin
+    param := arg.stringValue;
     i := pos('+', param);
     if i = 0 then i := pos('-', param);
-    if i = 0 then
-    begin
-      paramOffset := 0;
-    end else begin
+    if i = 0 then i := pos(']', param);
+
+    { extract the register part }
+    j := pos('[', param) + 1;
+    while param[j]=' ' do inc(j);      
+    token := copy(param, j, i-j);
+    success := getRegisterInfoByName(token, code, bitSize);
+    if not success then error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, token));
+    arg.registerCode := code;
+
+    { extract the constant value part }
+    if param[i] = ']' then
+      arg.offset := 0
+    else begin
+      j := pos(']', param);
       token := copy(param, i+1, j-i-1);
-      success := any2int(token, value);
-      if not success then error(C_STR_INVALID_POINTER_CONSTANT);
-      if param[i] = '-' then value := -value;
-      if (value<-32768) or (value>32767) then error(C_STR_INVALID_POINTER_CONSTANT_RANGE);
-      paramOffset := value;
+      success := any2int(token, constantValue);
+      if not success then error(strformatn(C_STR_INVALID_POINTER_CONSTANT, token));
+      if param[i] = '-' then constantValue := -constantValue;
+      if (constantValue<-32768) or (constantValue>32767) then 
+        error(C_STR_INVALID_POINTER_CONSTANT_RANGE);
+      arg.offset := constantValue;
     end;
   end;
 
