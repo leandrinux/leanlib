@@ -9,3 +9,4 @@ loop:
     jl 10, loop
     mov cx, 100
     mov [cx-90], cx 
+    mov [$A000], cx
