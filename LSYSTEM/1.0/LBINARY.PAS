@@ -46,7 +46,9 @@ interface
     private
       _symbols: PSymbols;          { keeps track of the symbols like labels or defines }
       _sentences: PList;           { the list of non compiled, parsed sentences }
-      _instructions: PList;              { the list of compiled instruction blocks }
+      _instructions: PList;        { the list of compiled instruction blocks }
+      function parameterTypeToValue(parameterType: EParameterType): byte;
+      procedure setParameterBinaryValue(const arg: TSentenceArgument; var param: TUInt32);
     end;
 
     PSentenceBlock = ^TSentenceBlock;
@@ -77,44 +79,6 @@ implementation
   begin
     inherited init;
     count := 0;
-  end;
-
-  { non-object functions } 
-
-  function parameterTypeToValue(parameterType: EParameterType): byte;
-  const
-    C_VALUES : array[EParameterType] of byte = (
-        C_PARAMETER_LITERAL,
-        C_PARAMETER_LITERAL,
-        C_PARAMETER_REGISTER,
-        C_PARAMETER_ADDRESS,
-        C_PARAMETER_POINTER,
-        C_PARAMETER_LITERAL
-    );
-  begin
-    parameterTypeToValue := C_VALUES[parameterType];
-  end;
-
-  function getParameterBinaryValue(const arg: TSentenceArgument): TUInt32;
-  var
-    result: TUInt32;
-    i, j, code, bitSize: byte;
-    token: TString30;
-    success: boolean;
-  begin
-    with arg do case argType of
-      EParameterTypeLiteral, EParameterTypeAddress: result := arg.intValue;
-      EParameterTypeRegister: result := arg.registerCode;
-      EParameterTypePointer: result := (arg.offset shr 16) and arg.registerCode;
-      EParameterTypeSymbol:
-      begin
-        message('symbol "' + arg.stringValue + '" found, not implemented yet');
-        result := 0;
-      end;
-    else
-      error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
-    end;
-    getParameterBinaryValue := result;
   end;
 
   { TBinary public }
@@ -179,27 +143,34 @@ implementation
     sentence: TSentence;
     instruction: TInstruction;
     i: byte;
+    totalCount, instructionAddress: TUInt32;
   begin
     message(C_STR_MAKING);
     _sentences^.moveToStart;
     sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
 
     instructionBlock := PInstructionBlock(_instructions^.getLast);
-
+    totalCount := 0;
     while sentenceBlock<>nil do
     begin
       i:=0;
       while i<sentenceBlock^.count do
       begin        
+        instructionAddress := totalCount * sizeof(TInstruction);
         with sentenceBlock^.items[i] do
         begin
+          if labelName<>'' then _symbols^.addValue(labelName, instructionAddress);
+          
           instruction.header.opcode := opcode;
+
           instruction.header.params := 
              (parameterTypeToValue(args[0].argType) shl 4) 
              or parameterTypeToValue(args[1].argType);
-          instruction.param0 := getParameterBinaryValue(args[0]);
-          instruction.param1 := getParameterBinaryValue(args[1]);
+
+          setParameterBinaryValue(args[0], instruction.param0);
+          setParameterBinaryValue(args[1], instruction.param1);
         end;
+
         if (instructionBlock = nil) or (instructionBlock^.count = C_INSTRUCTIONS_PER_BLOCK) then
         begin
           instructionBlock := new(PInstructionBlock, init);
@@ -211,12 +182,15 @@ implementation
           items[count] := instruction;
           count := count + 1;
         end;
-
+        inc(totalCount);
         inc(i);
       end;
       _sentences^.moveForward;
       sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
     end;
+
+    if _symbols^.getUnknownCount > 0 then
+      error(strformatn(C_STR_UNDEFINED_SYMBOL, _symbols^.getFirstUnknownName));
   end;
 
   procedure TBinary.save(stream: PStream);
@@ -244,6 +218,44 @@ implementation
   end;
 
   { TBinary private }
+
+  function TBinary.parameterTypeToValue(parameterType: EParameterType): byte;
+  const
+    C_VALUES : array[EParameterType] of byte = (
+        C_PARAMETER_LITERAL,
+        C_PARAMETER_LITERAL,
+        C_PARAMETER_REGISTER,
+        C_PARAMETER_ADDRESS,
+        C_PARAMETER_POINTER,
+        C_PARAMETER_LITERAL
+    );
+  begin
+    parameterTypeToValue := C_VALUES[parameterType];
+  end;
+
+  procedure TBinary.setParameterBinaryValue(const arg: TSentenceArgument; var param: TUInt32);
+  var
+    success: boolean;
+  begin
+    with arg do case argType of
+      EParameterTypeLiteral, EParameterTypeAddress: 
+        param := arg.intValue;
+
+      EParameterTypeRegister: 
+        param := arg.registerCode;
+
+      EParameterTypePointer: 
+        param := (arg.offset shr 16) and arg.registerCode;
+
+      EParameterTypeSymbol:
+      begin
+        success := _symbols^.getValue(arg.stringValue, param);
+        if not success then _symbols^.addUnknownValue(arg.stringValue, param);
+      end;
+    else
+      error(strformatn(C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue));
+    end;
+  end;
 
   { Other }
 

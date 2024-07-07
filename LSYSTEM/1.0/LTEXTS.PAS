@@ -30,6 +30,8 @@ interface
     C_STR_UNRECOGNIZABLE_ARGUMENT = 'Unrecognizable argument "%0"';
     C_STR_SOURCE_NOT_SET = 'Source stream not set';
     C_STR_TARGET_NOT_SET = 'Target stream not set';
+    C_STR_SYMBOL_ADDED = 'Added symbol "%0" with value %1';
+    C_STR_UNDEFINED_SYMBOL = 'Undefined symbol "%0"';
 
 implementation
 

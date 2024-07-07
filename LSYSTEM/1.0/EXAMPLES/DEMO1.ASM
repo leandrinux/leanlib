@@ -7,6 +7,8 @@ loop:
     add ax, 1
     add [ebx], ax
     jl 10, loop
+    mov eax, leandro
     mov cx, 100
+leandro:
     mov [cx-90], cx 
     mov [$A000], cx
