@@ -30,7 +30,7 @@ interface
     private
       _known: PList;
       _unknown: PList;
-      procedure replaceUnknown(var name: TString30; value: TUInt32);
+      procedure replaceUnknown(const name: TString30; value: TUInt32);
     end;
 
     PKnownSymbol = ^TKnownSymbol;
@@ -134,11 +134,22 @@ implementation
       getFirstUnknownName := '';
   end;
 
-  procedure TSymbols.replaceUnknown(var name: TString30; value: TUInt32);
+  procedure TSymbols.replaceUnknown(const name: TString30; value: TUInt32);
+  var
+    pair: PUnknownSymbol;
   begin
     _unknown^.moveToStart;
-    { CONTINUE HERE }
-    
+    pair := PUnknownSymbol(_unknown^.getObjectAtCursor);
+    while pair <> nil do
+    begin
+      if pair^.name = name then
+      begin
+        pair^.reference^ := value;
+        _unknown^.removeObjectAtCursor;
+      end else
+        _unknown^.moveForward;
+      pair := PUnknownSymbol(_unknown^.getObjectAtCursor);
+    end;    
   end;
 
   { TSymbols private }
