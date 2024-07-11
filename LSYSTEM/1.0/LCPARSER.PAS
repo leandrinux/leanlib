@@ -277,6 +277,8 @@ implementation
       EParameterTypePointer: parsePointer(args[0]);
     end;
     with sentence do case args[1].argType of
+      EParameterTypeLiteral: parseLiteral(args[1]);
+      EParameterTypeAddress: parseAddress(args[1]);
       EParameterTypeRegister: parseRegister(args[1]);
       EParameterTypePointer: parsePointer(args[1]);
     end;
