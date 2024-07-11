@@ -139,4 +139,30 @@ begin
   end;
   test(sentence, match);
 
+
+  with sentence do
+  begin
+    labelName := '';
+    opname := 'mov';
+    opcode := C_MOV;
+    args[0].argType := EParameterTypePointer;
+    args[0].stringValue := '[ax]';
+    args[0].intValue := 0;
+    args[0].registerCode := $51;
+    args[0].offset := 0;
+    args[1].argType := EParameterTypeLiteral;
+    args[1].stringValue := '200';
+    args[1].intValue := 200;
+    args[1].registerCode := 0;
+    args[1].offset := 0;
+  end;
+  with match do
+  begin
+    header.opcode := $01;
+    header.params := $30;
+    param0 := $00000051; { AX = $51, OFFSET=0 }
+    param1 := 200;
+  end;
+  test(sentence, match);
+
 end.

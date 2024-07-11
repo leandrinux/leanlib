@@ -172,4 +172,22 @@ begin
   end;
   test('loop: fdiv [eax+0b_1111_0010], cat', match);
 
+  with match do
+  begin
+    labelName := '';
+    opname := 'mov';
+    opcode := C_MOV;
+    args[0].argType := EParameterTypePointer;
+    args[0].stringValue := '[ax]';
+    args[0].intValue := 0;
+    args[0].registerCode := $51;
+    args[0].offset := 0;
+    args[1].argType := EParameterTypeLiteral;
+    args[1].stringValue := '200';
+    args[1].intValue := 200;
+    args[1].registerCode := 0;
+    args[1].offset := 0;
+  end;
+  test('mov [ax], 200', match);
+
 end.
