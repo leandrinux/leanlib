@@ -115,7 +115,7 @@ var
   match: TSentence;
 
 begin
-  { fillchar(match, sizeof(match), 0); }
+
   with match do
   begin
     labelName := '';
@@ -133,4 +133,43 @@ begin
     args[1].offset := 0;
   end;
   test('mov ax, 100', match);
+
+
+  with match do
+  begin
+    labelName := '';
+    opname := 'cmp';
+    opcode := C_CMP;
+    args[0].argType := EParameterTypeRegister;
+    args[0].stringValue := 'edx';
+    args[0].intValue := 0;
+    args[0].registerCode := $80;
+    args[0].offset := 0;
+    args[1].argType := EParameterTypeAddress;
+    args[1].stringValue := '[0xBACAF0FA]';
+    args[1].intValue := $BACAF0FA;
+    args[1].registerCode := 0;
+    args[1].offset := 0;
+  end;
+  test('cmp edx, [0xBACAF0FA]', match);
+
+
+  with match do
+  begin
+    labelName := 'loop';
+    opname := 'fdiv';
+    opcode := C_FDIV;
+    args[0].argType := EParameterTypePointer;
+    args[0].stringValue := '[eax+0b_1111_0010]';
+    args[0].intValue := 0;
+    args[0].registerCode := $50;
+    args[0].offset := $F2;
+    args[1].argType := EParameterTypeSymbol;
+    args[1].stringValue := 'cat';
+    args[1].intValue := 0;
+    args[1].registerCode := 0;
+    args[1].offset := 0;
+  end;
+  test('loop: fdiv [eax+0b_1111_0010], cat', match);
+
 end.
