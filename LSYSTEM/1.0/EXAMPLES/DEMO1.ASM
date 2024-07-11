@@ -1,14 +1,2 @@
-
-    mov ax, 0
-    mov ebx, 200
-    xor [ebx], [ebx] 
-loop:
-    out 0, al
-    add ax, 1
-    add [ebx], ax
-    jl 10, loop
-    mov eax, leandro
-    mov cx, 100
-leandro:
-    mov [cx-90], cx 
-    mov [$A000], cx
+mov ax, 100
+mov [ax], 200
