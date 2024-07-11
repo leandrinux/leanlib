@@ -69,7 +69,6 @@ implementation
        EMsgNormal: write('[-] ');
         EMsgFatal: write('[X] ');
       EMsgVerbose: write('[ ] ');
-       EMsgStrong: write('    ');
       EMsgWarning: write('[!] ');
          EMsgGood: write(' *  ');
     end;
