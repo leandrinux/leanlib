@@ -237,8 +237,7 @@ implementation
     end else if isValidRegister(token) then
       getParameterType := EParameterTypeRegister
     else
-      getParameterType := EParameterTypeSymbol
-;    
+      getParameterType := EParameterTypeSymbol;    
   end;
 
   function getLiteralBitSize(const param: string): byte;
