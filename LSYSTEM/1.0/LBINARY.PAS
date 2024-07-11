@@ -252,7 +252,7 @@ implementation
         param := arg.registerCode;
 
       EParameterTypePointer: 
-        param := (arg.offset shr 16) and arg.registerCode;
+        param := (longint(arg.offset) shl 16) or arg.registerCode;
 
       EParameterTypeSymbol:
       begin
