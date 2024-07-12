@@ -2,10 +2,10 @@ uses
   lsystem;
 
 var
-  lsystem: PSystem;
+  sys: PSystem;
 
 begin
-  lsystem := new(PSystem, init);
-  lsystem^.loadBinaryFile('..\examples\demo1.bin');
-  lsystem^.release;
+  sys := new(PSystem, init);
+  sys^.loadBinaryFile('..\examples\demo1.bin');
+  sys^.release;
 end.

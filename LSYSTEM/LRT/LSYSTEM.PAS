@@ -9,7 +9,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ufstream,
-    lcpu, lram, lbus, ldecho;
+    lcommon, lcpu, lram, lbus, ldecho, ltexts;
 
   const
     C_CLASS_ID_SYSTEM = 5000;
@@ -71,8 +71,22 @@ implementation
   procedure TSystem.loadBinaryFile(const filename: string);
   var
     fs: PFileStream;
+    signature: TBinarySignature;
+    readBytes: word;
   begin
     fs := new(PFileStream, initWithPath(filename, EFileReadOnly));
+    
+    if not fs^.isFileOpen then
+      msg(EMsgFatal, C_STR_BINARY_NOT_FOUND, '');
+
+    readBytes := fs^.read(@signature, sizeof(TBinarySignature));
+
+    if readBytes<sizeof(TBinarySignature) then
+      msg(EMsgFatal, C_STR_BINARY_INVALID, '');
+
+    if compareBuffers(@signature, @C_BINARY_SIGNATURE, sizeof(TBinarySignature)) <> ECompareEqual then 
+      msg(EMsgFatal, C_STR_BINARY_INVALID, '');
+    
     _ram^.load(fs, 0);
     fs^.release;
   end;
