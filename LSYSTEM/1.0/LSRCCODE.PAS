@@ -24,6 +24,7 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      function readLine: string;
       procedure readChar(var current, lookAhead: char);
       function isValid: boolean;
       function isReadComplete: boolean;
@@ -72,6 +73,21 @@ implementation
   function TSourceCode.getClassId: word;
   begin
     getClassId := C_CLASS_ID_SourceCode;
+  end;
+
+  function TSourceCode.readLine: string;
+  var
+    str: string;
+    ch, next: char;
+  begin
+    str := '';
+    readChar(ch, next);
+    while (ch<>C_LF) and (ch<>#0) do
+    begin
+      if ch<>C_CR then str := str + ch;
+      readChar(ch, next);
+    end;
+    readLine := str;
   end;
 
   procedure TSourceCode.readChar(var current, lookAhead: char);
