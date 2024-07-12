@@ -31,6 +31,7 @@ interface
   function strToInt(s: string): integer;
 
   { comparison functions }
+  function compareBuffers(a, b: pchar; size: word): ECompareResult;
   function compareLong(a, b: pointer): ECompareResult;
   function compareStr(a, b: pointer): ECompareResult;
 
@@ -133,6 +134,23 @@ implementation
   begin
     Val(s, i, c);
     StrToInt := i;
+  end;
+
+  function compareBuffers(a, b: pchar; size: word): ECompareResult;
+  begin
+    while (size>0) and (a^=b^) do
+    begin
+      inc(a);
+      inc(b);
+      dec(size);
+    end;
+    if size=0 then
+      compareBuffers := ECompareEqual
+    else
+      if a^<b^ then
+        compareBuffers := ECompareLesser
+      else
+        compareBuffers := ECompareGreater;
   end;
 
   function compareLong(a, b: pointer): ECompareResult;
