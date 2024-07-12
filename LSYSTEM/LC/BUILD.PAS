@@ -1,5 +1,4 @@
 uses
-  lcommon,
   lcbase,
   lliteral,
   lbuilder,

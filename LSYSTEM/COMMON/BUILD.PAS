@@ -1,0 +1,5 @@
+uses
+  lcommon;
+
+begin
+end.

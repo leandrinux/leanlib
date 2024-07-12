@@ -35,7 +35,9 @@ call build base
 call build classlib
 call build sys
 call build gui
-call build lsystem
+call build lsystem\common
+call build lsystem\lc
+call build lsystem\lrt
 del /q c:\bin\*.exe >nul
 
 :end
