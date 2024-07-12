@@ -26,9 +26,10 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure addDevice(device: PDevice);
+      function readFromRAM(data: PChar; position: TUInt32; count: word): word;
     private
-      devices: TDeviceBusArray;
-      count: byte;
+      _devices: TDeviceBusArray;
+      _count: byte;
     end;
 
 implementation
@@ -38,15 +39,15 @@ implementation
   constructor TBus.init;
   begin
     inherited init;
-    count := 0;
+    _count := 0;
   end;
 
   destructor TBus.done;
   begin
-    while count>0 do
+    while _count>0 do
     begin
-      devices[count]^.release;
-      dec(count);
+      _devices[_count]^.release;
+      dec(_count);
     end;
     inherited done;
   end;
@@ -63,8 +64,13 @@ implementation
 
   procedure TBus.addDevice(device: PDevice);
   begin
-    devices[count] := device;
+    _devices[_count] := device;
     device^.retain;
+  end;
+
+  function TBus.readFromRAM(data: PChar; position: TUInt32; count: word): word;
+  begin
+
   end;
 
   { TBus private }

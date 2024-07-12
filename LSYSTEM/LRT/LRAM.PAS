@@ -9,7 +9,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ustream,
-    lcommon, ldevice;
+    lcommon, ldevice, ltexts;
 
   const
     C_CLASS_ID_RAM = 5002;
@@ -62,7 +62,8 @@ implementation
   begin
     p := _data;
     inc(p, position);
-    size := stream^.getSize;
+    size := stream^.getSize - stream^.getPosition;
+    if size>_size then msg(EMsgFatal, C_STR_BINARY_TOO_BIG, '');
     stream^.read(p, size);
   end;
 
