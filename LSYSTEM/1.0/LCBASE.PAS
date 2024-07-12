@@ -9,7 +9,8 @@ interface
   uses
     lcommon,
     lliteral,
-    utils;
+    utils,
+    uobject;
 
   const
     C_SPACE = ' ';
@@ -77,6 +78,12 @@ interface
       opname: TString30;
       opcode: byte;
       args: array[0..1] of TSentenceArgument;
+    end;
+
+    PSymbol = ^TSymbol;
+    TSymbol = object (TObject)
+      name: TString30;
+      value: TUInt32;
     end;
 
   const

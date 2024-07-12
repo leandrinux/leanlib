@@ -26,6 +26,7 @@ interface
     C_STR_INVALID_POINTER_CONSTANT = 'Invalid pointer constant (%0)';
     C_STR_INVALID_POINTER_CONSTANT_RANGE = 'Pointer constant must be between -32768 and 32767';
     C_STR_UNRECOGNIZABLE_ARGUMENT = 'Unrecognizable argument "%0"';
+    C_STR_UNRECOGNIZABLE_SYMBOL = 'Unrecognizable argument "%0"';
     C_STR_SOURCE_NOT_SET = 'Source stream not set';
     C_STR_TARGET_NOT_SET = 'Target stream not set';
     C_STR_UNDEFINED_SYMBOL = 'Undefined symbol "%0"';

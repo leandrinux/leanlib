@@ -22,6 +22,7 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      function isDone: boolean;
       procedure parseSentence(var sentence: TSentence);
     private
       _sourceCode: PSourceCode;
@@ -58,6 +59,11 @@ implementation
   function TCodeParser.getClassId: word;
   begin
     getClassId := C_CLASS_ID_CODE_PARSER;
+  end;
+
+  function TCodeParser.isDone: boolean;
+  begin
+    isDone := _sourceCode^.isReadComplete;
   end;
 
   procedure TCodeParser.parseSentence(var sentence: TSentence);

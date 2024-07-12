@@ -4,6 +4,7 @@ uses
   lliteral,
   lbuilder,
   lcparser,
+  ldparser,
   lsrccode,
   ltexts;
 

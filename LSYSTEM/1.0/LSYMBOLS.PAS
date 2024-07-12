@@ -12,7 +12,7 @@ interface
     lcommon, lcbase;
 
   const
-    C_CLASS_ID_known = $F013;
+    C_CLASS_ID_SYMBOLS = $F013;
 
   type
     PSymbols = ^TSymbols;
@@ -31,12 +31,6 @@ interface
       _known: PList;
       _unknown: PList;
       procedure replaceUnknown(const name: TString30; value: TUInt32);
-    end;
-
-    PKnownSymbol = ^TKnownSymbol;
-    TKnownSymbol = object (TObject)
-      name: TString30;
-      value: TUInt32;
     end;
 
     PUnknownSymbol = ^TUnknownSymbol;
@@ -70,14 +64,14 @@ implementation
 
   function TSymbols.getClassId: word;
   begin
-    getClassId := C_CLASS_ID_known;
+    getClassId := C_CLASS_ID_SYMBOLS;
   end;
 
   procedure TSymbols.addValue(const name: TString30; value: TUInt32);
   var
-    symbol: PKnownSymbol; 
+    symbol: PSymbol; 
   begin
-    symbol := new(PKnownSymbol, init);
+    symbol := new(PSymbol, init);
     symbol^.name := name;
     symbol^.value := value;
     _known^.addObject(symbol);
@@ -87,14 +81,14 @@ implementation
 
   function TSymbols.getValue(const name: TString30; var value: TUInt32): boolean;
   var
-    symbol: PKnownSymbol;
+    symbol: PSymbol;
   begin
     _known^.moveToStart;
-    symbol := PKnownSymbol(_known^.getObjectAtCursor);
+    symbol := PSymbol(_known^.getObjectAtCursor);
     while (symbol<>nil) and (symbol^.name <> name) do 
     begin
       _known^.moveForward;
-      symbol := PKnownSymbol(_known^.getObjectAtCursor);
+      symbol := PSymbol(_known^.getObjectAtCursor);
     end;
     if symbol <> nil then
     begin

@@ -41,7 +41,7 @@ interface
       procedure addSentence(const sentence: TSentence);
       procedure addData(data: pointer; size: longint);
       procedure addMetadata(const key: EMetadataKey; const value: TMetadataEntry);
-      procedure addDefinition(const name: TString30; value: TUInt32);
+      procedure addSymbol(const name: TString30; value: TUInt32);
       procedure make;
       procedure save(stream: PStream);
     private
@@ -137,7 +137,7 @@ implementation
   begin
   end;
 
-  procedure TBinary.addDefinition(const name: TString30; value: TUInt32);
+  procedure TBinary.addSymbol(const name: TString30; value: TUInt32);
   begin
     _symbols^.addValue(name, value);
   end;
@@ -259,8 +259,14 @@ implementation
         success := _symbols^.getValue(arg.stringValue, param);
         if not success then _symbols^.addUnknownValue(arg.stringValue, param);
       end;
-    else
-      msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
+    
+      EParameterTypeUnknown:
+      begin
+        { this happens when there is no parameter (an empty argument) }
+        { by default we simply store 0 }
+        param := 0;
+      end;
+
     end;
   end;
 
