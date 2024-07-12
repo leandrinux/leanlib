@@ -21,7 +21,11 @@ interface
     C_PARAMETER_ADDRESS  = 2;    { param type value for address parameters }
     C_PARAMETER_POINTER = 3;     { param type value for pointer parameters }
 
-    C_BINARY_SIGNATURE : array[0..6] of char  = 'LSYSBIN';
+  type
+    TBinarySignature = array[0..6] of char;
+  
+  const
+    C_BINARY_SIGNATURE : TBinarySignature  = 'LSYSBIN';
 
   type
     TString3 = string[3];
