@@ -13,8 +13,11 @@ interface
 
   const
     C_CLASS_ID_BUS = 5003;
+    C_DEVICE_BUS_SIZE = 5;
 
   type
+    TDeviceBusArray = array[0..C_DEVICE_BUS_SIZE-1] of PDevice;
+   
     PBus = ^TBus;
     TBus = object (TObject)
     public
@@ -24,6 +27,8 @@ interface
       function getClassId: word; virtual;
       procedure addDevice(device: PDevice);
     private
+      devices: TDeviceBusArray;
+      count: byte;
     end;
 
 implementation
@@ -33,10 +38,16 @@ implementation
   constructor TBus.init;
   begin
     inherited init;
+    count := 0;
   end;
 
   destructor TBus.done;
   begin
+    while count>0 do
+    begin
+      devices[count]^.release;
+      dec(count);
+    end;
     inherited done;
   end;
 
@@ -52,6 +63,8 @@ implementation
 
   procedure TBus.addDevice(device: PDevice);
   begin
+    devices[count] := device;
+    device^.retain;
   end;
 
   { TBus private }
