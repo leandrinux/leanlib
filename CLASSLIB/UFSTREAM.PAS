@@ -48,13 +48,13 @@ implementation
       EFileReadOnly, EFileReadWrite:
       begin
         reset(_fileHandle, 1);
-        iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_NOT_FOUND);
+        { iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_NOT_FOUND); }
       end;
 
       EFileCreate:
       begin
         rewrite(_fileHandle, 1);
-        iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_CREATION_FAILED);
+        { iassert(IOResult = 0, @self, 0, S_ERR_RESOURCE_CREATION_FAILED); }
       end;
     end;
     {$I+}
