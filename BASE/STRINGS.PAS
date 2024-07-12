@@ -11,6 +11,9 @@ interface
   uses
     types;
 
+  type
+    TTrimmableChars = set of char;
+
   { returns the word value as a string, left padded with the specified char }
   function padw(w: word; ch: char; count: byte): string5;
 
@@ -22,6 +25,13 @@ interface
 
   { returns a substring of the provided string }
   function subString(s: string; position, count:byte): string;
+
+  { returns true if string begins as specified }
+  function beginsWith(const str, key: string): boolean;
+
+  { trims a string by removing characters from its beginning and end} 
+  function trim(const str: string): string;
+  function trimChars(const str: string; chars: TTrimmableChars): string;
 
   { converts a null-terminated string to a Pascal-style string }
   function pCharToStr(p: PChar): string;
@@ -123,6 +133,35 @@ implementation
       dec(i);
     end;
     extractFileName := s;
+  end;
+
+  function beginsWith(const str, key: string): boolean;
+  var
+    i: byte;
+  begin
+    beginsWith := false;
+    if length(str)<length(key) then exit;
+    i := 1;
+    while (i<=length(str)) and (i<=length(key)) and (str[i]=key[i]) do inc(i);
+    beginsWith := i>length(key);
+  end;
+
+  function trim(const str: string): string;
+  const
+    C_TRIM_CHARS = [' ', #10, #13, #9];
+  begin
+    trim := trimChars(str, C_TRIM_CHARS);
+  end;
+
+  function trimChars(const str: string; chars: TTrimmableChars): string;
+  var
+    i, j: byte;
+  begin
+    i := 1;
+    while (i<=length(str)) and (str[i] in chars) do inc(i);
+    j := length(str);
+    while (j>=1) and (str[j] in chars) do dec(j);
+    trimChars := copy(str, i, j-i+1);
   end;
 
   function pCharToStr(p: PChar): string;
