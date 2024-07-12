@@ -1,5 +1,7 @@
 uses
-  lsystem;
+  lsystem,
+  lcpu,
+  lram;
 
 begin
 end.
