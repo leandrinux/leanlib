@@ -36,8 +36,7 @@ call build classlib
 call build sys
 call build gui
 call build vm
-call build lsystem\0.4
-call build lsystem\1.0
+call build lsystem
 del /q c:\bin\*.exe >nul
 
 :end

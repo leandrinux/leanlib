@@ -88,7 +88,6 @@ implementation
     count := 0;
 
     { parse the data section }
-    writeln('Parsing data');
     dataParser := new(PDataParser, initWithSourceCode(sourceCode));
     dataParser^.setDelegate(@self);
     while not dataParser^.isDone do
@@ -96,7 +95,6 @@ implementation
       dataParser^.parse(dataType, data);
     end;
     dataParser^.release;
-    writeln('Ended parsing data');
 
     { parse the code section } 
     codeParser := new(PCodeParser, initWithSourceCode(sourceCode));
