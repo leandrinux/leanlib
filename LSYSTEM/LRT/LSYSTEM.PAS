@@ -8,11 +8,12 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc,
-    lcpu, lram, lbus;
+    uobject, uexc, ufstream,
+    lcpu, lram, lbus, ldecho;
 
   const
     C_CLASS_ID_SYSTEM = 5000;
+    C_DEFAULT_RAM = 1024;
 
   type
     PSystem = ^TSystem;
@@ -22,10 +23,11 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure loadBinaryFile(const filename: string);
     private
       _cpu: PCPU;
-      _ram: PRAM;
       _bus: PBus;
+      _ram: PRAM;
     end;
 
 implementation
@@ -33,18 +35,26 @@ implementation
   { TSystem public }
 
   constructor TSystem.init;
+  var
+    echoDevice: PEchoDevice;
   begin
     inherited init;
     _cpu := new (PCPU, init);
-    _ram := new (PRAM, init);
     _bus := new (PBus, init);
+    _ram := new(PRAM, initWithSize(C_DEFAULT_RAM));
+    _cpu^.setBus(_bus);
+    _bus^.addDevice(_ram);
+
+    echoDevice := new(PEchoDevice, init);
+    _bus^.addDevice(echoDevice);
+    echoDevice^.release;
   end;
 
   destructor TSystem.done;
   begin
+    _cpu^.release;
     _bus^.release;
     _ram^.release;
-    _cpu^.release;
     inherited done;
   end;
 
@@ -56,6 +66,15 @@ implementation
   function TSystem.getClassId: word;
   begin
     getClassId := C_CLASS_ID_SYSTEM;
+  end;
+
+  procedure TSystem.loadBinaryFile(const filename: string);
+  var
+    fs: PFileStream;
+  begin
+    fs := new(PFileStream, initWithPath(filename, EFileReadOnly));
+    _ram^.load(fs, 0);
+    fs^.release;
   end;
 
   { TSystem private }

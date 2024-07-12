@@ -8,7 +8,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc;
+    uobject, uexc,
+    lcommon, ldevice;
 
   const
     C_CLASS_ID_BUS = 5003;
@@ -21,6 +22,7 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure addDevice(device: PDevice);
     private
     end;
 
@@ -46,6 +48,10 @@ implementation
   function TBus.getClassId: word;
   begin
     getClassId := C_CLASS_ID_BUS;
+  end;
+
+  procedure TBus.addDevice(device: PDevice);
+  begin
   end;
 
   { TBus private }
