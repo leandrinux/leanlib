@@ -7,7 +7,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
+    xcrt, ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, ufstream,
     lcommon, lcpu, lram, lbus, ldecho, ltexts;
 
@@ -24,6 +24,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure loadBinaryFile(const filename: string);
+      procedure run;
     private
       _cpu: PCPU;
       _bus: PBus;
@@ -89,6 +90,12 @@ implementation
     
     _ram^.load(fs, 0);
     fs^.release;
+  end;
+
+  procedure TSystem.run;
+  begin
+    _cpu^.initialize;
+    while (not keypressed) or (readkey<>C_ESC) do _cpu^.runOnce;
   end;
 
   { TSystem private }

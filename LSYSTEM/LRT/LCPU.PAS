@@ -23,6 +23,8 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure setBus(bus: PBus);
+      procedure initialize;
+      procedure runOnce;
     private
       _bus: PBus;
     end;
@@ -59,6 +61,15 @@ implementation
     _bus := bus;
     bus^.retain;    
   end;
+
+  procedure TCPU.initialize;
+  begin
+  end;
+
+  procedure TCPU.runOnce;
+  begin
+  end;
+
   { TCPU private }
 
   { Other }
