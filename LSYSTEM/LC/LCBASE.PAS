@@ -7,25 +7,11 @@ unit
 interface
 
   uses
+    ascii,
     lcommon,
     lliteral,
     utils,
     uobject;
-
-  const
-    C_SPACE = ' ';
-    C_CR    = #13;
-    C_LF    = #10;
-    C_TAB   = #09;
-
-    C_MOV = $01; C_ADD = $02; C_SUB = $03; C_MUL = $04;
-    C_DIV = $05; C_CMP = $06; C_SHL = $07; C_SHR = $08;
-    C_FADD = $09; C_FSUB = $0A; C_FMUL = $0B; C_FDIV = $0C;
-    C_JMP = $21; C_JE = $22; C_JG = $23; C_JL = $24;
-    C_JZ = $25; C_JP = $26; C_JN = $27; C_JNZ = $28;
-    C_AND = $31; C_OR = $32; C_NOT = $33; C_XOR = $34;
-    C_PUSH = $41; C_POP = $42; C_PUSHA = $43; C_POPA = $44;
-    C_CALL = $45; C_RET = $46; C_OUT = $51; C_IN = $52;
 
   type
     TRegisterName = string[3];
@@ -88,29 +74,29 @@ interface
 
   const
     C_REGISTER_INFO: TRegisterInfoArray = (
-      (name: 'sp'; code:$10; bitSize:32),
-      (name: 'bp'; code:$20; bitSize:32),
-      (name: 'ip'; code:$30; bitSize:32),
-      (name: 'cc'; code:$40; bitSize:32),
-      (name: 'eax'; code:$50; bitSize:32),
-      (name: 'ax'; code:$51; bitSize:16),
-      (name: 'ah'; code:$52; bitSize:8),
-      (name: 'al'; code:$53; bitSize:8),
-      (name: 'ebx'; code:$60; bitSize:32),
-      (name: 'bx'; code:$61; bitSize:16),
-      (name: 'bh'; code:$62; bitSize:8),
-      (name: 'bl'; code:$63; bitSize:8),
-      (name: 'ecx'; code:$70; bitSize:32),
-      (name: 'cx'; code:$71; bitSize:16),
-      (name: 'ch'; code:$72; bitSize:8),
-      (name: 'cl'; code:$73; bitSize:8),
-      (name: 'edx'; code:$80; bitSize:32),
-      (name: 'dx'; code:$81; bitSize:16),
-      (name: 'dh'; code:$82; bitSize:8),
-      (name: 'dl'; code:$83; bitSize:8),
-      (name: 'cs'; code:$A0; bitSize:32),
-      (name: 'ds'; code:$A1; bitSize:32),
-      (name: 'ss'; code:$A2; bitSize:32)
+      (name: 'sp';  code:C_SP;  bitSize:32),
+      (name: 'bp';  code:C_BP;  bitSize:32),
+      (name: 'ip';  code:C_IP;  bitSize:32),
+      (name: 'cc';  code:C_CC;  bitSize:32),
+      (name: 'eax'; code:C_EAX; bitSize:32),
+      (name: 'ax';  code:C_AX;  bitSize:16),
+      (name: 'ah';  code:C_AH;  bitSize:8),
+      (name: 'al';  code:C_AL;  bitSize:8),
+      (name: 'ebx'; code:C_EBX; bitSize:32),
+      (name: 'bx';  code:C_BX;  bitSize:16),
+      (name: 'bh';  code:C_BH;  bitSize:8),
+      (name: 'bl';  code:C_BL;  bitSize:8),
+      (name: 'ecx'; code:C_ECX; bitSize:32),
+      (name: 'cx';  code:C_CX;  bitSize:16),
+      (name: 'ch';  code:C_CH;  bitSize:8),
+      (name: 'cl';  code:C_CL;  bitSize:8),
+      (name: 'edx'; code:C_EDX; bitSize:32),
+      (name: 'dx';  code:C_DX;  bitSize:16),
+      (name: 'dh';  code:C_DH;  bitSize:8),
+      (name: 'dl';  code:C_DL;  bitSize:8),
+      (name: 'cs';  code:C_CS;  bitSize:32),
+      (name: 'ds';  code:C_DS;  bitSize:32),
+      (name: 'ss';  code:C_SS;  bitSize:32)
     );
 
 

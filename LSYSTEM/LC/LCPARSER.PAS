@@ -8,7 +8,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale, strings,
+    ascii, consts, utils, uclasses, types, locale, strings,
     uobject, uexc, lliteral, lcommon, lcbase, lsrccode, ltexts;
 
   const

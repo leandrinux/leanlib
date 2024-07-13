@@ -10,11 +10,14 @@ interface
 
   const
     C_BACKSPACE = #8;
+    C_TAB       = #9;
     C_LF        = #10;
     C_CR        = #13;
     C_ESC       = #27;
     C_LEFT      = #37;
     C_RIGHT     = #39;
+    
+    C_SPACE     = ' ';
 
     { function keys are preceded by 0 }
     C_BREAK     = #$03;
