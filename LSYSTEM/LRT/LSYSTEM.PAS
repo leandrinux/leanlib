@@ -44,11 +44,11 @@ implementation
     _bus := new (PBus, init);
     _ram := new(PRAM, initWithSize(C_DEFAULT_RAM));
     _cpu^.setBus(_bus);
-    _bus^.addDevice(_ram);
+    _bus^.addDevice(_ram); { RAM is device #0 }
 
     echoDevice := new(PEchoDevice, init);
     _bus^.addDevice(echoDevice);
-    echoDevice^.release;
+    echoDevice^.release;  { echo device is device #1 }
   end;
 
   destructor TSystem.done;
@@ -88,14 +88,21 @@ implementation
     if compareBuffers(@signature, @C_BINARY_SIGNATURE, sizeof(TBinarySignature)) <> ECompareEqual then 
       msg(EMsgFatal, C_STR_BINARY_INVALID, '');
     
-    _ram^.load(fs, 0);
+    _ram^.loadStream(fs, 0);
     fs^.release;
   end;
 
   procedure TSystem.run;
+  var
+    instruction: TInstruction;
   begin
     _cpu^.initialize;
-    while (not keypressed) or (readkey<>C_ESC) do _cpu^.runOnce;
+    while (not keypressed) or (readkey<>C_ESC) do
+    begin
+       _ram^.readMemory(@instruction, _cpu^.regs.IP, sizeof(TInstruction));
+       _cpu^.exec(instruction);
+       delay(2000);
+    end;
   end;
 
   { TSystem private }

@@ -26,7 +26,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure addDevice(device: PDevice);
-      function readFromRAM(data: PChar; position: TUInt32; count: word): word;
+      function RAM: PDevice;
     private
       _devices: TDeviceBusArray;
       _count: byte;
@@ -68,11 +68,10 @@ implementation
     device^.retain;
   end;
 
-  function TBus.readFromRAM(data: PChar; position: TUInt32; count: word): word;
+  function TBus.RAM: PDevice;
   begin
-
+    RAM := _devices[0];
   end;
-
   { TBus private }
 
   { Other }
