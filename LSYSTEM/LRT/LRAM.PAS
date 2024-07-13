@@ -22,8 +22,8 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      procedure loadStream(stream: PStream; position: TUInt32);
-      function readMemory(buffer: pchar; position: TUInt32; count: word): word;
+      procedure loadStream(source: PStream; bytesToLoad: word; memoryPosition: TUInt32);
+      function readFromMemory(buffer: pchar; memoryPosition: TUInt32; bytesToRead: word): word;
     private
       _data: pchar;
       _dataSize: word;
@@ -56,34 +56,34 @@ implementation
     getClassId := C_CLASS_ID_RAM;
   end;
 
-  procedure TRAM.loadStream(stream: PStream; position: TUInt32);
+  procedure TRAM.loadStream(source: PStream; bytesToLoad: word; memoryPosition: TUInt32);
   var
     p: pchar;
     size: TUInt32;
   begin
     p := _data;
-    inc(p, position);
-    size := stream^.getSize - stream^.getPosition;
-    if size > _dataSize then msg(EMsgFatal, C_STR_BINARY_TOO_BIG, '');
-    stream^.read(p, size);
+    inc(p, memoryPosition);
+    if bytesToLoad > _dataSize then msg(EMsgFatal, C_STR_BINARY_TOO_BIG, '');
+    source^.read(p, bytesToLoad);
   end;
 
-  function TRAM.readMemory(buffer: pchar; position: TUInt32; count: word): word;
+  function TRAM.readFromMemory(buffer: pchar; memoryPosition: TUInt32; bytesToRead: word): word;
   var
     p: pchar;
-    c: word;
+    bytesRead: word;
   begin
     p := _data;
-    inc(p, position);
-    c := count;
-    while (c>0) and (position<_dataSize) do
+    inc(p, memoryPosition);
+    bytesRead := 0;
+    while (bytesRead<bytesToRead) and (memoryPosition<_dataSize) do
     begin
       buffer^ := p^;
-      dec(c);
-      inc(position);
+      inc(bytesRead);
       inc(p);
+      inc(buffer);
+      inc(memoryPosition);
     end;
-    readMemory := count - c;
+    readFromMemory := bytesRead;
   end;
 
   { TRAM private }

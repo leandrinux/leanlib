@@ -88,7 +88,7 @@ implementation
     if compareBuffers(@signature, @C_BINARY_SIGNATURE, sizeof(TBinarySignature)) <> ECompareEqual then 
       msg(EMsgFatal, C_STR_BINARY_INVALID, '');
     
-    _ram^.loadStream(fs, 0);
+    _ram^.loadStream(fs, 0, fs^.getSize - sizeof(TBinarySignature));
     fs^.release;
   end;
 
@@ -99,7 +99,7 @@ implementation
     _cpu^.initialize;
     while (not keypressed) or (readkey<>C_ESC) do
     begin
-       _ram^.readMemory(@instruction, _cpu^.regs.IP, sizeof(TInstruction));
+       _ram^.readFromMemory(@instruction, _cpu^.regs.IP, sizeof(TInstruction));
        _cpu^.exec(instruction);
        delay(2000);
     end;
