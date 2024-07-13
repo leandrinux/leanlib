@@ -8,7 +8,8 @@ interface
 
   uses
     consts, utils, uclasses, types, locale,
-    uobject, uexc;
+    uobject, uexc,
+    lcommon;
 
   const
     C_CLASS_ID_DEVICE = 5004;
@@ -21,6 +22,9 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      function command(cmd: byte; value: TUInt32): boolean; virtual;
+      function read(buffer: pchar; count: word): word; virtual;
+      function write(buffer: pchar; count: word): word; virtual;
     private
     end;
 
@@ -46,6 +50,21 @@ implementation
   function TDevice.getClassId: word;
   begin
     getClassId := C_CLASS_ID_DEVICE;
+  end;
+
+  function TDevice.command(cmd: byte; value: TUInt32): boolean;
+  begin
+    command := false;
+  end;
+
+  function TDevice.read(buffer: pchar; count: word): word;
+  begin
+    read := 0;
+  end;
+
+  function TDevice.write(buffer: pchar; count: word): word;
+  begin
+    write := 0;
   end;
 
   { TDevice private }
