@@ -9,19 +9,17 @@ interface
   uses
     crt, strings;
 
-  const
-    C_REGISTER_COUNT = 23;       { how many registers does the CPU have }
-    C_OPCODE_COUNT   = 32;       { how many operations does the CPU recognize }
-    
+  const    
     C_MASK_FLAG_ZERO = $01;      { used to know if CC indicates a zero flag }
     C_MASK_FLAG_SIGN = $02;      { used to know the sign of the last operation that affected the CC }
 
     C_PARAMETER_LITERAL  = 0;    { param type value for literal parameters }
     C_PARAMETER_REGISTER = 1;    { param type value for register parameters }
     C_PARAMETER_ADDRESS  = 2;    { param type value for address parameters }
-    C_PARAMETER_POINTER = 3;     { param type value for pointer parameters }
+    C_PARAMETER_POINTER  = 3;    { param type value for pointer parameters }
 
-    { register codes } 
+    { opcodes } 
+    C_OPCODE_COUNT   = 32;       { how many operations does the CPU recognize }
     C_MOV = $01; 
     C_ADD = $02; 
     C_SUB = $03; 
@@ -55,6 +53,8 @@ interface
     C_OUT = $51; 
     C_IN = $52;
 
+    { registers }
+    C_REGISTER_COUNT = 23;       { how many registers does the CPU have }
     C_SP = $10;
     C_BP = $20;
     C_IP = $30;
