@@ -59,12 +59,11 @@ implementation
   procedure TRAM.loadStream(source: PStream; bytesToLoad: word; memoryPosition: TUInt32);
   var
     p: pchar;
-    size: TUInt32;
   begin
+    if bytesToLoad > _dataSize then msg(EMsgFatal, C_STR_BINARY_TOO_BIG, '');
     p := _data;
     inc(p, memoryPosition);
-    if bytesToLoad > _dataSize then msg(EMsgFatal, C_STR_BINARY_TOO_BIG, '');
-    source^.read(p, bytesToLoad);
+    source^.read(p, bytesToLoad)
   end;
 
   function TRAM.readFromMemory(buffer: pchar; memoryPosition: TUInt32; bytesToRead: word): word;

@@ -29,6 +29,7 @@ interface
       _cpu: PCPU;
       _bus: PBus;
       _ram: PRAM;
+      _codeSize : TUInt32;
     end;
 
 implementation
@@ -88,7 +89,8 @@ implementation
     if compareBuffers(@signature, @C_BINARY_SIGNATURE, sizeof(TBinarySignature)) <> ECompareEqual then 
       msg(EMsgFatal, C_STR_BINARY_INVALID, '');
     
-    _ram^.loadStream(fs, 0, fs^.getSize - sizeof(TBinarySignature));
+    _codeSize := fs^.getSize - sizeof(TBinarySignature);
+    _ram^.loadStream(fs, _codeSize, 0);
     fs^.release;
   end;
 
@@ -101,7 +103,7 @@ implementation
     begin
        _ram^.readFromMemory(@instruction, _cpu^.regs.IP, sizeof(TInstruction));
        _cpu^.exec(instruction);
-       delay(2000);
+       if _cpu^.regs.IP >= _codeSize then exit; 
     end;
   end;
 
