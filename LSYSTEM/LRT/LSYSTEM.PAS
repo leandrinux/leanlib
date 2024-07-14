@@ -9,7 +9,7 @@ interface
   uses
     xcrt, ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, ufstream,
-    lcommon, lrbase, lcpu, lram, lbus, ldecho, ltexts,
+    lcommon, lregs, lcpu, lram, lbus, ldecho, ltexts,
     op_base;
 
   const

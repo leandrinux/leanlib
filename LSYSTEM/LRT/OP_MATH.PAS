@@ -9,7 +9,7 @@ interface
   uses
     op_base, 
     lcommon,
-    lrbase;
+    lregs;
 
   procedure _mov(const c: TContext); far;
   procedure _sub(const c: TContext); far;

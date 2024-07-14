@@ -7,7 +7,7 @@ unit
 interface
 
   uses
-    lcommon, lrbase, lram, lbus;
+    lcommon, lregs, lram, lbus;
 
   type
     TContext = record

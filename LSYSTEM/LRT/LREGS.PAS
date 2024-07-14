@@ -1,9 +1,8 @@
 {
-  this unit contains elements that are exclusively
-  shared by components of the runtime only
+  this unit implements register management types and routines
 }
 unit
-  lrbase;
+  lregs;
 
 interface
 
@@ -84,20 +83,20 @@ implementation
       C_ECX: regs^.ECX := value;
       C_EDX: regs^.EDX := value;
 
-      C_AX: regs^.EAX := (regs^.EAX and $FFFF0000) and (value and $0000FFFF);
-      C_BX: regs^.EBX := (regs^.EBX and $FFFF0000) and (value and $0000FFFF);
-      C_CX: regs^.ECX := (regs^.ECX and $FFFF0000) and (value and $0000FFFF);
-      C_DX: regs^.EDX := (regs^.EDX and $FFFF0000) and (value and $0000FFFF);
+      C_AX: regs^.EAX := (regs^.EAX and $FFFF0000) or (value and $0000FFFF);
+      C_BX: regs^.EBX := (regs^.EBX and $FFFF0000) or (value and $0000FFFF);
+      C_CX: regs^.ECX := (regs^.ECX and $FFFF0000) or (value and $0000FFFF);
+      C_DX: regs^.EDX := (regs^.EDX and $FFFF0000) or (value and $0000FFFF);
 
-      C_AH: regs^.EAX := (regs^.EAX and $FFFF00FF) and ((value shl 8) and $0000FF00);
-      C_BH: regs^.EBX := (regs^.EBX and $FFFF00FF) and ((value shl 8) and $0000FF00);
-      C_CH: regs^.ECX := (regs^.ECX and $FFFF00FF) and ((value shl 8) and $0000FF00);
-      C_DH: regs^.EDX := (regs^.EDX and $FFFF00FF) and ((value shl 8) and $0000FF00);
+      C_AH: regs^.EAX := (regs^.EAX and $FFFF00FF) or ((value shl 8) and $0000FF00);
+      C_BH: regs^.EBX := (regs^.EBX and $FFFF00FF) or ((value shl 8) and $0000FF00);
+      C_CH: regs^.ECX := (regs^.ECX and $FFFF00FF) or ((value shl 8) and $0000FF00);
+      C_DH: regs^.EDX := (regs^.EDX and $FFFF00FF) or ((value shl 8) and $0000FF00);
 
-      C_AL: regs^.EAX := (regs^.EAX and $FFFFFF00) and (value and $000000FF);
-      C_BL: regs^.EBX := (regs^.EBX and $FFFFFF00) and (value and $000000FF);
-      C_CL: regs^.ECX := (regs^.ECX and $FFFFFF00) and (value and $000000FF);
-      C_DL: regs^.EDX := (regs^.EDX and $FFFFFF00) and (value and $000000FF);
+      C_AL: regs^.EAX := (regs^.EAX and $FFFFFF00) or (value and $000000FF);
+      C_BL: regs^.EBX := (regs^.EBX and $FFFFFF00) or (value and $000000FF);
+      C_CL: regs^.ECX := (regs^.ECX and $FFFFFF00) or (value and $000000FF);
+      C_DL: regs^.EDX := (regs^.EDX and $FFFFFF00) or (value and $000000FF);
 
       C_CS: regs^.CS := value;
       C_DS: regs^.DS := value;

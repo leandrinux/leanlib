@@ -9,7 +9,7 @@ interface
   uses
     op_base,
     lcommon,
-    lrbase;
+    lregs;
 
   procedure _jnz(const c: TContext); far;
   procedure _jmp(const c: TContext); far;
