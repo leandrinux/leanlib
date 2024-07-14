@@ -96,6 +96,8 @@ interface
     TUInt32 = longint;
     TChar = char;
 
+    PUInt32 = ^TUInt32;
+
     TInstructionHeader = packed record
       opcode: TUInt8;
       params: TUInt8;

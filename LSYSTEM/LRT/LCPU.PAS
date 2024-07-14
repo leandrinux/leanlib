@@ -25,7 +25,7 @@ interface
       function getClassId: word; virtual;
       procedure setBus(bus: PBus);
       procedure initialize;
-      procedure exec(const context: TContext);
+      procedure exec(var context: TContext);
     private
       _bus: PBus;
     end;
@@ -68,7 +68,7 @@ implementation
     fillchar(regs, sizeof(TRegisters), 0);
   end;
 
-  procedure TCPU.exec(const context: TContext);
+  procedure TCPU.exec(var context: TContext);
   begin
     linstset.exec(context);
     inc(context.regs^.IP, sizeof(TInstruction));

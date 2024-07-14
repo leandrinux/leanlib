@@ -24,6 +24,8 @@ interface
       function getClassId: word; virtual;
       procedure loadStream(source: PStream; bytesToLoad: word; memoryPosition: TUInt32);
       function readFromMemory(buffer: pchar; memoryPosition: TUInt32; bytesToRead: word): word;
+      procedure setValue(address: TUInt32; value: TUInt32);
+      function getValue(address: TUInt32): TUInt32;
     private
       _data: pchar;
       _dataSize: word;
@@ -83,6 +85,24 @@ implementation
       inc(memoryPosition);
     end;
     readFromMemory := bytesRead;
+  end;
+
+  procedure TRAM.setValue(address: TUInt32; value: TUInt32);
+  var
+    p: pchar;
+  begin
+    p := _data;
+    inc(p, address);
+    PUInt32(p)^ := value;
+  end;
+
+  function TRAM.getValue(address: TUInt32): TUInt32;
+  var
+    p: pchar;
+  begin
+    p := _data;
+    inc(p, address);
+    getValue := PUInt32(p)^;    
   end;
 
   { TRAM private }

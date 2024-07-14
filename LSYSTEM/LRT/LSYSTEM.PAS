@@ -9,7 +9,7 @@ interface
   uses
     xcrt, ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, ufstream,
-    lcommon, lrbase, lcpu, lram, lbus, ldecho, ltexts;
+    lcommon, lrbase, linstset, lcpu, lram, lbus, ldecho, ltexts;
 
   const
     C_CLASS_ID_SYSTEM = 5000;
@@ -100,6 +100,7 @@ implementation
   begin
     _cpu^.initialize;
     context.regs := @(_cpu^.regs);
+    context.ram := _ram;
     while (not keypressed) or (readkey<>C_ESC) do
     with context do begin
        _ram^.readFromMemory(@instruction, regs^.IP, sizeof(TInstruction));
