@@ -101,6 +101,7 @@ interface
       params: TUInt8;
     end;
 
+    PInstruction = ^TInstruction;
     TInstruction = packed record
       header: TInstructionHeader;
       param0: TUInt32;

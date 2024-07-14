@@ -9,27 +9,12 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc,
-    lcommon, lrbase, lbus;
+    lcommon, lrbase, lbus, linstset;
 
   const
     C_CLASS_ID_CPU = 5001;
 
   type
-
-    TRegisters = record
-      SP: TUInt32;
-      BP: TUInt32;
-      IP: TUInt32;
-      CC: TUInt32;
-      EAX: TUInt32;
-      EBX: TUInt32;
-      ECX: TUInt32;
-      EDX: TUInt32;
-      CS: TUInt32;
-      DS: TUInt32;
-      SS: TUInt32;    
-    end;
-
     PCPU = ^TCPU;
     TCPU = object (TObject)
     public
@@ -40,7 +25,7 @@ interface
       function getClassId: word; virtual;
       procedure setBus(bus: PBus);
       procedure initialize;
-      procedure exec(const instruction: TInstruction);
+      procedure exec(const context: TContext);
     private
       _bus: PBus;
     end;
@@ -83,10 +68,10 @@ implementation
     fillchar(regs, sizeof(TRegisters), 0);
   end;
 
-  procedure TCPU.exec(const instruction: TInstruction);
+  procedure TCPU.exec(const context: TContext);
   begin
-    writeln('opcode: ', instruction.header.opcode);
-    inc(regs.IP, sizeof(instruction));
+    linstset.exec(context);
+    inc(context.regs^.IP, sizeof(TInstruction));
   end;
 
   { TCPU private }

@@ -9,7 +9,7 @@ interface
   uses
     xcrt, ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, ufstream,
-    lcommon, lcpu, lram, lbus, ldecho, ltexts;
+    lcommon, lrbase, lcpu, lram, lbus, ldecho, ltexts;
 
   const
     C_CLASS_ID_SYSTEM = 5000;
@@ -96,14 +96,15 @@ implementation
 
   procedure TSystem.run;
   var
-    instruction: TInstruction;
+    context: TContext;
   begin
     _cpu^.initialize;
+    context.regs := @(_cpu^.regs);
     while (not keypressed) or (readkey<>C_ESC) do
-    begin
-       _ram^.readFromMemory(@instruction, _cpu^.regs.IP, sizeof(TInstruction));
-       _cpu^.exec(instruction);
-       if _cpu^.regs.IP >= _codeSize then exit; 
+    with context do begin
+       _ram^.readFromMemory(@instruction, regs^.IP, sizeof(TInstruction));
+       _cpu^.exec(context);
+       if regs^.IP >= _codeSize then exit; 
     end;
   end;
 
