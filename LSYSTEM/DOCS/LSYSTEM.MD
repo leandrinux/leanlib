@@ -93,11 +93,18 @@ The last 16 bits are a signed constant, therefore defined in the -32768..32767 r
 
 ## Instruction set 
 
-The lsystem instruction set consists of 32 instructions or operations divided in 5 groups: math, jumps, binary algebra, stack operations and device IO.
+The lsystem instruction set consists of 32 instructions or operations divided in multiple groups
+
+* math
+* flow control
+* binary algebra 
+* stack operations 
+* device IO
+* extended features
 
 ### Math
 
-The math group of instructions is made of 12 instructions, including all from the basic 4 math operations to moving data and performing bit shifts, which essentially are the same as multiplying or dividing a value by 2. The four basic mathematical operations are handled by ADD, SUB, MUL and DIV for integer values, and FADD, FSUB, FMUL and FDIV for floating point values.
+The math group of instructions is made of all the basic 4 math operations and also moving data and performing bit shifts, which essentially are the same as multiplying or dividing a value by 2. The four basic mathematical operations are handled by ADD, SUB, MUL and DIV for integer values, and FADD, FSUB, FMUL and FDIV for floating point values.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
@@ -107,16 +114,10 @@ The math group of instructions is made of 12 instructions, including all from th
 |MUL|0x04|2|Yes|$1 becomes $1 * $2|
 |DIV|0x05|2|Yes|$1 becomes $1 / $2|
 |CMP|0x06|2|Yes|Does $1 - $2 without changing $1|
-|SHL|0x07|2|Yes|Shifts $1 to the left by $2 bits|
-|SHR|0x08|2|Yes|Shifts $1 to the right by $2 bits|
-|FADD|0x09|2|Yes|$1 becomes $1 + $2 (floating point operation)|
-|FSUB|0x0A|2|Yes|$1 becomes $1 - $2 (floating point operation)|
-|FMUL|0x0B|2|Yes|$1 becomes $1 * $2 (floating point operation)|
-|FDIV|0x0C|2|Yes|$1 becomes $1 / $2 (floating point operation)|
 
-### Jumps
+### Flow control
 
-This group is made of 8 instructions. Jumps are used to alter the flow of execution of the program. `JMP` is an unconditional jump, which means it will always change flow execution to the specified line. All other jumps are conditional and based on different criteria such as the sign bit, the zero bit or the result of a comparison with another value.
+Flow control consists of different kinds of branching or jumping which are used to alter the flow of execution of the program. `JMP` is an unconditional jump, which means it will always change flow execution to the specified line. All other jumps are conditional and based on different criteria such as the sign bit, the zero bit or the result of a comparison with another value.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
@@ -128,10 +129,12 @@ This group is made of 8 instructions. Jumps are used to alter the flow of execut
 |JP|0x26|1|No|jumps to $1 if CC sign bit is 0|
 |JN|0x27|1|No|jumps to $1 if CC sign bit is 1|
 |JNZ|0x28|1|No|jumps to $1 if CC zero bit is 0|
+|CALL|0x45|1|No|Performs subroutine call (pushes current instruction address plus one, then jumps to specified address)|
+|RET|0x46|0|No|Pops the address from the stack and resumes execution from there|
 
 ### Binary algebra
 
-The binary algebra group includes the 4 basic logical operations.
+The binary algebra group includes the 4 basic logical operations plus others like shifting bits to the left or right.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
@@ -139,6 +142,8 @@ The binary algebra group includes the 4 basic logical operations.
 |OR|0x32|2|Yes|$1 becomes $1 or $2|
 |NOT|0x33|1|Yes|$1 becomes not $1|
 |XOR|0x34|2|Yes|$1 becomes $1 xor $2|
+|SHL|0x07|2|Yes|Shifts $1 to the left by $2 bits|
+|SHR|0x08|2|Yes|Shifts $1 to the right by $2 bits|
 
 ### Stack operations
 
@@ -150,23 +155,31 @@ The stack operations are 7 instructions allowing for stack access such as adding
 |POP|0x42|1|No|Pops a value from the stack|
 |PUSHA|0x43|0|No|Pushes all registers to the stack|
 |POPA|0x44|0|No|Pops all registers to the stack|
-|CALL|0x45|1|No|Performs subroutine call (pushes current instruction address plus one, then jumps to specified address)|
-|RET|0x46|0|No|Pops the address from the stack and resumes execution from there|
 
 ### Device bus communication
 
-The CPU can communicate with other devices by using a bus. Each device has an id.
-You can either read and write a single byte to/from a device id. The device id 0 is actually a 
-broadcast id and it allows the CPU to send a byte to all the attached devices.
+The CPU can communicate with other devices by using a bus. Each device has an id. Some devices can be the RAM module or optional I/O devices.
+You can either read and write a single byte to/from a device id.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
 |OUT|0x51|2|No|Sends the lower byte of $2 to the device number $1|
 |IN|0x52|1|No|Receives one byte from the device number $1 into AL|
 
-### Parameter validation per instruction
+### Extended features
 
-Each instruction can take up to two parameters. These parameters have four different types. But not all combinations of parameter types are valid. The following tables show the different valid combinations for each instruction. The rows represent the first parameter and the columns represent the second.
+This group consists of floating point operations and other features which may not be available in all lsystem implementations.
+
+|Instruction|Opcode|Args|Affects CC|Description|
+|-----------|------|----|----------|-----------|
+|FADD|0x09|2|Yes|$1 becomes $1 + $2 (floating point operation)|
+|FSUB|0x0A|2|Yes|$1 becomes $1 - $2 (floating point operation)|
+|FMUL|0x0B|2|Yes|$1 becomes $1 * $2 (floating point operation)|
+|FDIV|0x0C|2|Yes|$1 becomes $1 / $2 (floating point operation)|
+
+## Parameter validation per instruction
+
+Instructions can take between none and two parameters. These parameters have four different types. But not all combinations of parameter types are valid. The following tables show the different valid combinations for each instruction. The rows represent the first parameter and the columns represent the second.
 
 As general rule, the left parameter cannot have a smaller bit size than the right parameter
 
@@ -262,12 +275,12 @@ The basic assembly program structure is as follows:
        mov 1, ax
        
        // you can also skip lines
-       write 1, 1
+       out 1, 1
        stop
 
 ### Instructions and arguments
 
-Instructions are case insensitive. They can have 1 or 2 arguments, or none at all. There are different types of arguments
+Identifiers like instruction names, register names or literal base prefixes are case sensitive. There are different types of arguments that an instruction can take.
 
 * Literal values
 * Memory references
@@ -314,12 +327,20 @@ You can use labels to create subroutines. Labels are defined before an instructi
                  
 `main` is a mandatory label which indicates the starting point of the program. 
 
-### Definitions and inclusions
+## The data section 
 
-Definitions are processed before compilation and they consist of names that are replaced by the value on the right side. Definitions can be any string, for instance a literal value, a register, or a memory reference. Definition names cannot be duplicates or existing reserved words. Definitions can be defined anywhere, but they can only be used after being defined. They are case sensitive
+The data section is the first part of a valid lsystem program. It starts with the `.data` reserved word and contains definitions, constants and variables.
 
+### Definitions
+
+Definitions are labels that are substituted during the compilation process by a numeric value. Definition names cannot be duplicates or reserved words such as register names. They are case sensitive
+
+    .data
+    
     #DEFINE value 0xCAFE
     
+    .code
+
 	main:
         mov ax, value
         
