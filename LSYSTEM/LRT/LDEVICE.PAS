@@ -25,6 +25,8 @@ interface
       function command(cmd: byte; value: TUInt32): boolean; virtual;
       function read(buffer: pchar; count: word): word; virtual;
       function write(buffer: pchar; count: word): word; virtual;
+      function readByte: byte; virtual;
+      procedure writeByte(value: byte); virtual;
     private
     end;
 
@@ -65,6 +67,15 @@ implementation
   function TDevice.write(buffer: pchar; count: word): word;
   begin
     write := 0;
+  end;
+
+  function TDevice.readByte: byte;
+  begin
+    readByte := 0;
+  end;  
+
+  procedure TDevice.writeByte(value: byte); 
+  begin
   end;
 
   { TDevice private }

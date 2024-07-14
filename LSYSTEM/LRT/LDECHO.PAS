@@ -22,6 +22,7 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      procedure writeByte(value: byte); virtual;
     private
     end;
 
@@ -47,6 +48,11 @@ implementation
   function TEchoDevice.getClassId: word;
   begin
     getClassId := C_CLASS_ID_DEVICE_ECHO;
+  end;
+
+  procedure TEchoDevice.writeByte(value: byte);
+  begin
+    system.write('#', value, ' ');
   end;
 
   { TEchoDevice private }

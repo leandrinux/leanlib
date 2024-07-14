@@ -102,6 +102,7 @@ implementation
     _cpu^.initialize;
     context.regs := @(_cpu^.regs);
     context.ram := _ram;
+    context.bus := _bus;
     while (not keypressed) or (readkey<>C_ESC) do
     with context do begin
        _ram^.readFromMemory(@instruction, regs^.IP, sizeof(TInstruction));

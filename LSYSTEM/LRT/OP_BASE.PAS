@@ -7,7 +7,7 @@ unit
 interface
 
   uses
-    lcommon, lrbase, lram;
+    lcommon, lrbase, lram, lbus;
 
   type
     TContext = record
@@ -15,6 +15,7 @@ interface
       paramType0, paramType1: byte;
       regs: PRegisters;
       ram: PRAM;
+      bus: PBus;
     end;
 
   function getPointerValue(regs: PRegisters; ram: PRAM; param: TUInt32): TUInt32;
