@@ -18,8 +18,10 @@ implementation
 
   procedure _jnz(const c: TContext);
   begin
-    if (c.regs^.CC and C_CC_ZERO) <> 0 then
-      setRegisterValue(c.regs, C_IP, c.instruction.param0);
+    if (c.regs^.CC and C_CC_ZERO) = 0 then
+      setRegisterValue(c.regs, C_IP, c.instruction.param0)
+    else
+      setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
   end;
 
   procedure _jmp(const c: TContext);
