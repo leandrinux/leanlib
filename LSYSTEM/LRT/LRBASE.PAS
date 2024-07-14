@@ -10,6 +10,10 @@ interface
   uses
     lcommon;
 
+  const
+    C_CC_ZERO = 1;
+    C_CC_NEGATIVE = 2;
+
   type
     PRegisters = ^TRegisters;
     TRegisters = record
