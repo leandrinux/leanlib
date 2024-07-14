@@ -9,7 +9,8 @@ interface
   uses
     xcrt, ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, ufstream,
-    lcommon, lrbase, linstset, lcpu, lram, lbus, ldecho, ltexts;
+    lcommon, lrbase, lcpu, lram, lbus, ldecho, ltexts,
+    op_base;
 
   const
     C_CLASS_ID_SYSTEM = 5000;

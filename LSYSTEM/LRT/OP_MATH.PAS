@@ -1,50 +1,22 @@
 {
-  Implements the CPU instruction set
+  this unit implements the math operations of the instruction set 
 }
-unit
-  linstset;
+unit 
+  op_math;
 
-interface
+interface   
 
   uses
-    lcommon, lrbase, lram;
+    op_base, 
+    lcommon,
+    lrbase;
 
-  type
-    TContext = record
-      instruction: TInstruction;
-      paramType0, paramType1: byte;
-      regs: PRegisters;
-      ram: PRAM;
-    end;
-
-  procedure exec(var c: TContext);
+  procedure _mov(const c: TContext); far;
+  procedure _sub(const c: TContext); far;
 
 implementation
 
-  type
-    TInstructionHandler = procedure(const c: TContext);
-    THandlerVector = array [byte] of TInstructionHandler;
-
-  var
-    handlerVector: THandlerVector;
-
-  function getPointerValue(regs: PRegisters; ram: PRAM; param: TUInt32): TUInt32;
-  var
-    address: TUInt32;
-  begin
-    address := getRegisterValue(regs, param and $000000FF) + (param shr 16);
-    getPointerValue := ram^.getValue(address);
-  end;
-
-  procedure setPointerValue(regs: PRegisters; ram: PRAM; param, value: TUInt32);
-  var
-    address: TUInt32;
-  begin
-    address := getRegisterValue(regs, param and $000000FF) + (param shr 16);
-    ram^.setValue(address, value);
-  end;
-
-  procedure _mov(const c: TContext); far;
+  procedure _mov(const c: TContext);
   begin
     with c, instruction do case paramType0 of
       C_PARAMETER_ADDRESS:
@@ -71,11 +43,7 @@ implementation
     end;
   end;
 
-  procedure _out(const c: TContext); far;
-  begin
-  end;
-
-  procedure _sub(const c: TContext); far;
+  procedure _sub(const c: TContext);
   var
     value: TUInt32;
   begin
@@ -116,34 +84,4 @@ implementation
     end;
   end;
 
-  procedure _jnz(const c: TContext); far;
-  begin
-  end;
-
-  procedure _jmp(const c: TContext); far;
-  begin
-  end;
-
-  procedure registerOpcodes;
-  begin
-    fillchar(handlerVector, sizeof(handlerVector), 0);
-    handlerVector[C_MOV] := _mov;
-    handlerVector[C_OUT] := _out;
-    handlerVector[C_SUB] := _sub;
-    handlerVector[C_JNZ] := _jnz;
-    handlerVector[C_JMP] := _jmp;
-  end;
-
-  procedure exec(var c: TContext);
-  begin
-    with c.instruction.header do
-    begin
-      c.paramType0 := params shr 4;
-      c.paramType1 := params and $0F;
-    end;
-    handlerVector[c.instruction.header.opcode](c);
-  end;
-
-begin
-  registerOpcodes;
 end.

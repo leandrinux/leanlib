@@ -99,7 +99,7 @@ The lsystem instruction set consists of 32 instructions or operations divided in
 * flow control
 * binary algebra 
 * stack operations 
-* device IO
+* input/output
 * extended features
 
 ### Math
@@ -113,7 +113,7 @@ The math group of instructions is made of all the basic 4 math operations and al
 |SUB|0x03|2|Yes|$1 becomes $1 - $2|
 |MUL|0x04|2|Yes|$1 becomes $1 * $2|
 |DIV|0x05|2|Yes|$1 becomes $1 / $2|
-|CMP|0x06|2|Yes|Does $1 - $2 without changing $1|
+|CMP|0x06|2|Yes|Substracts $2 from $1 without changing $1 but affecting the condition codes (CC) register|
 
 ### Flow control
 
@@ -156,7 +156,7 @@ The stack operations are 7 instructions allowing for stack access such as adding
 |PUSHA|0x43|0|No|Pushes all registers to the stack|
 |POPA|0x44|0|No|Pops all registers to the stack|
 
-### Device bus communication
+### Input / output
 
 The CPU can communicate with other devices by using a bus. Each device has an id. Some devices can be the RAM module or optional I/O devices.
 You can either read and write a single byte to/from a device id.

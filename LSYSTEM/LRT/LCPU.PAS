@@ -9,7 +9,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc,
-    lcommon, lrbase, lbus, linstset;
+    lcommon, lrbase, lbus, op_base, op_full;
 
   const
     C_CLASS_ID_CPU = 5001;
@@ -70,7 +70,7 @@ implementation
 
   procedure TCPU.exec(var context: TContext);
   begin
-    linstset.exec(context);
+    op_full.exec(context);
     inc(context.regs^.IP, sizeof(TInstruction));
   end;
 
