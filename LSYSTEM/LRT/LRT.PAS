@@ -5,7 +5,7 @@ var
   sys: PSystem;
 
 const
-  filename = '..\examples\hello.bin';
+  filename = '..\examples\abc.bin';
   isSilent = true;
 
 begin

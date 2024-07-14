@@ -14,7 +14,9 @@ interface
 
   const
     C_CLASS_ID_SYSTEM = 5000;
+  
     C_DEFAULT_RAM = 1024;
+    C_DEFAULT_STACK = 128;  
 
   type
     PSystem = ^TSystem;
@@ -103,6 +105,7 @@ implementation
     context.regs := @(_cpu^.regs);
     context.ram := _ram;
     context.bus := _bus;
+    context.regs^.SS := C_DEFAULT_RAM - C_DEFAULT_STACK;
     while (not keypressed) or (readkey<>C_ESC) do
     with context do begin
        _ram^.readFromMemory(@instruction, regs^.IP, sizeof(TInstruction));
