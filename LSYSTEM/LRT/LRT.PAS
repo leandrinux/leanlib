@@ -5,7 +5,7 @@ var
   sys: PSystem;
 
 const
-  filename = '..\examples\demo1.bin';
+  filename = '..\examples\hello.bin';
 
 begin
   msg(EMsgStrong, C_STR_BANNER, C_STR_LSYSTEM_VERSION + #0 + C_STR_LSYSTEM_CODENAME);

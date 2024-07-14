@@ -14,7 +14,7 @@ interface
 
   const
     C_CLASS_ID_SYSTEM = 5000;
-    C_DEFAULT_RAM = 100;
+    C_DEFAULT_RAM = 1024;
 
   type
     PSystem = ^TSystem;
