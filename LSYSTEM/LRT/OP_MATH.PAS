@@ -80,6 +80,7 @@ implementation
         setPointerValue(regs, ram, param0, value);
       end;
     end;
+    setConditionCode(c.regs, value);
     setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
   end;
 

@@ -28,6 +28,7 @@ interface
 
   function getRegisterValue(regs: PRegisters; reg: TUInt8): TUInt32;
   procedure setRegisterValue(regs: PRegisters; reg: TUInt8; value: TUInt32);
+  procedure setConditionCode(regs: PRegisters; value: TUInt32);
 
 implementation
 
@@ -98,6 +99,15 @@ implementation
       C_DS: regs^.DS := value;
       C_SS: regs^.SS := value;
     end;
+  end;
+
+  procedure setConditionCode(regs: PRegisters; value: TUInt32);
+  var
+    isZero, isNegative: byte;
+  begin
+    if value = 0 then isZero := 1 else isZero := 0;
+    if value < 0 then isNegative := 1 else isNegative := 0;
+    regs^.CC := (isNegative shl 1) and isZero;
   end;
 
 end.

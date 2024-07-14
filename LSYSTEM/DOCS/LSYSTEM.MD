@@ -39,8 +39,7 @@ The CC register is affected by certain instructions and has three meaningful bit
 |Bit number|Name|Meaning|
 |----------|----|-------|
 |0|Zero flag|1 if the last operation produced a zero value, 0 if it produced a non-zero value|
-|1|Sign flag|1 if the last operation produced a odd value, 0 if it produced an even value|
-|2|I/O flag|1 if the last I/O operation was successful, 0 if the device is busy|
+|1|Sign flag|1 if the last operation produced a negative value, 0 if it produced a positive value|
 |3..31|Unused|Bits reserved for future use|
 
 ## Instructions
