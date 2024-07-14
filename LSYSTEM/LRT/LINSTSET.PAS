@@ -9,13 +9,6 @@ interface
   uses
     lcommon, lrbase;
 
-(*
-mov 1
-out 81
-sub 3
-jnz 40
-jmp 33
-*)
   procedure exec(const c: TContext);
 
 implementation
@@ -27,19 +20,44 @@ implementation
   var
     handlerVector: THandlerVector;
 
-  procedure mov(const c: TContext); far;
+  procedure _mov(const c: TContext); far;
   begin
+    writeln('mov');
+  end;
+
+  procedure _out(const c: TContext); far;
+  begin
+    writeln('out');
+  end;
+
+  procedure _sub(const c: TContext); far;
+  begin
+    writeln('sub');
+  end;
+
+  procedure _jnz(const c: TContext); far;
+  begin
+    writeln('jnz');
+  end;
+
+  procedure _jmp(const c: TContext); far;
+  begin
+    writeln('jmp');
   end;
 
   procedure registerOpcodes;
   begin
     fillchar(handlerVector, sizeof(handlerVector), 0);
-    handlerVector[C_MOV] := mov;
+    handlerVector[C_MOV] := _mov;
+    handlerVector[C_OUT] := _out;
+    handlerVector[C_SUB] := _sub;
+    handlerVector[C_JNZ] := _jnz;
+    handlerVector[C_JMP] := _jmp;
   end;
 
   procedure exec(const c: TContext);
   begin
-    writeln('opcode: ', c.instruction.header.opcode);
+    handlerVector[c.instruction.header.opcode](c);
   end;
 
 begin
