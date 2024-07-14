@@ -24,8 +24,16 @@ implementation
 
   procedure _jmp(const c: TContext);
   begin
-    writeln('jmp not implemented');
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+        setRegisterValue(c.regs, C_IP, param0);
+      C_PARAMETER_ADDRESS:
+        setRegisterValue(c.regs, C_IP, ram^.getValue(param0));
+      C_PARAMETER_REGISTER:
+        setRegisterValue(c.regs, C_IP, getRegisterValue(regs, param0));
+      C_PARAMETER_POINTER:
+        setRegisterValue(c.regs, C_IP, getPointerValue(regs, ram, param0));
+    end;
   end;
 
 end.
