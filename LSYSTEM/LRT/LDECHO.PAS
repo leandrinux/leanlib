@@ -7,7 +7,7 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale,
+    ascii, consts, utils, uclasses, types, locale,
     uobject, uexc,
     ldevice;
 
@@ -52,7 +52,10 @@ implementation
 
   procedure TEchoDevice.writeByte(value: byte);
   begin
-    system.write('#', value, ' ');
+    if chr(value) in ['a'..'z', 'A'..'Z', '0'..'9', C_CR, C_LF, C_SPACE] then
+      system.write(chr(value))
+    else
+      system.write('#', value, ' ');
   end;
 
   { TEchoDevice private }
