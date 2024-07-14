@@ -41,6 +41,7 @@ implementation
 
     { math }
     handlerVector[C_MOV] := _mov;
+    handlerVector[C_ADD] := _add;
     handlerVector[C_SUB] := _sub;
 
     { flow }

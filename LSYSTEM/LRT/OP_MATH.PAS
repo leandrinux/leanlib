@@ -12,6 +12,7 @@ interface
     lregs;
 
   procedure _mov(const c: TContext); far;
+  procedure _add(const c: TContext); far;
   procedure _sub(const c: TContext); far;
 
 implementation
@@ -41,6 +42,46 @@ implementation
             C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, getPointerValue(regs, ram, param1));
         end;
     end;
+    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+  end;
+
+  procedure _add(const c: TContext);
+  var
+    value: TUInt32;
+  begin
+    with c, instruction do case paramType0 of
+      C_PARAMETER_ADDRESS:
+      begin
+        case paramType1 of
+            C_PARAMETER_LITERAL: value := ram^.getValue(param0) + param1;
+            C_PARAMETER_ADDRESS: value := ram^.getValue(param0) + ram^.getValue(param1);
+            C_PARAMETER_REGISTER: value := ram^.getValue(param0) + getRegisterValue(regs, param1);
+            C_PARAMETER_POINTER: value := ram^.getValue(param0) + getPointerValue(regs, ram, param1);
+        end;
+        ram^.setValue(param0, value);
+      end;
+      C_PARAMETER_REGISTER:
+      begin
+        case paramType1 of
+            C_PARAMETER_LITERAL: value := getRegisterValue(regs, param0) + param1;
+            C_PARAMETER_ADDRESS: value := getRegisterValue(regs, param0) + ram^.getValue(param1);
+            C_PARAMETER_REGISTER: value := getRegisterValue(regs, param0) + getRegisterValue(regs, param1);
+            C_PARAMETER_POINTER: value := getRegisterValue(regs, param0) + getPointerValue(regs, ram, param1);
+        end;
+        setRegisterValue(regs, param0, value);
+      end;
+      C_PARAMETER_POINTER:
+      begin
+        case paramType1 of
+            C_PARAMETER_LITERAL: value := getPointerValue(regs, ram, param0) + param1;
+            C_PARAMETER_ADDRESS: value := getPointerValue(regs, ram, param0) + ram^.getValue(param1);
+            C_PARAMETER_REGISTER: value := getPointerValue(regs, ram, param0) + getRegisterValue(regs, param1);
+            C_PARAMETER_POINTER: value := getPointerValue(regs, ram, param0) + getPointerValue(regs, ram, param1);
+        end;
+        setPointerValue(regs, ram, param0, value);
+      end;
+    end;
+    setConditionCode(c.regs, value);
     setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
   end;
 
