@@ -43,6 +43,9 @@ implementation
     handlerVector[C_MOV] := _mov;
     handlerVector[C_ADD] := _add;
     handlerVector[C_SUB] := _sub;
+    handlerVector[C_MUL] := _mul;
+    handlerVector[C_DIV] := _div;
+    handlerVector[C_CMP] := _cmp;
 
     { flow }
     handlerVector[C_JNZ] := _jnz;
