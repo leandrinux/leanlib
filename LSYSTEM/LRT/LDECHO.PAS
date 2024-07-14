@@ -52,10 +52,7 @@ implementation
 
   procedure TEchoDevice.writeByte(value: byte);
   begin
-    if chr(value) in ['a'..'z', 'A'..'Z', '0'..'9', C_CR, C_LF, C_SPACE] then
-      system.write(chr(value))
-    else
-      system.write('#', value, ' ');
+    system.write(chr(value))
   end;
 
   { TEchoDevice private }
