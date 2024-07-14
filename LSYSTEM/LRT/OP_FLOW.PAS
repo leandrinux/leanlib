@@ -19,11 +19,13 @@ implementation
   procedure _jnz(const c: TContext);
   begin
     writeln('jnz not implemented');
+    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
   end;
 
   procedure _jmp(const c: TContext);
   begin
     writeln('jmp not implemented');
+    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
   end;
 
 end.

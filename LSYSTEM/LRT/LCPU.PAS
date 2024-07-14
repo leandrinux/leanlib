@@ -71,7 +71,6 @@ implementation
   procedure TCPU.exec(var context: TContext);
   begin
     op_full.exec(context);
-    inc(context.regs^.IP, sizeof(TInstruction));
   end;
 
   { TCPU private }

@@ -41,6 +41,7 @@ implementation
             C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, getPointerValue(regs, ram, param1));
         end;
     end;
+    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
   end;
 
   procedure _sub(const c: TContext);
@@ -58,7 +59,6 @@ implementation
         end;
         ram^.setValue(param0, value);
       end;
-
       C_PARAMETER_REGISTER:
       begin
         case paramType1 of
@@ -69,7 +69,6 @@ implementation
         end;
         setRegisterValue(regs, param0, value);
       end;
-
       C_PARAMETER_POINTER:
       begin
         case paramType1 of
@@ -80,8 +79,8 @@ implementation
         end;
         setPointerValue(regs, ram, param0, value);
       end;
-
     end;
+    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
   end;
 
 end.

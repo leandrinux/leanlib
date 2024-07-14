@@ -22,7 +22,6 @@ interface
 
 implementation
 
-
   function getPointerValue(regs: PRegisters; ram: PRAM; param: TUInt32): TUInt32;
   var
     address: TUInt32;
