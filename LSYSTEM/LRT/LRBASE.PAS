@@ -10,9 +10,6 @@ interface
   uses
     lcommon;
 
-  const
-    C_RAM_CMD_SEEK = 10;
-
   type
     PRegisters = ^TRegisters;
     TRegisters = record
