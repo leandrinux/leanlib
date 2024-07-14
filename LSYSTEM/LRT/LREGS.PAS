@@ -110,7 +110,7 @@ implementation
   begin
     if value = 0 then isZero := 1 else isZero := 0;
     if value < 0 then isNegative := 1 else isNegative := 0;
-    regs^.CC := (isNegative shl 1) and isZero;
+    regs^.CC := (isNegative shl 1) or isZero;
   end;
 
 end.
