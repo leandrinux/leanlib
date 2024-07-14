@@ -46,7 +46,6 @@ implementation
 
   procedure _mov(const c: TContext); far;
   begin
-    writeln('mov');
     with c, instruction do case paramType0 of
       C_PARAMETER_ADDRESS:
         case paramType1 of
@@ -74,14 +73,12 @@ implementation
 
   procedure _out(const c: TContext); far;
   begin
-    writeln('out');
   end;
 
   procedure _sub(const c: TContext); far;
   var
     value: TUInt32;
   begin
-    writeln('sub');
     with c, instruction do case paramType0 of
       C_PARAMETER_ADDRESS:
       begin
@@ -121,12 +118,10 @@ implementation
 
   procedure _jnz(const c: TContext); far;
   begin
-    writeln('jnz');
   end;
 
   procedure _jmp(const c: TContext); far;
   begin
-    writeln('jmp');
   end;
 
   procedure registerOpcodes;
