@@ -20,10 +20,10 @@ implementation
 
   type
     TInstructionHandler = procedure(const c: TContext);
-    THandlerVector = array [byte] of TInstructionHandler;
+    THandlers = array [byte] of TInstructionHandler;
 
   var
-    handlerVector: THandlerVector;
+    handlers: THandlers;
 
   procedure exec(var c: TContext);
   begin
@@ -32,28 +32,33 @@ implementation
       c.paramType0 := params shr 4;
       c.paramType1 := params and $0F;
     end;
-    handlerVector[c.instruction.header.opcode](c);
+    handlers[c.instruction.header.opcode](c);
   end;
 
   procedure registerOpcodes;
   begin
-    fillchar(handlerVector, sizeof(handlerVector), 0);
+    fillchar(handlers, sizeof(handlers), 0);
 
     { math }
-    handlerVector[C_MOV] := _mov;
-    handlerVector[C_ADD] := _add;
-    handlerVector[C_SUB] := _sub;
-    handlerVector[C_MUL] := _mul;
-    handlerVector[C_DIV] := _div;
-    handlerVector[C_CMP] := _cmp;
+    handlers[C_MOV] := _mov;
+    handlers[C_ADD] := _add;
+    handlers[C_SUB] := _sub;
+    handlers[C_MUL] := _mul;
+    handlers[C_DIV] := _div;
+    handlers[C_CMP] := _cmp;
 
     { flow }
-    handlerVector[C_JMP] := _jmp;
-    handlerVector[C_JE] := _je;
-    handlerVector[C_JNZ] := _jnz;
+    handlers[C_JMP] := _jmp;
+    handlers[C_JE] := _je;
+    handlers[C_JG] := _jg;
+    handlers[C_JL] := _jl;
+    handlers[C_JZ] := _jz;
+    handlers[C_JP] := _jp;
+    handlers[C_JN] := _jn;
+    handlers[C_JNZ] := _jnz;
 
     { IO }
-    handlerVector[C_OUT] := _out;
+    handlers[C_OUT] := _out;
   end;
 
 begin
