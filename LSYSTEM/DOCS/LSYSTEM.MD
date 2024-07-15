@@ -121,9 +121,9 @@ Flow control consists of different kinds of branching or jumping which are used 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
 |JMP|0x21|1|No|assigns $1 to IP causing a jump|
-|JE|0x22|2|No|jumps to $2 if $1 is equal to AX|
-|JG|0x23|2|No|jumps to $2 if $1 is greater than AX|
-|JL|0x24|2|No|jumps to $2 if $1 is less than AX|
+|JE|0x22|2|No|jumps to $2 if $1 is equal to EAX|
+|JG|0x23|2|No|jumps to $2 if $1 is greater than EAX|
+|JL|0x24|2|No|jumps to $2 if $1 is less than EAX|
 |JZ|0x25|1|No|jumps to $1 if CC zero bit is 1|
 |JP|0x26|1|No|jumps to $1 if CC sign bit is 0|
 |JN|0x27|1|No|jumps to $1 if CC sign bit is 1|
