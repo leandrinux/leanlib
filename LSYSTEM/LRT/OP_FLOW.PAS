@@ -19,6 +19,8 @@ interface
   procedure _jp(const c: TContext); far;
   procedure _jn(const c: TContext); far;
   procedure _jnz(const c: TContext); far;
+  procedure _call(const c: TContext); far;
+  procedure _ret(const c: TContext); far;
 
 implementation
 
@@ -141,6 +143,34 @@ implementation
       c.regs^.IP := c.instruction.param0
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
+  end;
+
+  procedure _call(const c: TContext);
+  var
+    returnAddress, funcAddress: TUInt32;
+  begin
+    returnAddress := c.regs^.IP + sizeOf(TInstruction);
+    with c, instruction do
+    begin
+      case paramType0 of
+        C_PARAMETER_LITERAL: funcAddress := param0;
+        C_PARAMETER_ADDRESS: funcAddress := ram^.getValue(param0);
+        C_PARAMETER_REGISTER: funcAddress := getRegisterValue(regs, param0);
+        C_PARAMETER_POINTER: funcAddress := getPointerValue(regs, ram, param0);
+      end;
+      ram^.setValue(c.regs^.SP, returnAddress);
+    end;
+    dec(c.regs^.SP, sizeOf(TUInt32));
+    c.regs^.IP := funcAddress;
+  end;
+
+  procedure _ret(const c: TContext);
+  var
+    returnAddress: TUInt32;
+  begin
+    returnAddress := c.ram^.getValue(c.regs^.SP);
+    inc(c.regs^.SP, sizeOf(TUInt32));
+    c.regs^.IP := returnAddress;
   end;
 
 end.
