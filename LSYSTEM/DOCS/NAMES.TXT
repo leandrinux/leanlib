@@ -1,6 +1,7 @@
 Cat breeds to be used as codenames for the lean system (lsystem)
 
 1.0 Ragamuffin
+1.1 Snowshoe
 
 Abyssinian
 Aegean
