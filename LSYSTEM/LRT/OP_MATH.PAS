@@ -45,7 +45,7 @@ implementation
             C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, getPointerValue(regs, ram, param1));
         end;
     end;
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _add(const c: TContext);
@@ -85,7 +85,7 @@ implementation
       end;
     end;
     setConditionCode(c.regs, value);
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _sub(const c: TContext);
@@ -125,7 +125,7 @@ implementation
       end;
     end;
     setConditionCode(c.regs, value);
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _mul(const c: TContext);
@@ -165,7 +165,7 @@ implementation
       end;
     end;
     setConditionCode(c.regs, value);
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _div(const c: TContext);
@@ -205,7 +205,7 @@ implementation
       end;
     end;
     setConditionCode(c.regs, value);
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _cmp(const c: TContext);
@@ -242,7 +242,7 @@ implementation
       end;
     end;
     setConditionCode(c.regs, value);
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
 end.

@@ -47,7 +47,7 @@ implementation
             C_PARAMETER_POINTER: bus^.sendByte(getPointerValue(regs, ram, param0), getPointerValue(regs, ram, param1));
         end;
     end;
-    setRegisterValue(c.regs, C_IP, getRegisterValue(c.regs, C_IP) + sizeOf(TInstruction));
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
 
