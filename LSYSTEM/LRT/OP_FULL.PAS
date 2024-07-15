@@ -56,6 +56,8 @@ implementation
     handlers[C_JP] := _jp;
     handlers[C_JN] := _jn;
     handlers[C_JNZ] := _jnz;
+    handlers[C_CALL] := _call;
+    handlers[C_RET] := _ret;
 
     { IO }
     handlers[C_OUT] := _out;
