@@ -158,9 +158,9 @@ implementation
         C_PARAMETER_REGISTER: funcAddress := getRegisterValue(regs, param0);
         C_PARAMETER_POINTER: funcAddress := getPointerValue(regs, ram, param0);
       end;
-      ram^.setValue(c.regs^.SP, returnAddress);
+      ram^.setValue(c.regs^.SS + c.regs^.SP, returnAddress);
     end;
-    dec(c.regs^.SP, sizeOf(TUInt32));
+    inc(c.regs^.SP, sizeOf(TUInt32));
     c.regs^.IP := funcAddress;
   end;
 
@@ -168,8 +168,8 @@ implementation
   var
     returnAddress: TUInt32;
   begin
-    returnAddress := c.ram^.getValue(c.regs^.SP);
-    inc(c.regs^.SP, sizeOf(TUInt32));
+    returnAddress := c.ram^.getValue(c.regs^.SS + c.regs^.SP);
+    dec(c.regs^.SP, sizeOf(TUInt32));
     c.regs^.IP := returnAddress;
   end;
 
