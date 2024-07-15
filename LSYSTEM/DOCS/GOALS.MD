@@ -28,7 +28,7 @@ The second lsystem release must include multiple improvements for both compiler 
   * OUT must support all types of parameters but bitsize validation should still be performed.
   * Support for char literals such as '*'
   * Support for metadata
-  * 8087 support should be optional, which means it can run in XT computers or 386 without numeric coprocessor.
+  * 8087 support should be optional, which means it should run in XT computers or 386 without numeric coprocessor.
   * Support for byte, word, long and char variables
   * Binary should include flags which state information such as whether it requires floating point instructions.
 
