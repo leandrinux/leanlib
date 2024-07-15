@@ -48,8 +48,9 @@ implementation
     handlerVector[C_CMP] := _cmp;
 
     { flow }
-    handlerVector[C_JNZ] := _jnz;
     handlerVector[C_JMP] := _jmp;
+    handlerVector[C_JE] := _je;
+    handlerVector[C_JNZ] := _jnz;
 
     { IO }
     handlerVector[C_OUT] := _out;
