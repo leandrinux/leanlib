@@ -49,7 +49,7 @@ interface
       _sentences: PList;           { the list of non compiled, parsed sentences }
       _instructions: PList;        { the list of compiled instruction blocks }
       function parameterTypeToValue(parameterType: EParameterType): byte;
-      procedure setParameterBinaryValue(const arg: TSentenceArgument; var param: TUInt32);
+      procedure setParameterBinaryValue(const arg: TSentenceArgument; param: PUInt32);
     end;
 
     PSentenceBlock = ^TSentenceBlock;
@@ -147,7 +147,7 @@ implementation
     sentenceBlock: PSentenceBlock;
     instructionBlock: PInstructionBlock;
     sentence: TSentence;
-    instruction: TInstruction;
+    instruction: PInstruction;
     i: byte;
     totalCount, instructionAddress: TUInt32;
   begin
@@ -162,20 +162,6 @@ implementation
       i:=0;
       while i<sentenceBlock^.count do
       begin        
-        instructionAddress := totalCount * sizeof(TInstruction);
-        with sentenceBlock^.items[i] do
-        begin
-          if labelName<>'' then _symbols^.addValue(labelName, instructionAddress);
-          
-          instruction.header.opcode := opcode;
-
-          instruction.header.params := 
-             (parameterTypeToValue(args[0].argType) shl 4) 
-             or parameterTypeToValue(args[1].argType);
-
-          setParameterBinaryValue(args[0], instruction.param0);
-          setParameterBinaryValue(args[1], instruction.param1);
-        end;
 
         if (instructionBlock = nil) or (instructionBlock^.count = C_INSTRUCTIONS_PER_BLOCK) then
         begin
@@ -183,11 +169,26 @@ implementation
           _instructions^.addObject(instructionBlock);
           instructionBlock^.release;
         end;
+
         with instructionBlock^ do
         begin
-          items[count] := instruction;
-          count := count + 1;
+          instruction := @items[count];
+          inc(count);
         end;
+
+        with sentenceBlock^.items[i] do
+        begin
+          instructionAddress := totalCount * sizeof(TInstruction);
+          if labelName<>'' then _symbols^.addValue(labelName, instructionAddress);
+          instruction^.header.opcode := opcode;
+          instruction^.header.params := 
+             (parameterTypeToValue(args[0].argType) shl 4) 
+             or parameterTypeToValue(args[1].argType);
+
+          setParameterBinaryValue(args[0], @instruction^.param0);
+          setParameterBinaryValue(args[1], @instruction^.param1);
+        end;
+
         inc(totalCount);
         inc(i);
       end;
@@ -240,23 +241,23 @@ implementation
     parameterTypeToValue := C_VALUES[parameterType];
   end;
 
-  procedure TBinary.setParameterBinaryValue(const arg: TSentenceArgument; var param: TUInt32);
+  procedure TBinary.setParameterBinaryValue(const arg: TSentenceArgument; param: PUInt32);
   var
     success: boolean;
   begin
     with arg do case argType of
       EParameterTypeLiteral, EParameterTypeAddress: 
-        param := arg.intValue;
+        param^ := arg.intValue;
 
       EParameterTypeRegister: 
-        param := arg.registerCode;
+        param^ := arg.registerCode;
 
       EParameterTypePointer: 
-        param := (longint(arg.offset) shl 16) or arg.registerCode;
+        param^ := (longint(arg.offset) shl 16) or arg.registerCode;
 
       EParameterTypeSymbol:
       begin
-        success := _symbols^.getValue(arg.stringValue, param);
+        success := _symbols^.getValue(arg.stringValue, param^);
         if not success then _symbols^.addUnknownValue(arg.stringValue, param);
       end;
     
@@ -264,7 +265,7 @@ implementation
       begin
         { this happens when there is no parameter (an empty argument) }
         { by default we simply store 0 }
-        param := 0;
+        param^ := 0;
       end;
 
     end;

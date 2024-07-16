@@ -23,7 +23,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure addValue(const name: TString30; value: TUInt32);
-      procedure addUnknownValue(const name: TString30; const value: TUInt32);
+      procedure addUnknownValue(const name: TString30; reference: PUInt32);
       function getValue(const name: TString30; var value: TUInt32): boolean;
       function getUnknownCount: word;
       function getFirstUnknownName: TString30;
@@ -36,7 +36,7 @@ interface
     PUnknownSymbol = ^TUnknownSymbol;
     TUnknownSymbol = object (TObject)
       name: TString30;
-      reference: ^TUInt32;
+      reference: PUInt32;
     end;
 
 implementation
@@ -100,13 +100,13 @@ implementation
     end;
   end;
 
-  procedure TSymbols.addUnknownValue(const name: TString30; const value: TUInt32);
+  procedure TSymbols.addUnknownValue(const name: TString30; reference: PUInt32);
   var
     symbol: PUnknownSymbol;
   begin
     symbol := new(PUnknownSymbol, init);
     symbol^.name := name;
-    {symbol^.reference := @value;}
+    symbol^.reference := reference;
     _unknown^.addObject(symbol);
     symbol^.release;
   end;
