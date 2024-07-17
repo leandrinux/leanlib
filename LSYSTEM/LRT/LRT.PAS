@@ -7,7 +7,6 @@ var
 const
   filename = '..\examples\hello2.bin';
   isSilent = true;
-  
 
 begin
   if not isSilent then

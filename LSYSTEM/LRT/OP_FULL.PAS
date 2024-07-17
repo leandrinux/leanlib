@@ -13,6 +13,7 @@ interface
     op_math,
     op_flow,
     op_bin,
+    op_stack,
     op_io;
 
   procedure exec(var c: TContext);
@@ -67,6 +68,12 @@ implementation
     handlers[C_XOR] := _xor;
     handlers[C_SHL] := _shl;
     handlers[C_SHR] := _shr;
+
+    { stack }
+    handlers[C_PUSH] := _push;
+    handlers[C_POP] := _pop;
+    handlers[C_PUSHA] := _pusha;
+    handlers[C_POPA] := _popa;
 
     { IO }
     handlers[C_OUT] := _out;
