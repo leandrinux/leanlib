@@ -12,43 +12,64 @@ interface
     lregs;
 
   procedure _out(const c: TContext); far;
+  procedure _in(const c: TContext); far;
 
 implementation
 
   procedure _out(const c: TContext);
-  begin
-    with c, instruction do case paramType0 of
-      C_PARAMETER_LITERAL:
-        case paramType1 of
-            C_PARAMETER_LITERAL: bus^.sendByte(param0, param1);
-            C_PARAMETER_ADDRESS: bus^.sendByte(param0, ram^.getValue(param1));
-            C_PARAMETER_REGISTER: bus^.sendByte(param0, getRegisterValue(regs, param1));
-            C_PARAMETER_POINTER: bus^.sendByte(param0, getPointerValue(regs, ram, param1));
-        end;
-      C_PARAMETER_ADDRESS:
-        case paramType1 of
-            C_PARAMETER_LITERAL: bus^.sendByte(ram^.getValue(param0), param1);
-            C_PARAMETER_ADDRESS: bus^.sendByte(ram^.getValue(param0), ram^.getValue(param1));
-            C_PARAMETER_REGISTER: bus^.sendByte(ram^.getValue(param0), getRegisterValue(regs, param1));
-            C_PARAMETER_POINTER: bus^.sendByte(ram^.getValue(param0), getPointerValue(regs, ram, param1));
-        end;
-      C_PARAMETER_REGISTER:
-        case paramType1 of
-            C_PARAMETER_LITERAL: bus^.sendByte(getRegisterValue(regs, param0), param1);
-            C_PARAMETER_ADDRESS: bus^.sendByte(getRegisterValue(regs, param0), ram^.getValue(param1));
-            C_PARAMETER_REGISTER: bus^.sendByte(getRegisterValue(regs, param0), getRegisterValue(regs, param1));
-            C_PARAMETER_POINTER: bus^.sendByte(getRegisterValue(regs, param0), getPointerValue(regs, ram, param1));
-        end;
-      C_PARAMETER_POINTER:
-        case paramType1 of
-            C_PARAMETER_LITERAL: bus^.sendByte(getPointerValue(regs, ram, param0), param1);
-            C_PARAMETER_ADDRESS: bus^.sendByte(getPointerValue(regs, ram, param0), ram^.getValue(param1));
-            C_PARAMETER_REGISTER: bus^.sendByte(getPointerValue(regs, ram, param0), getRegisterValue(regs, param1));
-            C_PARAMETER_POINTER: bus^.sendByte(getPointerValue(regs, ram, param0), getPointerValue(regs, ram, param1));
-        end;
+  var
+    device, value: byte;
+    result: boolean;
+  begin  
+    with c, instruction, regs^ do 
+    begin
+      case paramType0 of
+          C_PARAMETER_LITERAL: device := param0;
+          C_PARAMETER_ADDRESS: device := ram^.getValue(param0);
+          C_PARAMETER_REGISTER: device := getRegisterValue(regs, param0);
+          C_PARAMETER_POINTER: device := getPointerValue(regs, ram, param0);
+      end;
+      case paramType1 of
+          C_PARAMETER_LITERAL: value := param1;
+          C_PARAMETER_ADDRESS: value := ram^.getValue(param1);
+          C_PARAMETER_REGISTER: value := getRegisterValue(regs, param1);
+          C_PARAMETER_POINTER: value := getPointerValue(regs, ram, param1);
+      end;
+      result := bus^.sendByte(device, value);
+      if result then 
+        CC := CC or C_CC_IO
+      else
+        CC := CC and (not C_CC_IO);
+      inc(IP, sizeOf(TInstruction));
     end;
-    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
+  procedure _in(const c: TContext);
+  var
+    device, value: byte;
+    result: boolean;
+  begin  
+
+    with c, instruction, regs^ do 
+    begin
+      case paramType0 of
+          C_PARAMETER_LITERAL: device := param0;
+          C_PARAMETER_ADDRESS: device := ram^.getValue(param0);
+          C_PARAMETER_REGISTER: device := getRegisterValue(regs, param0);
+          C_PARAMETER_POINTER: device := getPointerValue(regs, ram, param0);
+      end;
+      result := bus^.receiveByte(device, value);
+      case paramType1 of
+          C_PARAMETER_ADDRESS: ram^.setValue(param1, value);
+          C_PARAMETER_REGISTER: setRegisterValue(regs, param1, value);
+          C_PARAMETER_POINTER: setPointerValue(regs, ram, param1, value);
+      end;
+      if result then 
+        CC := CC or C_CC_IO
+      else
+        CC := CC and (not C_CC_IO);
+      inc(IP, sizeOf(TInstruction));
+    end;
+  end;
 
 end.

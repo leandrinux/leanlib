@@ -12,6 +12,7 @@ interface
   const    
     C_CC_ZERO = 1;  { used to know if CC indicates a zero flag }
     C_CC_SIGN = 2;  { used to know the sign of the last operation that affected the CC }
+    C_CC_IO   = 4;  { used to know if an IO operation was successful }
 
     C_PARAMETER_LITERAL  = 0;    { param type value for literal parameters }
     C_PARAMETER_REGISTER = 1;    { param type value for register parameters }

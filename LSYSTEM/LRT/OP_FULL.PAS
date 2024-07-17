@@ -77,6 +77,8 @@ implementation
 
     { IO }
     handlers[C_OUT] := _out;
+    handlers[C_IN] := _in;
+    
   end;
 
 begin

@@ -40,6 +40,7 @@ The CC register is affected by certain instructions and has three meaningful bit
 |----------|----|-------|
 |0|Zero flag|1 if the last operation produced a zero value, 0 if it produced a non-zero value|
 |1|Sign flag|1 if the last operation produced a negative value, 0 if it produced a positive value|
+|2|IO flag|1 if the last IO operation failed, 0 if succeeded|
 |3..31|Unused|Bits reserved for future use|
 
 ## Instructions

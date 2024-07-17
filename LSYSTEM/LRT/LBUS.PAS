@@ -26,7 +26,8 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure addDevice(device: PDevice);
-      procedure sendByte(deviceId, data: byte);
+      function sendByte(deviceId, data: byte): boolean;
+      function receiveByte(deviceId: byte; var data: byte): boolean;
     private
       _devices: TDeviceBusArray;
       _count: byte;
@@ -68,9 +69,14 @@ implementation
     device^.retain;
   end;
 
-  procedure TBus.sendByte(deviceId, data: byte);
+  function TBus.sendByte(deviceId, data: byte): boolean;
   begin
-    _devices[_count]^.writeByte(data);
+    sendByte := _devices[_count]^.writeByte(data);
+  end;
+
+  function TBus.receiveByte(deviceId: byte; var data: byte): boolean;
+  begin
+    receiveByte := _devices[_count]^.readByte(data);
   end;
 
   { TBus private }
