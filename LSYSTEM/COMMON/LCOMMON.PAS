@@ -10,6 +10,9 @@ interface
     crt, strings;
 
   const    
+    C_STR_LSYSTEM_VERSION = '1.1';
+    C_STR_LSYSTEM_CODENAME = 'Ragamuffin';
+
     C_CC_ZERO = 1;  { used to know if CC indicates a zero flag }
     C_CC_SIGN = 2;  { used to know the sign of the last operation that affected the CC }
     C_CC_IO   = 4;  { used to know if an IO operation was successful }
