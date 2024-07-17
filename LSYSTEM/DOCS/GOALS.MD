@@ -38,9 +38,8 @@ The second lsystem release must include multiple improvements for both compiler 
 
   * IP must be reset to zero if changes are made to CS
   * Support for JSON system configuration files
-  * Usable command line
+  * Usable command line allows to set silent mode
   * Displays metadata before running program if this info is available
   * Performance optimizations
   * Include examples for benchmarking
-  * 8087 must be optional. Floating point operations are optional.
   * Data section in binaries should be supported.
