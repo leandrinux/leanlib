@@ -1,11 +1,14 @@
+.data
+
+#define count 10
+
 .code
 
-main:
+  mov ecx, count
+loop:
   call hello
-  call hello
-  call hello
-
-end: 
+  sub ecx, 1
+  jnz loop
   jmp end
 
 hello:
@@ -24,3 +27,6 @@ hello:
   mov al, 10
   out 1, al
   ret
+
+end:
+  mov eax, 0
