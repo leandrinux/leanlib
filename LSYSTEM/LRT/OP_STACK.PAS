@@ -22,7 +22,12 @@ implementation
   begin
     with c, instruction, regs^ do
     begin
-      ram^.setValue(SS + SP, getRegisterValue(regs, param0));
+      case paramType0 of
+          C_PARAMETER_LITERAL: ram^.setValue(SS + SP, param0);
+          C_PARAMETER_ADDRESS: ram^.setValue(SS + SP, ram^.getValue(param0));
+          C_PARAMETER_REGISTER: ram^.setValue(SS + SP, getRegisterValue(regs, param0));
+          C_PARAMETER_POINTER: ram^.setValue(SS + SP, getPointerValue(regs, ram, param0)); 
+      end;
       inc(SP, sizeOf(TUInt32));        
       inc(IP, sizeOf(TInstruction));
     end;
@@ -33,7 +38,11 @@ implementation
     with c, instruction, regs^ do
     begin
       dec(SP, sizeOf(TUInt32));        
-      setRegisterValue(regs, param0, ram^.getValue(SS + SP));
+      case paramType0 of
+          C_PARAMETER_ADDRESS: ram^.setValue(param0, ram^.getValue(SS + SP));
+          C_PARAMETER_REGISTER: setRegisterValue(regs, param0, ram^.getValue(SS + SP));
+          C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, ram^.getValue(SS + SP)) 
+      end;
       inc(IP, sizeOf(TInstruction));
     end;
   end;
