@@ -14,7 +14,8 @@ interface
     op_flow,
     op_bin,
     op_stack,
-    op_io;
+    op_io,
+    op_ext;
 
   procedure exec(var c: TContext);
 
@@ -78,7 +79,13 @@ implementation
     { IO }
     handlers[C_OUT] := _out;
     handlers[C_IN] := _in;
-    
+
+    { extended features }
+    handlers[C_FADD] := _fadd;
+    handlers[C_FSUB] := _fsub;
+    handlers[C_FMUL] := _fmul;
+    handlers[C_FDIV] := _fdiv;
+
   end;
 
 begin
