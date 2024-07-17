@@ -117,14 +117,13 @@ implementation
         EStateReadOperationOrLabel:
         begin
           case ch of
-            C_CR, C_LF: begin end;
             ':': begin
               sentence.labelName := token;
               token := '';
               state := EStateSkipSpacesAndCRLF;
               nextState := EStateReadOperation;
             end;
-            ' ', #0: begin
+            C_CR, C_LF, ' ', #0: begin
               sentence.labelName := '';
               sentence.opname := token;
               token := '';
