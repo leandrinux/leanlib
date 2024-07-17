@@ -12,6 +12,7 @@ interface
     op_base,
     op_math,
     op_flow,
+    op_bin,
     op_io;
 
   procedure exec(var c: TContext);
@@ -58,6 +59,14 @@ implementation
     handlers[C_JNZ] := _jnz;
     handlers[C_CALL] := _call;
     handlers[C_RET] := _ret;
+
+    { binary algebra }
+    handlers[C_AND] := _and;
+    handlers[C_OR] := _or;
+    handlers[C_NOT] := _not;
+    handlers[C_XOR] := _xor;
+    handlers[C_SHL] := _shl;
+    handlers[C_SHR] := _shr;
 
     { IO }
     handlers[C_OUT] := _out;
