@@ -317,15 +317,17 @@ Pointer values only work with registers. If you want to use the address located 
 You can use labels to create subroutines. Labels are defined before an instruction, but not necessarily in the same line. Labels are case sensitive
 
     main:
-                 call doSomething
-                 stop
+      call doSomething
+    
+    loop:
+      jmp loop
 
-    doSomething: mov ax, 1
-                 mov bx, 2
-                 add ax, bx
-                 mov 1, ax
-                 
-`main` is a mandatory label which indicates the starting point of the program. 
+    doSomething: 
+      mov ax, 1
+      mov bx, 2
+      add ax, bx
+      mov 1, ax
+      ret
 
 ## The data section 
 
