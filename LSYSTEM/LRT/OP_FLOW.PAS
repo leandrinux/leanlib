@@ -116,7 +116,12 @@ implementation
   procedure _jz(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_ZERO) = 1 then
-      c.regs^.IP := c.instruction.param0
+      with c, instruction do case paramType0 of
+        C_PARAMETER_LITERAL: regs^.IP := param0;
+        C_PARAMETER_ADDRESS: regs^.IP := ram^.getValue(param0);
+        C_PARAMETER_REGISTER: regs^.IP := getRegisterValue(regs, param0);
+        C_PARAMETER_POINTER: regs^.IP := getPointerValue(regs, ram, param0);
+      end
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
@@ -124,7 +129,12 @@ implementation
   procedure _jp(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_SIGN) = 0 then
-      c.regs^.IP := c.instruction.param0
+      with c, instruction do case paramType0 of
+        C_PARAMETER_LITERAL: regs^.IP := param0;
+        C_PARAMETER_ADDRESS: regs^.IP := ram^.getValue(param0);
+        C_PARAMETER_REGISTER: regs^.IP := getRegisterValue(regs, param0);
+        C_PARAMETER_POINTER: regs^.IP := getPointerValue(regs, ram, param0);
+      end
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
@@ -132,7 +142,12 @@ implementation
   procedure _jn(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_SIGN) = 1 then
-      c.regs^.IP := c.instruction.param0
+      with c, instruction do case paramType0 of
+        C_PARAMETER_LITERAL: regs^.IP := param0;
+        C_PARAMETER_ADDRESS: regs^.IP := ram^.getValue(param0);
+        C_PARAMETER_REGISTER: regs^.IP := getRegisterValue(regs, param0);
+        C_PARAMETER_POINTER: regs^.IP := getPointerValue(regs, ram, param0);
+      end
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
@@ -140,7 +155,12 @@ implementation
   procedure _jnz(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_ZERO) = 0 then
-      c.regs^.IP := c.instruction.param0
+      with c, instruction do case paramType0 of
+        C_PARAMETER_LITERAL: regs^.IP := param0;
+        C_PARAMETER_ADDRESS: regs^.IP := ram^.getValue(param0);
+        C_PARAMETER_REGISTER: regs^.IP := getRegisterValue(regs, param0);
+        C_PARAMETER_POINTER: regs^.IP := getPointerValue(regs, ram, param0);
+      end
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
