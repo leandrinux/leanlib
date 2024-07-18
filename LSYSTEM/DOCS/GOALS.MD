@@ -8,6 +8,7 @@ The second lsystem release must include multiple improvements for both compiler 
   * Improved parsing prevents crashes due to invalid characters
   * Extra argument validations
     * SS and IP are considered read-only and compiler should validate that they are not modified
+    * CS can only be modified with MOV
     * OUT must support all types of parameters but bitsize validation should still be performed.
     * IN does not admit literals as first parameter
   * Support for char literals such as '*'
