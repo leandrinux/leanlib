@@ -72,7 +72,7 @@
     out 1, al
     mov eax, edx
     call write_uint32
-    mov eax, 58
+    mov eax, 32
     out 1, al
     mov eax, 61
     out 1, al
