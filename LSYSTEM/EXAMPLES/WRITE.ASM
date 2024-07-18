@@ -6,15 +6,15 @@
 
     mov eax, value
   loop:
-    call write_number
+    call write_int32
     mov bl, 32
     out 1, bl
     sub eax, 1
     jnz loop
-    call write_number
+    call write_int32
     jmp end
 
-  write_number:
+  write_int32:
     push eax
     xor edx, edx
     cmp eax, 0
