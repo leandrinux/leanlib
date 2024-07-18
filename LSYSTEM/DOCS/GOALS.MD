@@ -35,10 +35,9 @@ The second lsystem release must include multiple improvements for both compiler 
   * Include examples for future benchmarking
   * Data section in binaries should be supported.
 
-# 1.3 goals
+# 1.3 Minuet goals
 
   * Prevent the "jump to 0 on CPU panic" behavior by using another flag and a instruction that disables it only for the next instruction
-  * Allow for importing code from other files
   * Monochrome bitmap video display device
     * A command should turn on and off the device
     * A command should take a value to change the state of bits on the screen. 
@@ -53,3 +52,25 @@ The second lsystem release must include multiple improvements for both compiler 
    * AX becomes 0 if a device is not available
    * AX becomes the device identifier if a device is available
   * RAM device should report the total size through a command
+
+# 1.4 Sphynx goals
+
+* Allow for importing code from other files
+* The interpreter and its devices should run in a simulated/cooperative multitasking architecture, the CPU and each device running as a process, each process alternating in a round robin fashion. This will allow running multiple contexts simultaneously
+* the project should be buildable with the TPBUILD tool
+* New human interface device (keyboard and pointing device)
+* There should be a BIOS included which contains utility functions such as:
+  * printing null terminated strings throw the echo device
+  * printing numbers
+  * services accessible via a interrupt table
+  * using the monochrome bitmap video display
+  * using the beeper device
+  * using the human interface device
+  * saving and loading data from the storage device
+* After running the BIOS should use the storage device to read the boot program, then run it.
+
+# 1.5 Ragdoll goals
+
+* A demo boot program consisting on a simple shell
+* C-like language transpiler to lsystem assembly
+* Simple JS lsystem interpreter
