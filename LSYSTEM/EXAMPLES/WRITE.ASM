@@ -1,14 +1,21 @@
 .data
   
-#define value -1234
+#define value 100
 
 .code
 
     mov eax, value
+  loop:
+    call write_number
+    mov bl, 32
+    out 1, bl
+    sub eax, 1
+    jnz loop
     call write_number
     jmp end
 
   write_number:
+    push eax
     xor edx, edx
     cmp eax, 0
     jp get_digit
@@ -32,6 +39,8 @@
     out 1, cl
     sub edx, 1    
     jnz write_digit
+    pop eax
+    ret
 
   end:
     xor ax, ax
