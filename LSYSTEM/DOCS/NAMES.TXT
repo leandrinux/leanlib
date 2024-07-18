@@ -4,6 +4,7 @@ Cat breeds to be used as codenames for the lean system (lsystem)
 1.2 Snowshoe
 1.3 Minuet
 1.4 Sphynx
+1.5 Ragdoll
 
 Abyssinian
 Aegean
@@ -35,7 +36,6 @@ Norwegian
 Ojos Azules
 Oregon
 Bicolor
-Ragdoll
 Savannah
 Selkirk
 Serengeti
