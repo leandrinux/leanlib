@@ -43,6 +43,8 @@ The second lsystem release must include multiple improvements for both compiler 
     * A command should take a value to change the state of bits on the screen. 
     * screen size should be 128x128
     * one pixel per bit. 4 bytes per row. 512 bytes total video memory
+  * Keyboard device support
+  * System clock device support
   * Beeper device to generate sounds
     * A command should take a frequency value of 0 to silence the beeper
     * Any other frequency value generates a persistent tone
@@ -58,7 +60,7 @@ The second lsystem release must include multiple improvements for both compiler 
 * Allow for importing code from other files
 * The interpreter and its devices should run in a simulated/cooperative multitasking architecture, the CPU and each device running as a process, each process alternating in a round robin fashion. This will allow running multiple contexts simultaneously
 * the project should be buildable with the TPBUILD tool
-* New human interface device (keyboard and pointing device)
+* Pointing device support
 * There should be a BIOS included which contains utility functions such as:
   * printing null terminated strings throw the echo device
   * printing numbers
