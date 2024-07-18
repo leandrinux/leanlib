@@ -1,7 +1,9 @@
 Cat breeds to be used as codenames for the lean system (lsystem)
 
 1.0 Ragamuffin
-1.1 Snowshoe
+1.2 Snowshoe
+1.3 Minuet
+1.4 Sphynx
 
 Abyssinian
 Aegean
@@ -29,7 +31,6 @@ Korat
 Maine Coon
 Kurilian Bobtail
 Munchkin
-Minuet
 Norwegian
 Ojos Azules
 Oregon
@@ -40,9 +41,7 @@ Selkirk
 Serengeti
 Siamese
 Singapura
-Snowshoe
 Sosoke
-Sphynx
 Somali
 Venkedisi
 Ussuri
