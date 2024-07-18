@@ -40,4 +40,16 @@ The second lsystem release must include multiple improvements for both compiler 
   * Prevent the "jump to 0 on CPU panic" behavior by using another flag and a instruction that disables it only for the next instruction
   * Allow for importing code from other files
   * Monochrome bitmap video display device
+    * A command should turn on and off the device
+    * A command should take a value to change the state of bits on the screen. 
+    * screen size should be 128x128
+    * one pixel per bit. 4 bytes per row. 512 bytes total video memory
+  * Beeper device to generate sounds
+    * A command should take a frequency value of 0 to silence the beeper
+    * Any other frequency value generates a persistent tone
+  * Storage device to save data persistently
   * Redirect echo device output to file instead of the standard output
+  * All devices should be discoverable by reacting to a command
+   * AX becomes 0 if a device is not available
+   * AX becomes the device identifier if a device is available
+  * RAM device should report the total size through a command
