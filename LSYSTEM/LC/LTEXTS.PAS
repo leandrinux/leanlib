@@ -29,6 +29,8 @@ interface
     C_STR_TARGET_NOT_SET = 'Target stream not set';
     C_STR_UNDEFINED_SYMBOL = 'Undefined symbol "%0"';
     C_STR_BUILD_SUCCESSFUL = 'Build successful :)';
+    C_STR_EXPECTED_DATA = 'Expected .data at %0';
+    C_STR_UNRECOGNIZED_DATA_ELEMENT = 'Unrecognized data section element "%0" at line %1';
 
 implementation
 

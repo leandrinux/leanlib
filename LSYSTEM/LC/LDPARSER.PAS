@@ -20,7 +20,7 @@ interface
     C_CLASS_ID_DATA_PARSER = $F012;
     C_DATA_HEADER = '.data';
     C_CODE_HEADER = '.code';
-    C_DEFINE_KEYWORD = '#define';
+    C_DEFINE_KEYWORD = 'define';
     C_OPCODE_ADD_SYMBOL = 1001;
 
   type
@@ -100,11 +100,14 @@ implementation
   var
     str: string;
   begin
-    str := _sourceCode^.readLine;
+    str := trim(_sourceCode^.readLine);
     if _sourceCode^.isReadComplete or (str = C_CODE_HEADER) then 
       _isDone := true
-    else
-      if str = C_DATA_HEADER then _state := EDataParserHeader;
+    else if (length(str)=0) or (str[1]='#') then begin end 
+    else if str = C_DATA_HEADER then 
+      _state := EDataParserHeader
+    else 
+      msg(EMsgFatal, C_STR_EXPECTED_DATA, intToStr(_sourceCode^.lineNumber));;
   end;
 
   procedure TDataParser.readHeaderElements;
@@ -112,11 +115,15 @@ implementation
     str: string;
   begin
     str := _sourceCode^.readLine;
+    str := trim(str);
     if str = C_CODE_HEADER then 
       _isDone := true
-    else begin
-      if beginsWith(str, C_DEFINE_KEYWORD) then addDefinition(str);
-    end;
+    else if (length(str)=0) or (str[1]='#') then begin end 
+    else if beginsWith(str, C_DEFINE_KEYWORD) then 
+      addDefinition(str)
+    else 
+      msg(EMsgFatal, C_STR_UNRECOGNIZED_DATA_ELEMENT, str + #0 + intToStr(_sourceCode^.lineNumber));
+  
   end;
 
   procedure TDataParser.addDefinition(str: string);  
