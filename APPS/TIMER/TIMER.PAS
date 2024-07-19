@@ -25,6 +25,6 @@ begin
   getTime(h2,m2,s2,cs2);
   writeln(h1, ':', m1, ':', s1, '.', cs1);
   writeln(h2, ':', m2, ':', s2, '.', cs2);
-  result := (cs2-cs1) + (s2-s1)*100 + (m2-m1)*600 + (h2-h1)*360000;
+  result := (cs2 + s2*100 + m2*600) - (cs1 + s1*100 + m1*600);
   writeln('total time: ', result, 'cs');
 end.
