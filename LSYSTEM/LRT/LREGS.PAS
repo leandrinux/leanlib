@@ -31,20 +31,20 @@ interface
 
 implementation
 
-  { to do: optimize this to improve performance if needed }
   function getRegisterValue(regs: PRegisters; reg: TUInt8): TUInt32;
   begin
     case reg of
-      C_SP: getRegisterValue := regs^.SP;
-      C_BP: getRegisterValue := regs^.BP;
-      C_IP: getRegisterValue := regs^.IP;
-      C_CC: getRegisterValue := regs^.CC;
-      
       C_EAX: getRegisterValue := regs^.EAX;
       C_EBX: getRegisterValue := regs^.EBX;
       C_ECX: getRegisterValue := regs^.ECX;
       C_EDX: getRegisterValue := regs^.EDX;
 
+      C_IP: getRegisterValue := regs^.IP;
+
+      C_SP: getRegisterValue := regs^.SP;
+      C_BP: getRegisterValue := regs^.BP;
+      C_CC: getRegisterValue := regs^.CC;
+      
       C_AX: getRegisterValue := regs^.EAX and $0000FFFF;
       C_BX: getRegisterValue := regs^.EBX and $0000FFFF;
       C_CX: getRegisterValue := regs^.ECX and $0000FFFF;
@@ -69,15 +69,15 @@ implementation
   procedure setRegisterValue(regs: PRegisters; reg: TUInt8; value: TUInt32);
   begin
     case reg of
-      C_SP: regs^.SP := value;
-      C_BP: regs^.BP := value;
-      C_IP: regs^.IP := value;
-      C_CC: regs^.CC := value;
-      
       C_EAX: regs^.EAX := value;
       C_EBX: regs^.EBX := value;
       C_ECX: regs^.ECX := value;
       C_EDX: regs^.EDX := value;
+
+      C_SP: regs^.SP := value;
+      C_BP: regs^.BP := value;
+      C_IP: regs^.IP := value;
+      C_CC: regs^.CC := value;
 
       C_AX: regs^.EAX := (regs^.EAX and $FFFF0000) or (value and $0000FFFF);
       C_BX: regs^.EBX := (regs^.EBX and $FFFF0000) or (value and $0000FFFF);
