@@ -149,6 +149,11 @@ implementation
         C_PARAMETER_REGISTER: second := getRegisterValue(regs, param1);
         C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
       end;
+      if second = 0 then
+      begin
+        cpuError(regs, C_ERR_DIVIDE_BY_ZERO);
+        exit;
+      end;
       case paramType0 of
         C_PARAMETER_LITERAL:
         begin
