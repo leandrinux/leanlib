@@ -272,6 +272,7 @@ implementation
     case paramType of 
       EParameterTypeLiteral: result := getLiteralBitSize(param);
       EParameterTypeRegister: result := getRegisterBitSize(param);
+      EParameterTypeSymbol: result := 8;
       EParameterTypeAddress, EParameterTypePointer: result := 32;
     else
       result := 0;
