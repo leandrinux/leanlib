@@ -42,7 +42,16 @@ The CC register is affected by certain instructions and has three meaningful bit
 |1|Sign flag|1 if the last operation produced a negative value, 0 if it produced a positive value|
 |2|IO flag|1 if the last IO operation failed, 0 if succeeded|
 |3..30|Unused|Bits reserved for future use|
-|31|CPU flag|1 if the last operation caused a CPU error (divide by zero, stack overflow, other)|
+|31|CPU error flag|1 if the last operation caused a CPU error (divide by zero, stack overflow, other)|
+
+When an error occurs, the CPU error flag is set, the IP register is reset to zero and the EAX register is assigned a code representing the cause of the error. The CPU error flag is set to zero only after the JERR instruction is run. The possible errors are:
+
+|EAX|Error|Meaning|
+|-|-|-|
+|0|Divide by zero|A DIV or FDIV operation was attempted with the second parameter being zero|
+|1|Stack overflow|A PUSH or PUSHA operation tried to add data to the stack beyond its capacity|
+|2|Stack empty|A POP or POPA operation was attempted while the stack contained no data|
+|3|Invalid operation|the attempted operation is invalid because the opcode or the parameters are not valid|
 
 ## Instructions
 

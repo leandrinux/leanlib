@@ -14,5 +14,10 @@ loop:
   jnz loop
 
 error:
+  sub ax, 100
+  add ax, 48
+  out 1, al
   out 1, 7
-  jmp main
+  
+end:
+  jmp end
