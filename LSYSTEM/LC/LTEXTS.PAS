@@ -32,6 +32,7 @@ interface
     C_STR_EXPECTED_DATA = 'Expected .data at %0';
     C_STR_UNRECOGNIZED_DATA_ELEMENT = 'Unrecognized data section element "%0" at line %1';
     C_STR_REGISTER_IS_READONLY = 'Register %0 is read-only';
+    C_STR_CS_CAN_ONLY_BE_MODIFIED = 'CS can only be modified with MOV';
 
 implementation
 

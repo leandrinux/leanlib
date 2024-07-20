@@ -312,6 +312,11 @@ implementation
         (args[0].registerCode in C_REGISTERS_READ_ONLY)
         then
         msg(EMsgFatal, C_STR_REGISTER_IS_READONLY, args[0].stringValue);
+
+      { CS can only be modified with MOV}
+      if (args[0].registerCode = C_CS) and (opcode <> C_MOV) then
+        msg(EMsgFatal, C_STR_CS_CAN_ONLY_BE_MODIFIED, '');
+
     end;
   end;
 
