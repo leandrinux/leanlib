@@ -102,10 +102,14 @@ implementation
     context: TContext;
   begin
     _cpu^.initialize;
-    context.regs := @(_cpu^.regs);
-    context.ram := _ram;
-    context.bus := _bus;
-    context.regs^.SS := C_DEFAULT_RAM - C_DEFAULT_STACK;
+    with context do
+    begin
+      regs := @(_cpu^.regs);
+      ram := _ram;
+      bus := _bus;
+      regs^.SS := C_DEFAULT_RAM - C_DEFAULT_STACK;
+      stackSize := C_DEFAULT_STACK;
+    end;
     while (not keypressed) or (readkey<>C_ESC) do
     with context do begin
        _ram^.readFromMemory(@instruction, regs^.IP, sizeof(TInstruction));

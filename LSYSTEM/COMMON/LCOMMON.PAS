@@ -18,7 +18,10 @@ interface
     C_CC_IO   = 4;  { used to know if an IO operation was successful }
     C_CC_ERR  = $80000000;  { used to know if there was a CPU error }
 
-    C_ERR_DIVIDE_BY_ZERO = 100;  { value assigned to EAX when this error occurs }
+    C_ERR_DIVIDE_BY_ZERO    = 100;  { code used when divide by zero is attempted }
+    C_ERR_STACK_OVERFLOW    = 101;  { code used when the stack is full and we push into it }
+    C_ERR_STACK_EMPTY       = 102;  { code used when the stack is empty and we pop from it }
+    C_ERR_INVALID_OPERATION = 103;  { code used when opcode or arguments are invalid }
 
     C_PARAMETER_LITERAL  = 0;    { param type value for literal parameters }
     C_PARAMETER_REGISTER = 1;    { param type value for register parameters }

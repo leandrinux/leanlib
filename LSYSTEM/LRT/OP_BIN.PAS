@@ -25,6 +25,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
@@ -65,6 +70,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
@@ -105,6 +115,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS: ram^.setValue(param0, not ram^.getValue(param0));
       C_PARAMETER_REGISTER: setRegisterValue(regs, param0, not getRegisterValue(regs, param0));
       C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, not getPointerValue(regs, ram, param0));
@@ -118,6 +133,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
@@ -158,6 +178,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
@@ -199,6 +224,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of

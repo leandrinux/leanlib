@@ -22,6 +22,11 @@ implementation
   begin
     with c, instruction, regs^ do
     begin
+      if SP = stackSize then
+      begin
+        cpuError(regs, C_ERR_STACK_OVERFLOW);
+        exit;
+      end;
       case paramType0 of
           C_PARAMETER_LITERAL: ram^.setValue(SS + SP, param0);
           C_PARAMETER_ADDRESS: ram^.setValue(SS + SP, ram^.getValue(param0));
@@ -37,11 +42,21 @@ implementation
   begin
     with c, instruction, regs^ do
     begin
+      if SP = 0 then
+      begin
+        cpuError(regs, C_ERR_STACK_EMPTY);
+        exit;
+      end;
       dec(SP, sizeOf(TUInt32));        
       case paramType0 of
-          C_PARAMETER_ADDRESS: ram^.setValue(param0, ram^.getValue(SS + SP));
-          C_PARAMETER_REGISTER: setRegisterValue(regs, param0, ram^.getValue(SS + SP));
-          C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, ram^.getValue(SS + SP)) 
+        C_PARAMETER_LITERAL:
+        begin
+          cpuError(regs, C_ERR_INVALID_OPERATION);
+          exit;
+        end;
+        C_PARAMETER_ADDRESS: ram^.setValue(param0, ram^.getValue(SS + SP));
+        C_PARAMETER_REGISTER: setRegisterValue(regs, param0, ram^.getValue(SS + SP));
+        C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, ram^.getValue(SS + SP)) 
       end;
       inc(IP, sizeOf(TInstruction));
     end;
@@ -51,10 +66,34 @@ implementation
   begin
     with c, regs^ do
     begin
+      if SP = stackSize then
+      begin
+        cpuError(regs, C_ERR_STACK_OVERFLOW);
+        exit;
+      end;
       ram^.setValue(SS + SP, EAX); inc(SP, sizeOf(TUInt32));        
+
+      if SP = stackSize then
+      begin
+        cpuError(regs, C_ERR_STACK_OVERFLOW);
+        exit;
+      end;
       ram^.setValue(SS + SP, EBX); inc(SP, sizeOf(TUInt32));        
+
+      if SP = stackSize then
+      begin
+        cpuError(regs, C_ERR_STACK_OVERFLOW);
+        exit;
+      end;
       ram^.setValue(SS + SP, ECX); inc(SP, sizeOf(TUInt32));        
+
+      if SP = stackSize then
+      begin
+        cpuError(regs, C_ERR_STACK_OVERFLOW);
+        exit;
+      end;
       ram^.setValue(SS + SP, EDX); inc(SP, sizeOf(TUInt32));
+
       inc(IP, sizeOf(TInstruction));
     end;
   end;
@@ -63,10 +102,34 @@ implementation
   begin
     with c, regs^ do
     begin
+      if SP = 0 then
+      begin
+        cpuError(regs, C_ERR_STACK_EMPTY);
+        exit;
+      end;
       dec(SP, sizeOf(TUInt32)); EDX := ram^.getValue(SS + SP);
+
+      if SP = 0 then
+      begin
+        cpuError(regs, C_ERR_STACK_EMPTY);
+        exit;
+      end;
       dec(SP, sizeOf(TUInt32)); ECX := ram^.getValue(SS + SP);
+
+      if SP = 0 then
+      begin
+        cpuError(regs, C_ERR_STACK_EMPTY);
+        exit;
+      end;
       dec(SP, sizeOf(TUInt32)); EBX := ram^.getValue(SS + SP);
+
+      if SP = 0 then
+      begin
+        cpuError(regs, C_ERR_STACK_EMPTY);
+        exit;
+      end;
       dec(SP, sizeOf(TUInt32)); EAX := ram^.getValue(SS + SP);
+
       inc(IP, sizeOf(TInstruction));
     end;
   end;

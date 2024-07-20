@@ -23,13 +23,19 @@ implementation
   procedure _mov(const c: TContext);
   begin
     with c, instruction, regs^ do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
+
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
-            C_PARAMETER_LITERAL: ram^.setValue(param0, param1);
-            C_PARAMETER_ADDRESS: ram^.setValue(param0, ram^.getValue(param1));
-            C_PARAMETER_REGISTER: ram^.setValue(param0, getRegisterValue(regs, param1));
-            C_PARAMETER_POINTER: ram^.setValue(param0, getPointerValue(regs, ram, param1));
+          C_PARAMETER_LITERAL: ram^.setValue(param0, param1);
+          C_PARAMETER_ADDRESS: ram^.setValue(param0, ram^.getValue(param1));
+          C_PARAMETER_REGISTER: ram^.setValue(param0, getRegisterValue(regs, param1));
+          C_PARAMETER_POINTER: ram^.setValue(param0, getPointerValue(regs, ram, param1));
         end;
         inc(IP, sizeOf(TInstruction));
       end;
@@ -67,6 +73,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
@@ -107,6 +118,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
@@ -147,6 +163,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of
@@ -196,12 +217,15 @@ implementation
       end;
       if second = 0 then
       begin
-        CC := CC OR C_CC_ERR;
-        EAX := C_ERR_DIVIDE_BY_ZERO;
-        IP := 0;
+        cpuError(regs, C_ERR_DIVIDE_BY_ZERO);
         exit;
       end;
       case paramType0 of
+        C_PARAMETER_LITERAL:
+        begin
+          cpuError(regs, C_ERR_INVALID_OPERATION);
+          exit;
+        end;
         C_PARAMETER_ADDRESS:
         begin 
           first := ram^.getValue(param0);
@@ -231,6 +255,11 @@ implementation
     value: TUInt32;
   begin
     with c, instruction do case paramType0 of
+      C_PARAMETER_LITERAL:
+      begin
+        cpuError(regs, C_ERR_INVALID_OPERATION);
+        exit;
+      end;
       C_PARAMETER_ADDRESS:
       begin
         case paramType1 of

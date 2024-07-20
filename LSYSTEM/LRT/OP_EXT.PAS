@@ -33,6 +33,11 @@ implementation
         C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
       end;
       case paramType0 of
+        C_PARAMETER_LITERAL:
+        begin
+          cpuError(regs, C_ERR_INVALID_OPERATION);
+          exit;
+        end;
         C_PARAMETER_ADDRESS:
         begin
           result := ram^.getValue(param0) + second;
@@ -67,6 +72,11 @@ implementation
         C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
       end;
       case paramType0 of
+        C_PARAMETER_LITERAL:
+        begin
+          cpuError(regs, C_ERR_INVALID_OPERATION);
+          exit;
+        end;
         C_PARAMETER_ADDRESS:
         begin
           result := ram^.getValue(param0) - second;
@@ -101,6 +111,11 @@ implementation
         C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
       end;
       case paramType0 of
+        C_PARAMETER_LITERAL:
+        begin
+          cpuError(regs, C_ERR_INVALID_OPERATION);
+          exit;
+        end;
         C_PARAMETER_ADDRESS:
         begin
           result := ram^.getValue(param0) * second;
@@ -135,6 +150,11 @@ implementation
         C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
       end;
       case paramType0 of
+        C_PARAMETER_LITERAL:
+        begin
+          cpuError(regs, C_ERR_INVALID_OPERATION);
+          exit;
+        end;
         C_PARAMETER_ADDRESS:
         begin
           result := ram^.getValue(param0) / second;

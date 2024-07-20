@@ -16,10 +16,12 @@ interface
       regs: PRegisters;
       ram: PRAM;
       bus: PBus;
+      stackSize: TUInt32;
     end;
 
   function getPointerValue(regs: PRegisters; ram: PRAM; param: TUInt32): TUInt32;
   procedure setPointerValue(regs: PRegisters; ram: PRAM; param, value: TUInt32);
+  procedure cpuError(regs: PRegisters; code: TUInt32);
 
 implementation
 
@@ -37,6 +39,16 @@ implementation
   begin
     address := getRegisterValue(regs, param and $000000FF) + (param shr 16);
     ram^.setValue(address, value);
+  end;
+
+  procedure cpuError(regs: PRegisters; code: TUInt32);
+  begin
+    with regs^ do
+    begin
+      CC := CC OR C_CC_ERR;
+      EAX := code;
+      IP := 0;
+    end;
   end;
 
 end.
