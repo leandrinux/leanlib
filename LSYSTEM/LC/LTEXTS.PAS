@@ -15,12 +15,6 @@ interface
     C_STR_SENTENCES_PROC = '%0 sentences processed';
     C_STR_MAKING = 'Making object file...';
     C_STR_SAVING = 'Saving...';
-    C_STR_UNRECOGNIZED_OPERATION = 'unrecognized operation "%0 " at line %1';
-    C_STR_OPERATION_EXPECTS_N_PARAM = 'operation "%0" expects %1 parameters at line %2';
-    C_STR_1ST_LITERAL_UNSUPPORTED = 'operation %0 does not support a literal as first parameter';
-    C_STR_2ND_LITERAL_UNSUPPORTED = 'operation %0 does not support a literal as second parameter';
-    C_STR_REGISTER_CANT_FIT = 'register in first parameter cannot fit literal or register on the second parameter';
-    C_STR_OUT_EXPECTS_8BIT = 'OUT expects an 8-bit register as second parameter';
     C_STR_INVALID_POINTER_CONSTANT = 'Invalid pointer constant (%0)';
     C_STR_INVALID_POINTER_CONSTANT_RANGE = 'Pointer constant must be between -32768 and 32767';
     C_STR_UNRECOGNIZABLE_ARGUMENT = 'Unrecognizable argument "%0"';
@@ -31,8 +25,16 @@ interface
     C_STR_BUILD_SUCCESSFUL = 'Build successful :)';
     C_STR_EXPECTED_DATA = 'Expected .data at %0';
     C_STR_UNRECOGNIZED_DATA_ELEMENT = 'Unrecognized data section element "%0" at line %1';
-    C_STR_REGISTER_IS_READONLY = 'Register %0 is read-only';
-    C_STR_CS_CAN_ONLY_BE_MODIFIED = 'CS can only be modified with MOV';
+
+    { compiler validation errors }
+    C_STR_ERR_UNRECOGNIZED_OPERATION = '(%0) unrecognized operation "%1"';
+    C_STR_ERR_OPERATION_EXPECTS_N_PARAM = '(%0) operation "%1" expects %2 parameters';
+    C_STR_ERR_1ST_PARAM_UNSUPPORTED = '(%0) operation "%1" does not support "%2" as first parameter';
+    C_STR_ERR_2ND_PARAM_UNSUPPORTED = '(%0) operation "%1" does not support "%2" as second parameter';
+    C_STR_ERR_REGISTER_CANT_FIT = '(%0) register "%1" is not large enough for "%2"';
+    C_STR_ERR_OUT_EXPECTS_8BIT = '(%0) OUT parameter "%1" must be 8-bit in size';
+    C_STR_ERR_REGISTER_IS_READONLY = '(%0) Register %1 is read-only';
+    C_STR_ERR_CS_CAN_ONLY_BE_MODIFIED = '(%0) CS can only be modified with MOV';
 
 implementation
 

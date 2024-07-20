@@ -130,7 +130,7 @@ implementation
   procedure msg(kind: EMsgKind; const str, args: string);
   const
     C_MSG_COLORS: array [EMsgKind] of byte = (
-      lightgray, red, darkgray, white, yellow, lightgreen
+      lightgray, lightred, darkgray, white, yellow, lightgreen
     );
   begin
     textColor(C_MSG_COLORS[kind]);

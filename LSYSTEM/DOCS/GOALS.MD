@@ -10,7 +10,7 @@ The second lsystem release must include multiple improvements for both compiler 
     * SS, IP and CC are considered read-only and compiler should validate that they are not modified
     * CS can only be modified with MOV
     * OUT must support all types of parameters but bitsize validation should still be performed.
-    * IN does not admit literals as first parameter
+    * All compiler errors should include the line number
   * Support for char literals such as '*'
   * Binary must include metadata such as author, name and description
   * Support for byte, word, long and char variables and arrays

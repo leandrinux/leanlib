@@ -26,6 +26,7 @@ interface
       procedure parseSentence(var sentence: TSentence);
     private
       _sourceCode: PSourceCode;
+      procedure fatalError(const str, args: string);
       procedure validateSentence(var sentence: TSentence);
       procedure parseArguments(var sentence: TSentence);
       procedure parseLiteral(var arg: TSentenceArgument);
@@ -224,6 +225,11 @@ implementation
     end;
   end;
 
+  procedure TCodeParser.fatalError(const str, args: string);
+  begin
+    msg(EMsgFatal, str, intToStr(_sourceCode^.lineNumber) + C_NULL + args);
+  end;
+
   procedure TCodeParser.validateSentence(var sentence: TSentence);
   const 
     { these instructions do not support a literal as first parameter }
@@ -231,6 +237,13 @@ implementation
       C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL
+    ];
+
+    { these instructions do not support a symbol as first parameter }
+    C_OPCODES_NO_FIRST_SYMBOL: set of byte = [
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+      C_FADD, C_FSUB, C_FMUL, C_FDIV, 
+      C_AND, C_OR, C_NOT, C_XOR
     ];
 
     { these instructions do not support a literal as second parameter }
@@ -269,53 +282,54 @@ implementation
       { validate operation name exists }
       success := getOpcodeInfoByName(opname, opcode, count);
       if not success then 
-        msg(EMsgFatal, C_STR_UNRECOGNIZED_OPERATION, 
-          opname + C_NULL + 
-          intToStr(_sourceCode^.lineNumber)
-        );
+        fatalError(C_STR_ERR_UNRECOGNIZED_OPERATION, opname);
 
       { validate number of arguments } 
       sentenceParamCount := 0;
       if args[0].stringValue <> '' then inc(sentenceParamCount);
       if args[1].stringValue <> '' then inc(sentenceParamCount);
       if sentenceParamCount <> count then
-        msg(EMsgFatal, C_STR_OPERATION_EXPECTS_N_PARAM, 
-          opname + C_NULL + 
-          intToStr(count) + C_NULL + 
-          intToStr(_sourceCode^.lineNumber)
+        fatalError(C_STR_ERR_OPERATION_EXPECTS_N_PARAM, 
+          opname + C_NULL + intToStr(count)
         );
 
       { check valid parameters according to operation }
-      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (args[0].argType = EParameterTypeLiteral) then
-        msg(EMsgFatal, C_STR_1ST_LITERAL_UNSUPPORTED, opname);
+      if (opcode in C_OPCODES_NO_FIRST_LITERAL) and 
+        (args[0].argType = EParameterTypeLiteral) 
+      then
+        fatalError(C_STR_ERR_1ST_PARAM_UNSUPPORTED, opname + C_NULL + args[0].stringValue);
 
-      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and (args[1].argType = EParameterTypeLiteral) then
-        msg(EMsgFatal, C_STR_2ND_LITERAL_UNSUPPORTED, opname);
+      if (opcode in C_OPCODES_NO_FIRST_SYMBOL) and 
+        (args[0].argType = EParameterTypeSymbol) 
+      then
+        fatalError(C_STR_ERR_1ST_PARAM_UNSUPPORTED, opname + C_NULL + args[0].stringValue);
+
+      if (opcode in C_OPCODES_NO_SECOND_LITERAL) and 
+        (args[1].argType = EParameterTypeLiteral) 
+      then
+        fatalError(C_STR_ERR_2ND_PARAM_UNSUPPORTED, opname + C_NULL + args[1].stringValue);
 
       { check that the left size bit size is equal or greater than the right size bit size }
-      if (args[0].argType = EParameterTypeRegister) 
-          and (args[1].argType in [EParameterTypeLiteral, EParameterTypeRegister]) 
-          and (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) 
-          and (getBitSize(args[0].stringValue, args[0].argType) < getBitSize(args[1].stringValue, args[1].argType))
-          then
-        msg(EMsgFatal, C_STR_REGISTER_CANT_FIT, '');
+      if (args[0].argType = EParameterTypeRegister) and 
+        (args[1].argType in [EParameterTypeLiteral, EParameterTypeRegister]) and
+        (opcode in C_OPCODES_LITERAL_BITSIZE_CHK) and
+        (getBitSize(args[0].stringValue, args[0].argType) < getBitSize(args[1].stringValue, args[1].argType))
+      then
+        fatalError(C_STR_ERR_REGISTER_CANT_FIT, args[0].stringValue + C_NULL + args[1].stringValue);
 
       { check that the second parameter of OUT is 8-bit and no more }
-      if (opcode = C_OUT) and ( 
-        (args[1].argType <> EParameterTypeRegister) or 
-        (getBitSize(args[1].stringValue, args[1].argType)<>8)
-        ) then
-          msg(EMsgFatal, C_STR_OUT_EXPECTS_8BIT, '');
+      if (opcode = C_OUT) and (getBitSize(args[1].stringValue, args[1].argType)<>8) then
+        fatalError(C_STR_ERR_OUT_EXPECTS_8BIT, args[1].stringValue);
 
       { check that read only registers are not being modified }
       if (opcode in C_OPCODES_CHANGE_FIRST_ARG) and 
         (args[0].registerCode in C_REGISTERS_READ_ONLY)
         then
-        msg(EMsgFatal, C_STR_REGISTER_IS_READONLY, args[0].stringValue);
+        fatalError(C_STR_ERR_REGISTER_IS_READONLY, args[0].stringValue);
 
       { CS can only be modified with MOV}
       if (args[0].registerCode = C_CS) and (opcode <> C_MOV) then
-        msg(EMsgFatal, C_STR_CS_CAN_ONLY_BE_MODIFIED, '');
+        fatalError(C_STR_ERR_CS_CAN_ONLY_BE_MODIFIED, '');
 
     end;
   end;
