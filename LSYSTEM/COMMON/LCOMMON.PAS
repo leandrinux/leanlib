@@ -16,6 +16,9 @@ interface
     C_CC_ZERO = 1;  { used to know if CC indicates a zero flag }
     C_CC_SIGN = 2;  { used to know the sign of the last operation that affected the CC }
     C_CC_IO   = 4;  { used to know if an IO operation was successful }
+    C_CC_ERR  = $80000000;  { used to know if there was a CPU error }
+
+    C_ERR_DIVIDE_BY_ZERO = 100;  { value assigned to EAX when this error occurs }
 
     C_PARAMETER_LITERAL  = 0;    { param type value for literal parameters }
     C_PARAMETER_REGISTER = 1;    { param type value for register parameters }
@@ -23,7 +26,7 @@ interface
     C_PARAMETER_POINTER  = 3;    { param type value for pointer parameters }
 
     { opcodes } 
-    C_OPCODE_COUNT   = 32;       { how many operations does the CPU recognize }
+    C_OPCODE_COUNT   = 33;       { how many operations does the CPU recognize }
     C_MOV = $01; 
     C_ADD = $02; 
     C_SUB = $03; 
@@ -44,6 +47,7 @@ interface
     C_JP = $26; 
     C_JN = $27; 
     C_JNZ = $28;
+    C_JERR = $29;
     C_AND = $31; 
     C_OR = $32; 
     C_NOT = $33; 

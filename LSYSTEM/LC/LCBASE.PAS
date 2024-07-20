@@ -122,6 +122,7 @@ interface
       (name: 'jp'; code:C_JP; count:1),
       (name: 'jn'; code:C_JN; count:1),
       (name: 'jnz'; code:C_JNZ; count:1),
+      (name: 'jerr'; code:C_JERR; count:1),
 
       (name: 'and'; code:C_AND; count:2),
       (name: 'or'; code:C_OR; count:2),

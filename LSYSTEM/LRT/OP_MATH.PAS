@@ -184,42 +184,46 @@ implementation
 
   procedure _div(const c: TContext);
   var
-    value: TUInt32;
+    first, second: TUInt32;
   begin
-    with c, instruction do case paramType0 of
-      C_PARAMETER_ADDRESS:
-      begin
-        case paramType1 of
-            C_PARAMETER_LITERAL: value := ram^.getValue(param0) div param1;
-            C_PARAMETER_ADDRESS: value := ram^.getValue(param0) div ram^.getValue(param1);
-            C_PARAMETER_REGISTER: value := ram^.getValue(param0) div getRegisterValue(regs, param1);
-            C_PARAMETER_POINTER: value := ram^.getValue(param0) div getPointerValue(regs, ram, param1);
-        end;
-        ram^.setValue(param0, value);
+    with c, instruction, regs^ do 
+    begin
+      case paramType1 of
+        C_PARAMETER_LITERAL: second := param1;
+        C_PARAMETER_ADDRESS: second := ram^.getValue(param1);
+        C_PARAMETER_REGISTER: second := getRegisterValue(regs, param1);
+        C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
       end;
-      C_PARAMETER_REGISTER:
+      if second = 0 then
       begin
-        case paramType1 of
-            C_PARAMETER_LITERAL: value := getRegisterValue(regs, param0) div param1;
-            C_PARAMETER_ADDRESS: value := getRegisterValue(regs, param0) div ram^.getValue(param1);
-            C_PARAMETER_REGISTER: value := getRegisterValue(regs, param0) div getRegisterValue(regs, param1);
-            C_PARAMETER_POINTER: value := getRegisterValue(regs, param0) div getPointerValue(regs, ram, param1);
-        end;
-        setRegisterValue(regs, param0, value);
+        CC := CC OR C_CC_ERR;
+        EAX := C_ERR_DIVIDE_BY_ZERO;
+        IP := 0;
+        exit;
       end;
-      C_PARAMETER_POINTER:
-      begin
-        case paramType1 of
-            C_PARAMETER_LITERAL: value := getPointerValue(regs, ram, param0) div param1;
-            C_PARAMETER_ADDRESS: value := getPointerValue(regs, ram, param0) div ram^.getValue(param1);
-            C_PARAMETER_REGISTER: value := getPointerValue(regs, ram, param0) div getRegisterValue(regs, param1);
-            C_PARAMETER_POINTER: value := getPointerValue(regs, ram, param0) div getPointerValue(regs, ram, param1);
+      case paramType0 of
+        C_PARAMETER_ADDRESS:
+        begin 
+          first := ram^.getValue(param0);
+          first := first div second;
+          ram^.setValue(param0, first);
         end;
-        setPointerValue(regs, ram, param0, value);
+        C_PARAMETER_REGISTER:
+        begin
+          first := getRegisterValue(regs, param0);
+          first := first div second;
+          setRegisterValue(regs, param0, first);
+        end;
+        C_PARAMETER_POINTER:
+        begin
+          first := ram^.getValue(param0);
+          first := first div second;
+          setPointerValue(regs, ram, param0, first);
+        end;
       end;
+      setConditionCode(regs, first);
+      inc(IP, sizeOf(TInstruction));
     end;
-    setConditionCode(c.regs, value);
-    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _cmp(const c: TContext);

@@ -41,7 +41,8 @@ The CC register is affected by certain instructions and has three meaningful bit
 |0|Zero flag|1 if the last operation produced a zero value, 0 if it produced a non-zero value|
 |1|Sign flag|1 if the last operation produced a negative value, 0 if it produced a positive value|
 |2|IO flag|1 if the last IO operation failed, 0 if succeeded|
-|3..31|Unused|Bits reserved for future use|
+|3..30|Unused|Bits reserved for future use|
+|31|CPU flag|1 if the last operation caused a CPU error (divide by zero, stack overflow, other)|
 
 ## Instructions
 
@@ -93,7 +94,7 @@ The last 16 bits are a signed constant, therefore defined in the -32768..32767 r
 
 ## Instruction set 
 
-The lsystem instruction set consists of 32 instructions or operations divided in multiple groups
+The lsystem instruction set consists of 33 instructions or operations divided in multiple groups
 
 * math
 * flow control
@@ -129,6 +130,7 @@ Flow control consists of different kinds of branching or jumping which are used 
 |JP|0x26|1|No|jumps to $1 if CC sign bit is 0|
 |JN|0x27|1|No|jumps to $1 if CC sign bit is 1|
 |JNZ|0x28|1|No|jumps to $1 if CC zero bit is 0|
+|JERR|0x29|1|No|jumps to $1 if CC CPU error bit is 1|
 |CALL|0x45|1|No|Performs subroutine call (pushes current instruction address plus one, then jumps to specified address)|
 |RET|0x46|0|No|Pops the address from the stack and resumes execution from there|
 

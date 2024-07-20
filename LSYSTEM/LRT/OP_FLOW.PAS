@@ -19,6 +19,7 @@ interface
   procedure _jp(const c: TContext); far;
   procedure _jn(const c: TContext); far;
   procedure _jnz(const c: TContext); far;
+  procedure _jerr(const c: TContext); far;
   procedure _call(const c: TContext); far;
   procedure _ret(const c: TContext); far;
 
@@ -160,6 +161,23 @@ implementation
         C_PARAMETER_ADDRESS: regs^.IP := ram^.getValue(param0);
         C_PARAMETER_REGISTER: regs^.IP := getRegisterValue(regs, param0);
         C_PARAMETER_POINTER: regs^.IP := getPointerValue(regs, ram, param0);
+      end
+    else
+      inc(c.regs^.IP, sizeOf(TInstruction));
+  end;
+
+  procedure _jerr(const c: TContext);
+  begin
+    if (c.regs^.CC and C_CC_ERR) <> 0 then
+      with c, instruction, regs^ do 
+      begin
+        case paramType0 of
+          C_PARAMETER_LITERAL: IP := param0;
+          C_PARAMETER_ADDRESS: IP := ram^.getValue(param0);
+          C_PARAMETER_REGISTER: IP := getRegisterValue(regs, param0);
+          C_PARAMETER_POINTER: IP := getPointerValue(regs, ram, param0);
+        end;
+        CC := CC AND NOT C_CC_ERR;
       end
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
