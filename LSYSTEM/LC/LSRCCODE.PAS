@@ -25,7 +25,8 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       function readLine: string;
-      procedure readChar(var current, lookAhead: char);
+      procedure readAhead(var current, lookAhead: char);
+      function readChar: char;
       function isValid: boolean;
       function isReadComplete: boolean;
       function lineNumber: word;
@@ -81,16 +82,16 @@ implementation
     ch, next: char;
   begin
     str := '';
-    readChar(ch, next);
+    readAhead(ch, next);
     while (ch<>C_LF) and (ch<>#0) do
     begin
       if ch<>C_CR then str := str + ch;
-      readChar(ch, next);
+      readAhead(ch, next);
     end;
     readLine := str;
   end;
 
-  procedure TSourceCode.readChar(var current, lookAhead: char);
+  procedure TSourceCode.readAhead(var current, lookAhead: char);
   begin
     if _sourceCount = _sourceCodeSize then  
     begin
@@ -111,6 +112,25 @@ implementation
       else
         lookAhead := _sourcePos^;
     end;
+  end;
+
+  function TSourceCode.readChar: char;
+  var
+    result: char;
+  begin
+    if _sourceCount = _sourceCodeSize then  
+      result := #0
+    else begin
+      result := _sourcePos^;
+      inc(_sourcePos); 
+      inc(_sourceCount);
+      if result = C_LF then
+      begin
+        inc(_lineNumber);
+        _linePosition := 1;
+      end;
+    end;    
+    readChar := result;
   end;
 
   function TSourceCode.isValid: boolean;

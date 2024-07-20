@@ -70,128 +70,125 @@ implementation
   type
     EState = (
       EStateStart,
-      EStateSkipSpaces,
-      EStateSkipSpacesAndCRLF,
-      EStateReadOperationOrLabel,
-      EStateReadOperation,
-      EStateReadFirstParam,
-      EStateReadSecondParam,
-      EStateSuccess,
-      EStateFailure
+      EStateSkipSpacesBeforeFirst,
+      EStateGetFirstToken,
+      EStateSkipSpacesBeforeSecond,
+      EStateGetSecondToken,
+      EStateSkipSpacesBeforeThird,
+      EStateGetThirdToken,
+      EStateError,
+      EStateSuccess
     );
+  const 
+    C_IDENTIFIER_CHARS = ['A'..'Z', 'a'..'z', '_', '0'..'9'];
+    C_SPACING_CHARS = [C_SPACE, C_TAB, C_CR, C_LF];
+    C_END_STATES = [EStateSuccess, EStateError];
   var
-    ch, lookAhead: char;
+    ch: char;
     state: EState;
-    nextState: EState;
     token: string;
   begin
     state := EStateStart;
-    while (state <> EStateSuccess) and (state <> EStateFailure) do
+    with sentence do while not (state in C_END_STATES) do
     begin
       case state of
         EStateStart:
         begin
+          writeln('EStateStart');
           fillchar(sentence, sizeof(sentence), 0);
           token := '';
-          state := EStateSkipSpacesAndCRLF;
-          nextState := EStateReadOperationOrLabel;
-          _sourceCode^.readChar(ch, lookAhead);
+          state := EStateSkipSpacesBeforeFirst;
+          ch := _sourceCode^.readChar;
         end;
 
-        EStateSkipSpaces:
+        EStateSkipSpacesBeforeFirst:
         begin
-          if not (ch in [' ', #9]) then 
-            state := nextState
+          writeln('EStateSkipSpacesBeforeFirst');
+          if ch in C_IDENTIFIER_CHARS then
+            state := EStateGetFirstToken
+          else if ch in C_SPACING_CHARS then
+            ch := _sourceCode^.readChar
           else
-            _sourceCode^.readChar(ch, lookAhead);
+            state := EStateError
         end;
 
-        EStateSkipSpacesAndCRLF:
+        EStateGetFirstToken:
         begin
-          if not (ch in [' ', C_CR, C_LF, #9]) then 
-            state := nextState
-          else
-            _sourceCode^.readChar(ch, lookAhead);
-        end;
-
-        EStateReadOperationOrLabel:
-        begin
-          case ch of
-            ':': begin
-              sentence.labelName := token;
+          writeln('EStateGetFirstToken');
+          if ch in C_IDENTIFIER_CHARS then
+            token := token + ch
+          else if ch = ':' then 
+          begin
+            if labelName <> '' then 
+              state := EStateError
+            else begin
+              labelName := token;
               token := '';
-              state := EStateSkipSpacesAndCRLF;
-              nextState := EStateReadOperation;
+              state := EStateSkipSpacesBeforeFirst;
             end;
-            C_CR, C_LF, ' ', #0: begin
-              sentence.labelName := '';
-              sentence.opname := token;
-              token := '';
-              if ch = #0 then
-                state := EStateSuccess
-              else begin
-                state := EStateSkipSpaces;
-                nextState := EStateReadFirstParam;
-              end;
-            end;
-          else
-            token := token + ch;
+          end else if ch in C_SPACING_CHARS then
+          begin
+            opname := token;
+            token := '';
+            state := EStateSkipSpacesBeforeSecond;
           end;
-          _sourceCode^.readChar(ch, lookAhead);
+          ch := _sourceCode^.readChar
         end;
 
-        EStateReadOperation:
+        EStateSkipSpacesBeforeSecond:
         begin
-          case ch of
-            C_LF, C_CR: begin end;
-            ' ': begin
-              sentence.opname := token;
-              token := '';
-              state := EStateSkipSpaces;
-              nextState := EStateReadFirstParam;
-            end;
-          else
-            token := token + ch;
-          end;
-          _sourceCode^.readChar(ch, lookAhead);
+          writeln('EStateSkipSpacesBeforeSecond');
+          if ch in [C_SPACE, C_TAB, C_LF] then
+            ch := _sourceCode^.readChar
+          else if ch in [C_CR, C_NULL] then
+            state := EStateSuccess
+          else 
+            state := EStateGetSecondToken;
         end;
 
-        EStateReadFirstParam:
+        EStateGetSecondToken:
         begin
-          case ch of
-            C_LF:
-            begin
-              sentence.args[0].stringValue := token;
-              token := '';
-              state := EStateSuccess;
-            end;
-            C_CR: begin end;
-            ',': begin
-              sentence.args[0].stringValue := token;
-              token := '';
-              state := EStateSkipSpaces;
-              nextState := EStateReadSecondParam;
-            end;
-          else
+          writeln('EStateGetSecondToken');
+          if ch = C_COMMA then
+          begin
+            sentence.args[0].stringValue := token;
+            token := '';
+            state := EStateSkipSpacesBeforeThird;
+          end else if ch in [C_SPACE, C_TAB, C_LF] then
+          begin end else if ch in [C_CR, C_NULL] then
+          begin
+            sentence.args[0].stringValue := token;
+            token := '';
+            state := EStateSuccess
+          end else
             token := token + ch;
-          end;
-          _sourceCode^.readChar(ch, lookAhead);
+          ch := _sourceCode^.readChar
         end;
 
-        EStateReadSecondParam:
+        EStateSkipSpacesBeforeThird:
         begin
-          case ch of
-            C_CR: begin end;
-            ' ', C_LF, #0: begin
-              sentence.args[1].stringValue := token;
-              token := '';
-              state := EStateSuccess;
-            end;
-          else
-            token := token + ch;
-          end;
-          if ch<>C_LF then _sourceCode^.readChar(ch, lookAhead);
+          writeln('EStateSkipSpacesBeforeThird');
+          if ch in [C_SPACE, C_TAB, C_LF] then
+            ch := _sourceCode^.readChar
+          else if ch in [C_CR, C_NULL] then
+            state := EStateSuccess
+          else 
+            state := EStateGetThirdToken;
         end;
+
+        EStateGetThirdToken:
+        begin
+          writeln('EStateGetThirdToken');
+          if ch in [C_SPACE, C_TAB, C_CR, C_LF, C_NULL] then
+          begin
+            sentence.args[1].stringValue := token;
+            token := '';
+            state := EStateSuccess;
+          end else 
+            token := token + ch;
+          ch := _sourceCode^.readChar;
+        end;
+
       end;
     end;
 
@@ -234,14 +231,21 @@ implementation
       { validate operation name exists }
       success := getOpcodeInfoByName(opname, opcode, count);
       if not success then 
-        msg(EMsgFatal, C_STR_UNRECOGNIZED_OPERATION, opname + #0 + intToStr(_sourceCode^.lineNumber));
+        msg(EMsgFatal, C_STR_UNRECOGNIZED_OPERATION, 
+          opname + C_NULL + 
+          intToStr(_sourceCode^.lineNumber)
+        );
 
       { validate number of arguments } 
       sentenceParamCount := 0;
       if args[0].stringValue <> '' then inc(sentenceParamCount);
       if args[1].stringValue <> '' then inc(sentenceParamCount);
       if sentenceParamCount <> count then
-        msg(EMsgFatal, C_STR_OPERATION_EXPECTS_N_PARAM, intToStr(count));
+        msg(EMsgFatal, C_STR_OPERATION_EXPECTS_N_PARAM, 
+          opname + C_NULL + 
+          intToStr(count) + C_NULL + 
+          intToStr(_sourceCode^.lineNumber)
+        );
 
       { check valid parameters according to operation }
       if (opcode in C_OPCODES_NO_FIRST_LITERAL) and (args[0].argType = EParameterTypeLiteral) then

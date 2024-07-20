@@ -1,8 +1,8 @@
 .data
 
-#define device 1
-#define count 26
-#define letter_A 65
+ define device 1
+ define count 26
+ define letter_A 65
 
 .code
 

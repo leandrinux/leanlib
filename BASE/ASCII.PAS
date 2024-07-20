@@ -9,6 +9,7 @@ unit
 interface
 
   const
+    C_NULL      = #0;
     C_BACKSPACE = #8;
     C_TAB       = #9;
     C_LF        = #10;
@@ -18,6 +19,7 @@ interface
     C_RIGHT     = #39;
     
     C_SPACE     = ' ';
+    C_COMMA     = ',';
 
     { function keys are preceded by 0 }
     C_BREAK     = #$03;

@@ -1,6 +1,6 @@
 .data
   
-#define value 100
+define value 100
 
 .code
 
