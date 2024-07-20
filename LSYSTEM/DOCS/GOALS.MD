@@ -18,7 +18,7 @@ The second lsystem release must include multiple improvements for both compiler 
 ## Runtime
 
   * IP must be reset to zero if changes are made to CS
-  * CC now has a system error flag that is set to one when a CPU panic occurs (stack overflow, division by zero)
+  * CC now has a system error flag that is set to one when a CPU panic occurs (stack overflow, division by zero, invalid instruction)
     * new JERR instruction jumps if the system error flag is set
     * any successful instruction sets the flag to zero
     * a CPU panic resets IP to 0
