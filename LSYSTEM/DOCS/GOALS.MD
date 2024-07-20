@@ -11,6 +11,7 @@ The second lsystem release must include multiple improvements for both compiler 
     * CS can only be modified with MOV
     * OUT must support all types of parameters but bitsize validation should still be performed.
     * All compiler errors should include the line number
+
   * Support for char literals such as '*'
   * Binary must include metadata such as author, name and description
   * Support for byte, word, long and char variables and arrays
@@ -23,6 +24,8 @@ The second lsystem release must include multiple improvements for both compiler 
     * any successful instruction sets the flag to zero
     * a CPU panic resets IP to 0
     * when the system error flag is set, EAX contains the error code that describes the cause
+  * Include examples for future benchmarking
+
   * Support for JSON system configuration files
     * defines how much memory the system has
     * defines the size of the stack
@@ -33,7 +36,6 @@ The second lsystem release must include multiple improvements for both compiler 
     * each configuration setting must have a corresponding command line equivalent
   * When silent mode is off, displays metadata before running program if this info is available
   * Performance optimizations by converting strategic functions to assembly or unrolling cycles if possible
-  * Include examples for future benchmarking
   * Data section in binaries should be supported.
 
 # 1.3 Minuet goals

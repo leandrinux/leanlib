@@ -266,19 +266,18 @@ When the system starts, IP (instruction pointer) and CS are initialized with a v
 The basic assembly program structure is as follows:
 
     # comments are preceded by hash symbols
-    // they can also be defined with double slashes
-    /*
-      multiline comments are also possible using /* and */ just like in C and other languages 
-    */
-    main:
+    .code
+    
        mov ax, 1
        mov bx, 2
-       add ax, bx  // comments can go here as well
+       add ax, bx  # comments can go here as well
        mov 1, ax
        
-       // you can also skip lines
+       # you can also skip lines
        out 1, 1
-       stop
+
+    end:
+       jmp end
 
 ### Instructions and arguments
 
@@ -318,18 +317,20 @@ Pointer values only work with registers. If you want to use the address located 
 
 You can use labels to create subroutines. Labels are defined before an instruction, but not necessarily in the same line. Labels are case sensitive
 
-    main:
-      call doSomething
-    
-    loop:
-      jmp loop
+    .code
 
-    doSomething: 
-      mov ax, 1
-      mov bx, 2
-      add ax, bx
-      mov 1, ax
-      ret
+      main:
+        call doSomething
+    
+      loop:
+        jmp loop
+
+      doSomething: 
+        mov ax, 1
+        mov bx, 2
+        add ax, bx
+        mov 1, ax
+        ret
 
 ## The data section 
 
@@ -337,11 +338,11 @@ The data section is the first part of a valid lsystem program. It starts with th
 
 ### Definitions
 
-Definitions are labels that are substituted during the compilation process by a numeric value. Definition names cannot be duplicates or reserved words such as register names. They are case sensitive
+Definitions are labels that are substituted during the compilation process by a numeric value. Definitions are preceded by the keyword `define` and their names cannot be duplicates or reserved words such as register names. They are case sensitive.
 
     .data
     
-    #DEFINE value 0xCAFE
+      define value 0xCAFE
     
     .code
 
