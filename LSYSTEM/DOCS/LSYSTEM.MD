@@ -122,8 +122,10 @@ The math group of instructions is made of all the basic 4 math operations and al
 |ADD|0x02|2|Yes|$1 becomes $1 + $2|
 |SUB|0x03|2|Yes|$1 becomes $1 - $2|
 |MUL|0x04|2|Yes|$1 becomes $1 * $2|
-|DIV|0x05|2|Yes|$1 becomes $1 / $2|
+|DIV|0x05|2|Yes|$1 becomes $1 / $2 (integer division)|
 |CMP|0x06|2|Yes|Substracts $2 from $1 without changing $1 but affecting the condition codes (CC) register|
+
+Only `MOV` can change the value of the CS (code segment) register. When this value is changed, the instruction pointer (IP) is reset to zero. 
 
 ### Flow control
 
