@@ -22,30 +22,44 @@ implementation
 
   procedure _mov(const c: TContext);
   begin
-    with c, instruction do case paramType0 of
+    with c, instruction, regs^ do case paramType0 of
       C_PARAMETER_ADDRESS:
+      begin
         case paramType1 of
             C_PARAMETER_LITERAL: ram^.setValue(param0, param1);
             C_PARAMETER_ADDRESS: ram^.setValue(param0, ram^.getValue(param1));
             C_PARAMETER_REGISTER: ram^.setValue(param0, getRegisterValue(regs, param1));
             C_PARAMETER_POINTER: ram^.setValue(param0, getPointerValue(regs, ram, param1));
         end;
+        inc(IP, sizeOf(TInstruction));
+      end;
+
       C_PARAMETER_REGISTER:
+      begin
         case paramType1 of
             C_PARAMETER_LITERAL: setRegisterValue(regs, param0, param1);
             C_PARAMETER_ADDRESS: setRegisterValue(regs, param0, ram^.getValue(param1));
             C_PARAMETER_REGISTER: setRegisterValue(regs, param0, getRegisterValue(regs, param1));
             C_PARAMETER_POINTER: setRegisterValue(regs, param0, getPointerValue(regs, ram, param1));
         end;
+        if (param0 = C_CS) then
+          IP := 0
+        else
+          inc(IP, sizeOf(TInstruction));
+      end;
+
       C_PARAMETER_POINTER:
+      begin
         case paramType1 of
             C_PARAMETER_LITERAL: setPointerValue(regs, ram, param0, param1);
             C_PARAMETER_ADDRESS: setPointerValue(regs, ram, param0, ram^.getValue(param1));
             C_PARAMETER_REGISTER: setPointerValue(regs, ram, param0, getRegisterValue(regs, param1));
             C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, getPointerValue(regs, ram, param1));
         end;
+        inc(IP, sizeOf(TInstruction));
+      end;
+
     end;
-    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _add(const c: TContext);
