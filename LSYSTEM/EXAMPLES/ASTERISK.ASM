@@ -1,5 +1,5 @@
 .code
-  mov al, 42
+
 loop:
-  out 1, al
+  out 1, 42
   jmp loop

@@ -13,14 +13,12 @@
     # this is a comment before the operation name
     xor edx, edx     # set edx to 0
     call line_no     # print the line number
-    mov eax, 48
-    out 1, al        # print 0
+    out 1, 48        # print 0
     call eoln        # print CRLF
 
     mov edx, 1       # set edx to 1
     call line_no     # print the line number
-    mov eax, 49
-    out 1, al        # print 1
+    out 1, 49        # print 1
     call eoln        # print CRLF
 
     xor ebx, ebx     # set ebx to 0  (first value in the sequence)
@@ -70,10 +68,8 @@
 
   eoln:                 # prints CRLF
     push eax
-    mov al, C_CR
-    out 1, al
-    mov al, C_LF
-    out 1, al
+    out 1, C_CR
+    out 1, C_LF
     pop eax
     ret
 
@@ -83,12 +79,9 @@
     out 1, al
     mov eax, edx
     call write_uint32
-    mov eax, C_SPACE
-    out 1, al
-    mov eax, C_EQUAL
-    out 1, al
-    mov eax, C_SPACE
-    out 1, al
+    out 1, C_SPACE
+    out 1, C_EQUAL
+    out 1, C_SPACE
     pop eax
     ret
 

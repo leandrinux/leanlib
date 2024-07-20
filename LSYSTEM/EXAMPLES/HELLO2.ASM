@@ -12,20 +12,14 @@ loop:
   jmp end
 
 hello:
-  mov al, 72
-  out 1, al
-  mov al, 69
-  out 1, al
-  mov al, 76
-  out 1, al
-  out 1, al
-  mov al, 79
-  out 1, al
+  out 1, 72
+  out 1, 69
+  out 1, 76
+  out 1, 76
+  out 1, 79
 
-  mov al, 13
-  out 1, al
-  mov al, 10
-  out 1, al
+  out 1, 13
+  out 1, 10
   ret
 
 end:

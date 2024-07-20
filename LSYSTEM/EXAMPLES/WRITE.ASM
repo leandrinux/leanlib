@@ -7,8 +7,7 @@ define value 100
     mov eax, value
   loop:
     call write_int32
-    mov bl, 32
-    out 1, bl
+    out 1, 32
     sub eax, 1
     jnz loop
     call write_int32
@@ -19,8 +18,7 @@ define value 100
     xor edx, edx
     cmp eax, 0
     jp get_digit
-    mov ebx, 45
-    out 1, bl
+    out 1, 45
     not eax
     add eax, 1
   get_digit:
