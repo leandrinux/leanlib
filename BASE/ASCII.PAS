@@ -20,6 +20,7 @@ interface
     
     C_SPACE     = ' ';
     C_COMMA     = ',';
+    C_HASH      = '#';
 
     { function keys are preceded by 0 }
     C_BREAK     = #$03;

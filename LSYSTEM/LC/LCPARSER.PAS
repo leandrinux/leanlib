@@ -71,10 +71,13 @@ implementation
     EState = (
       EStateStart,
       EStateSkipSpacesBeforeFirst,
+      EStateSkipLineBeforeFirst,
       EStateGetFirstToken,
       EStateSkipSpacesBeforeSecond,
+      EStateSkipLineBeforeSecond,
       EStateGetSecondToken,
       EStateSkipSpacesBeforeThird,
+      EStateSkipLineBeforeThird,
       EStateGetThirdToken,
       EStateError,
       EStateSuccess
@@ -94,7 +97,6 @@ implementation
       case state of
         EStateStart:
         begin
-          writeln('EStateStart');
           fillchar(sentence, sizeof(sentence), 0);
           token := '';
           state := EStateSkipSpacesBeforeFirst;
@@ -103,18 +105,26 @@ implementation
 
         EStateSkipSpacesBeforeFirst:
         begin
-          writeln('EStateSkipSpacesBeforeFirst');
           if ch in C_IDENTIFIER_CHARS then
             state := EStateGetFirstToken
           else if ch in C_SPACING_CHARS then
             ch := _sourceCode^.readChar
+          else if ch = C_HASH then
+            state := EStateSkipLineBeforeFirst
           else
             state := EStateError
         end;
 
+        EStateSkipLineBeforeFirst:
+        begin
+          if ch in [C_CR, C_LF] then
+            state := EStateSkipSpacesBeforeFirst
+          else
+            ch := _sourceCode^.readChar;
+        end;
+
         EStateGetFirstToken:
         begin
-          writeln('EStateGetFirstToken');
           if ch in C_IDENTIFIER_CHARS then
             token := token + ch
           else if ch = ':' then 
@@ -137,25 +147,32 @@ implementation
 
         EStateSkipSpacesBeforeSecond:
         begin
-          writeln('EStateSkipSpacesBeforeSecond');
           if ch in [C_SPACE, C_TAB, C_LF] then
             ch := _sourceCode^.readChar
+          else if ch = C_HASH then
+            state := EStateSkipLineBeforeSecond
           else if ch in [C_CR, C_NULL] then
-            state := EStateSuccess
+            state := EStateSuccess            
           else 
             state := EStateGetSecondToken;
         end;
 
+        EStateSkipLineBeforeSecond:
+        begin
+          if ch in [C_CR, C_LF] then
+            state := EStateSkipSpacesBeforeSecond
+          else
+            ch := _sourceCode^.readChar;
+        end;
+
         EStateGetSecondToken:
         begin
-          writeln('EStateGetSecondToken');
-          if ch = C_COMMA then
+          if ch in [C_COMMA, C_SPACE, C_NULL, C_TAB, C_LF] then
           begin
             sentence.args[0].stringValue := token;
             token := '';
             state := EStateSkipSpacesBeforeThird;
-          end else if ch in [C_SPACE, C_TAB, C_LF] then
-          begin end else if ch in [C_CR, C_NULL] then
+          end else if ch in [C_CR, C_NULL, C_HASH] then
           begin
             sentence.args[0].stringValue := token;
             token := '';
@@ -167,24 +184,32 @@ implementation
 
         EStateSkipSpacesBeforeThird:
         begin
-          writeln('EStateSkipSpacesBeforeThird');
           if ch in [C_SPACE, C_TAB, C_LF] then
             ch := _sourceCode^.readChar
+          else if ch = C_HASH then
+            state := EStateSkipLineBeforeThird
           else if ch in [C_CR, C_NULL] then
             state := EStateSuccess
           else 
             state := EStateGetThirdToken;
         end;
 
+        EStateSkipLineBeforeThird:
+        begin
+          if ch in [C_CR, C_LF] then
+            state := EStateSkipSpacesBeforeThird
+          else
+            ch := _sourceCode^.readChar;
+        end;
+
         EStateGetThirdToken:
         begin
-          writeln('EStateGetThirdToken');
           if ch in [C_SPACE, C_TAB, C_CR, C_LF, C_NULL] then
           begin
             sentence.args[1].stringValue := token;
             token := '';
             state := EStateSuccess;
-          end else 
+          end else
             token := token + ch;
           ch := _sourceCode^.readChar;
         end;

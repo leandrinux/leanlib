@@ -10,6 +10,7 @@
 
 .code
 
+    # this is a comment before the operation name
     xor edx, edx     # set edx to 0
     call line_no     # print the line number
     mov eax, 48
