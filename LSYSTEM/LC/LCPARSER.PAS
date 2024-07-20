@@ -246,6 +246,19 @@ implementation
       C_OR, C_NOT, C_XOR
     ];
 
+    { these opcodes change the value of the first parameter }
+    C_OPCODES_CHANGE_FIRST_ARG: set of byte = [
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
+      C_FADD, C_FSUB, C_FMUL, C_FDIV, 
+      C_AND, C_OR, C_NOT, C_XOR, C_SHL, C_SHR,
+      C_POP
+    ];
+
+    { these registers are considered read-only and cannot be modified }
+    C_REGISTERS_READ_ONLY: set of byte = [
+      C_SS, C_IP, C_CC
+    ];
+
   var
     count: byte;
     success: boolean;
@@ -294,6 +307,11 @@ implementation
         ) then
           msg(EMsgFatal, C_STR_OUT_EXPECTS_8BIT, '');
 
+      { check that read only registers are not being modified }
+      if (opcode in C_OPCODES_CHANGE_FIRST_ARG) and 
+        (args[0].registerCode in C_REGISTERS_READ_ONLY)
+        then
+        msg(EMsgFatal, C_STR_REGISTER_IS_READONLY, args[0].stringValue);
     end;
   end;
 

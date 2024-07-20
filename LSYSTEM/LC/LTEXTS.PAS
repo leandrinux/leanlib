@@ -31,6 +31,7 @@ interface
     C_STR_BUILD_SUCCESSFUL = 'Build successful :)';
     C_STR_EXPECTED_DATA = 'Expected .data at %0';
     C_STR_UNRECOGNIZED_DATA_ELEMENT = 'Unrecognized data section element "%0" at line %1';
+    C_STR_REGISTER_IS_READONLY = 'Register %0 is read-only';
 
 implementation
 
