@@ -4,7 +4,7 @@ unit
 interface
   
   const
-    C_STR_BANNER = 'LRT lsystem runtime v%0 (%1)';
+    C_STR_BANNER = 'LRT lean system runtime v%0 (%1)';
     C_STR_BUILD_TS = 'Build date: %0 %1';
     C_STR_LOADING_BINARY = 'Loading binary "%0"';
     C_STR_NOW_RUNNING = 'Now running - press ESC to stop';

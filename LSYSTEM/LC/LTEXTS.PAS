@@ -7,7 +7,7 @@ unit
 interface
 
   const
-    C_STR_BANNER = 'LC lsystem compiler version %0 (%1)';
+    C_STR_BANNER = 'LC lean system compiler version %0 (%1)';
     C_STR_BUILD_TS = 'Build date: %0 %1';
     C_STR_NO_SOURCE_FILE = 'No source file specified!';
     C_STR_BUILDING = 'Reading source...';
