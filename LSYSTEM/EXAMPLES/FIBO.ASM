@@ -67,16 +67,13 @@
     ret 
 
   eoln:                 # prints CRLF
-    push eax
     out 1, C_CR
     out 1, C_LF
-    pop eax
     ret
 
   line_no:              # prints the number contained in edx
     push eax
-    mov eax, 70
-    out 1, al
+    out 1, 70
     mov eax, edx
     call write_uint32
     out 1, C_SPACE
