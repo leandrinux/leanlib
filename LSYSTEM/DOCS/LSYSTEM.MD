@@ -362,17 +362,38 @@ The data section is the first part of a valid lsystem program. It starts with th
 
 ### Definitions
 
-Definitions are labels that are substituted during the compilation process by a numeric value. Definitions are preceded by the keyword `define` and their names cannot be duplicates or reserved words such as register names. They are case sensitive.
+Definitions are labels that are substituted during the compilation process by a numeric value. Definitions are preceded by the keyword `define` and their names cannot be duplicates or reserved words such as register names. They are case sensitive. They do not exist during execution and do not get a memory space assigned to them
 
     .data
     
-      define value 0xCAFE
+      let value = 0xCAFE
+      let zero = 0, one = 1, twenty = 20
     
     .code
 
-	main:
+      main:
         mov ax, value
+        add ax, twenty
+        cmp ax, zero        
         
 ### Constants
+
+Constants are values that are not intended to change and take up space in memory during execution. A constant can be used to storage  information in memory such as a string that will be presented to screen
+
+    .data
+      const greeting = 'Hello world!\n'
+    
+    .code
+    
+      main:
+        mov ax, greeting
+      loop:
+        cmp [ax], 0
+        jz end 
+        out 1, [ax]
+        add ax, 1
+        jmp loop
+      end:
+        jmp end  
 
 ### Interacting with devices
