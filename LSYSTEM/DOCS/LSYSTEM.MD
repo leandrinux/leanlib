@@ -44,18 +44,18 @@ The CC register is affected by certain instructions and has three meaningful bit
 |3..30|Unused|Bits reserved for future use|
 |31|CPU error flag|1 if the last operation caused a CPU error (divide by zero, stack overflow, other)|
 
-When an error occurs, the CPU error flag is set, the IP register is reset to zero and the EAX register is assigned a code representing the cause of the error. The CPU error flag is set to zero only after the JERR instruction is run. The possible errors are:
+When an error occurs, the CPU error flag is set, the EAX register is assigned an error code, EBX becomes the value of IP when the error took place, and finally the IP register is reset to zero. The CPU error flag is set to zero only after the JERR instruction is run. The possible errors are:
 
 |EAX|Error|Meaning|
 |-|-|-|
 |0|Divide by zero|A DIV or FDIV operation was attempted with the second parameter being zero|
 |1|Stack overflow|A PUSH or PUSHA operation tried to add data to the stack beyond its capacity|
 |2|Stack empty|A POP or POPA operation was attempted while the stack contained no data|
-|3|Invalid operation|the attempted operation is invalid because the opcode or the parameters are not valid|
+|3|Invalid operation|the attempted operation is invalid because either the opcode or the arguments are incorrect|
 
 ## Instructions
 
-A lsystem virtual CPU instruction is made of three components: a header and two arguments. The header is 16 bit in size, while the parameter info is 32 bit. This makes the whole instruction 10 bytes long. 
+A lean system virtual CPU instruction is made of three components: a header and two arguments. The header is 16 bit in size, while the parameter info is 32 bit. This makes the whole instruction 10 bytes long. 
 
      |--------------|--------------|--------------|
      |    Header    |    Param0    |    Param1    |
@@ -207,7 +207,7 @@ This group consists of floating point operations and other features which may no
 
 Instructions can take between none and two parameters. These parameters have four different types. But not all combinations of parameter types are valid. The following tables show the different valid combinations for each instruction. The rows represent the first parameter and the columns represent the second.
 
-As general rule, the left parameter cannot have a smaller bit size than the right parameter
+As general rule, if the operation modifies the first argument then it cannot have a smaller bit size than the second. For instance you cannot mov a 32-bit literal to an 8-bit register.
 
 #### CMP
 
@@ -331,7 +331,7 @@ There are several registers that you can use together with instructions. For a f
 
 #### Pointer values
 
-Pointer values are memory references, but instead of defining them as fixed values, we can use the value stored in a register. This allows registers to function as pointers. For instance, `[AX]` represents the value stored in memory at the position pointed by the AX register. You can use any register except DS or SS.
+Pointer values are memory references, but instead of defining them as fixed values, we can use the value stored in a register. This allows registers to function as pointers. For instance, `[AX]` represents the value stored in memory at the position contained in the AX register. You can use any register except DS or SS.
 
 You can also add a constant that will be substracted or added to the memory location specified by that register. To do this just add it next to it. For instance `[AX+2]` is a memory reference that is 2 words ahead from the position specified by AX.
 
@@ -362,7 +362,7 @@ The data section is the first part of a valid lsystem program. It starts with th
 
 ### Definitions
 
-Definitions are labels that are substituted during the compilation process by a numeric value. Definitions are preceded by the keyword `define` and their names cannot be duplicates or reserved words such as register names. They are case sensitive. They do not exist during execution and do not get a memory space assigned to them. Defines are essentially literal values.
+Definitions are labels that are substituted during the compilation process by a numeric value. Definitions are preceded by the keyword `def` and their names cannot be duplicates or reserved words such as register names. They are case sensitive. They do not exist during execution and do not get a memory space assigned to them. Defines are essentially literal values.
 
     .data
     
@@ -386,6 +386,8 @@ Variables are values that may or may not change during execution. They take up s
       var question: char = '?'
       var name: char[10]
       var numbers: byte[] = 10, 0xFF, 30, 40, 50
+      var more_numbers: word[] = $FAFA, $BABE
+      var identifiers: long[] = $BABACACA, $BABECAFE
       var image: blob = 'avatar.jpg'
 
     .code

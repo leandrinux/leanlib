@@ -47,6 +47,7 @@ implementation
     begin
       CC := CC OR C_CC_ERR;
       EAX := code;
+      EBX := IP;
       IP := 0;
     end;
   end;
