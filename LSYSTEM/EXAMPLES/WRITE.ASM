@@ -28,7 +28,7 @@ define value 100
     mov eax, ebx
     mul ebx, 10
     sub ecx, ebx
-    add ecx, 48
+    add ecx, '0'
     push ecx
     add edx, 1
     jl 0, get_digit

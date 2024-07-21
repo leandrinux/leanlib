@@ -168,7 +168,18 @@ implementation
 
         EStateGetSecondToken:
         begin
-          if ch in [C_COMMA, C_SPACE, C_NULL, C_TAB, C_LF] then
+          if ch = C_QUOTE then
+          begin
+            ch := _sourceCode^.readChar;
+            sentence.args[0].stringValue := '''' + ch + '''';
+            ch := _sourceCode^.readChar;
+            if ch = C_QUOTE then
+            begin
+              token := '';
+              state := EStateSkipSpacesBeforeThird;
+            end else
+              state := EStateError;
+          end else if ch in [C_COMMA, C_SPACE, C_NULL, C_TAB, C_LF] then
           begin
             sentence.args[0].stringValue := token;
             token := '';
@@ -205,7 +216,18 @@ implementation
 
         EStateGetThirdToken:
         begin
-          if ch in [C_SPACE, C_TAB, C_CR, C_LF, C_NULL] then
+          if ch = C_QUOTE then
+          begin
+            ch := _sourceCode^.readChar;
+            sentence.args[1].stringValue := '''' + ch + '''';
+            ch := _sourceCode^.readChar;
+            if ch = C_QUOTE then
+            begin
+              token := '';
+              state := EStateSuccess;
+            end else
+              state := EStateError;
+          end else if ch in [C_SPACE, C_TAB, C_CR, C_LF, C_NULL] then
           begin
             sentence.args[1].stringValue := token;
             token := '';
@@ -359,8 +381,16 @@ implementation
   var
     success: boolean;
   begin
-    success := any2int(arg.stringValue, arg.intValue);
-    if not success then msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
+    if (length(arg.stringValue) = 3) and 
+      (arg.stringValue[1] = '''') and
+      (arg.stringValue[3] = '''') then
+    begin
+      arg.intValue := ord(arg.stringValue[2]);
+      success := true;
+    end else
+      success := any2int(arg.stringValue, arg.intValue);
+    if not success then 
+      msg(EMsgFatal, C_STR_UNRECOGNIZABLE_ARGUMENT, arg.stringValue);
   end;
 
   procedure TCodeParser.parseAddress(var arg: TSentenceArgument);

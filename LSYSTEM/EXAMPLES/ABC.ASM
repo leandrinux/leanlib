@@ -2,12 +2,11 @@
 
  define device 1
  define count 26
- define letter_A 65
 
 .code
 
   mov al, count
-  mov ah, letter_A
+  mov ah, 'A'
 loop:
   out device, ah
   add ah, 1

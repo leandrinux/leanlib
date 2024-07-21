@@ -21,6 +21,7 @@ interface
     C_SPACE     = ' ';
     C_COMMA     = ',';
     C_HASH      = '#';
+    C_QUOTE     = '''';
 
     { function keys are preceded by 0 }
     C_BREAK     = #$03;

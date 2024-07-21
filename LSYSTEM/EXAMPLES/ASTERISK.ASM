@@ -1,5 +1,5 @@
 .code
 
 loop:
-  out 1, 42
+  out 1, '*'
   jmp loop

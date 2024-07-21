@@ -5,8 +5,6 @@
   
   define C_CR 13
   define C_LF 10
-  define C_SPACE 32
-  define C_EQUAL 61
 
 .code
 
@@ -73,12 +71,12 @@
 
   line_no:              # prints the number contained in edx
     push eax
-    out 1, 70
+    out 1, 'F'
     mov eax, edx
     call write_uint32
-    out 1, C_SPACE
-    out 1, C_EQUAL
-    out 1, C_SPACE
+    out 1, ' '
+    out 1, '='
+    out 1, ' '
     pop eax
     ret
 

@@ -1,9 +1,9 @@
 .code
-  out 1, 72
-  out 1, 69
-  out 1, 76
-  out 1, 76
-  out 1, 79
+  out 1, 'H'
+  out 1, 'e'
+  out 1, 'l'
+  out 1, 'l'
+  out 1, 'o'
 
   out 1, 13
   out 1, 10
