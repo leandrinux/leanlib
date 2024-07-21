@@ -109,12 +109,12 @@ implementation
       bus := _bus;
       regs^.SS := C_DEFAULT_RAM - C_DEFAULT_STACK;
       stackSize := C_DEFAULT_STACK;
-    end;
-    while (not keypressed) or (readkey<>C_ESC) do
-    with context do begin
-       _ram^.readFromMemory(@instruction, regs^.IP, sizeof(TInstruction));
-       _cpu^.exec(context);
-       if regs^.IP >= _codeSize then exit; 
+
+      while regs^.IP < _codeSize do
+      begin
+        _ram^.readFromMemory(@instruction, regs^.IP, sizeof(TInstruction));
+        _cpu^.exec(context);
+      end;
     end;
   end;
 
