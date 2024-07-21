@@ -138,6 +138,7 @@ implementation
       if (i > 0) then
       begin
         stringValue := trim(copy(str, i+1, length(str)-i));
+        symbol := new(PSymbol, init);
         symbol^.name := trim(copy(str, 1, i-1));
         success := any2int(stringValue, symbol^.value);
         if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
