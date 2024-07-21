@@ -18,22 +18,11 @@ interface
 
   const
     C_CLASS_ID_DATA_PARSER = $F012;
-    C_DATA_HEADER = '.data';
-    C_CODE_HEADER = '.code';
-    C_DEFINE_KEYWORD = 'def';
-    C_OPCODE_ADD_SYMBOL = 1001;
+    
+    C_DELEGATE_ADD_DEFINITION = 1001;
+    C_DELEGATE_ADD_VARIABLE = 1001;
 
   type
-    EDataType = (
-      EDataTypeNone,
-      EDataTypeDefinition
-    );
-
-    EDataParserState = (
-      EDataParserStateStart,
-      EDataParserHeader
-    );
-
     PDataParser = ^TDataParser;
     TDataParser = object (TObject)
     public
@@ -41,16 +30,10 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      function isDone: boolean;
-      procedure parse(var dataType: EDataType; var data: pointer);
+      procedure parse;
     private
-      _isDone: boolean;
-      _state: EDataParserState;
       _sourceCode: PSourceCode;
       procedure fatalError(const str, args: string);
-      procedure waitForDataHeader;
-      procedure readHeaderElements;
-      procedure addDefinitions(str: string);
     end;
 
 implementation
@@ -62,8 +45,6 @@ implementation
     inherited init;
     _sourceCode := sourceCode;
     _sourceCode^.retain;
-    _isDone := false;
-    _state := EDataParserStateStart;
   end;
 
   destructor TDataParser.done;
@@ -82,88 +63,171 @@ implementation
     getClassId := C_CLASS_ID_DATA_PARSER;
   end;
 
-  function TDataParser.isDone: boolean;
+  procedure TDataParser.parse;
+  type
+    EParserState = (
+      EStateStart,
+      EStateSkipSpacesBeforeType,
+      EStateGetSymbolType,
+      EStateSkipSpacesBeforeName,
+      EStateGetSymbolName,
+      EStateSkipSpacesBeforeVarType,
+      EStateGetVarType,
+      EStateSkipSpacesBeforeDefinitionValue,
+      EStateGetDefinitionValue,
+      EStateSkipSpacesAfterDefinition,
+      EStateSuccess,
+      EStateFailed
+    );
+    ESymbolType = (
+      ESymbolTypeDefinition,
+      ESymbolTypeVariable
+    );
+  const
+    C_END_STATES = [EStateSuccess, EStateFailed];
+    C_SPACING_CHARS = [C_SPACE, C_TAB, C_CR, C_LF];
+    C_IDENTIFIER_CHARS = ['A'..'Z', 'a'..'z', '_', '0'..'9'];
+    C_KEYWORD_DEFINITION = 'def';
+    C_KEYWORD_VARIABLE = 'var';
+  var
+    state: EParserState;
+    token: string;
+    ch: char;
+    symbolType: ESymbolType;
+    symbolName: TString30;
+    value: TString30;
+    varType: TString30;
   begin
-    isDone := _isDone;
-  end;
+    state := EStateStart;
+    while not (state in C_END_STATES) do
+    begin
+      case state of
+        EStateStart:
+        begin
+          writeln('EStateStart');
+          token := '';
+          state := EStateSkipSpacesBeforeType;
+          ch := _sourceCode^.readChar;
+        end;
 
-  procedure TDataParser.parse(var dataType: EDataType; var data: pointer);
-  begin
-    case _state of
-      EDataParserStateStart: waitForDataHeader;
-      EDataParserHeader: readHeaderElements;
+        EStateSkipSpacesBeforeType: 
+        begin
+          writeln('EStateSkipSpacesBeforeType');
+          if not (ch in C_SPACING_CHARS) then 
+            state := EStateGetSymbolType;
+          ch := _sourceCode^.readChar;
+        end;
+
+        EStateGetSymbolType:
+        begin
+          writeln('EStateGetSymbolType');
+          if ch in ['a'..'z'] then
+            token := token + ch
+          else if ch in C_SPACING_CHARS then
+          begin
+            state := EStateSkipSpacesBeforeName;
+            if token = C_KEYWORD_DEFINITION then
+              symbolType := ESymbolTypeDefinition
+            else if token = C_KEYWORD_VARIABLE then
+              symbolType := ESymbolTypeVariable
+            else 
+              state := EStateFailed;
+            writeln('symbolType: ', ord(symbolType));
+            token := '';
+          end;
+          ch := _sourceCode^.readChar;
+        end;
+
+        EStateSkipSpacesBeforeName: 
+        begin
+          writeln('EStateSkipSpacesBeforeName');
+          if not (ch in C_SPACING_CHARS) then 
+            state := EStateGetSymbolName;
+          ch := _sourceCode^.readChar;
+        end;
+
+        EStateGetSymbolName:
+        begin
+          writeln('EStateGetSymbolName');
+          if ch in C_IDENTIFIER_CHARS then
+            token := token + ch
+          else if ch in (C_SPACING_CHARS + [':', '=']) then
+          begin
+            symbolName := token;
+            token := '';
+            writeln('symbolName:', symbolName);
+            if (ch = ':') and (symbolType = ESymbolTypeVariable) then
+              state := EStateSkipSpacesBeforeVarType
+            else if (ch = '=') and (symbolType = ESymbolTypeDefinition) then
+              state := EStateSkipSpacesBeforeDefinitionValue
+            else if ch in [':', '='] then
+              state := EStateFailed;
+          end;
+          ch := _sourceCode^.readChar;          
+        end;
+
+        EStateSkipSpacesBeforeDefinitionValue:
+        begin
+          writeln('EStateSkipSpacesBeforeDefinition');
+          if not (ch in C_SPACING_CHARS) then 
+            state := EStateGetDefinitionValue;
+          ch := _sourceCode^.readChar;
+        end;
+
+        EStateGetDefinitionValue:
+        begin
+          writeln('EStateGetDefinition');
+          if ch in C_IDENTIFIER_CHARS then
+            token := token + ch
+          else if ch in (C_SPACING_CHARS + [',']) then
+          begin
+            value := token;
+            token := '';
+            writeln('SET DEFINITION "', symbolName,'" WITH VALUE "', value, '"');
+            state := EStateSkipSpacesAfterDefinition
+          end;
+          ch := _sourceCode^.readChar;
+        end;
+
+        EStateSkipSpacesAfterDefinition:
+        begin
+          writeln('EStateSkipSpacesAfterDefinition');
+          if (ch in C_SPACING_CHARS) then 
+            ch := _sourceCode^.readChar
+          else
+            if ch = ',' then
+              state := EStateSkipSpacesBeforeName
+            else
+              state := EStateSkipSpacesBeforeType;
+        end;
+
+        EStateSkipSpacesBeforeVarType: 
+        begin
+          writeln('EStateSkipSpacesBeforeVarType');
+          if not (ch in C_SPACING_CHARS) then 
+            state := EStateGetVarType;
+          ch := _sourceCode^.readChar;
+        end;
+
+        EStateGetVarType:
+        begin
+          writeln('EStateGetVarType');
+          if ch in C_IDENTIFIER_CHARS then
+            token := token + ch
+          else if ch in (C_SPACING_CHARS + ['=']) then
+          begin
+            varType := token;
+            token := '';
+            state := EStateSkipSpacesAfterDefinition
+          end;
+          ch := _sourceCode^.readChar;
+        end;
+
+      end;    
     end;
   end;
 
   { TDataParser private }
-
-  procedure TDataParser.waitForDataHeader;
-  var
-    str: string;
-  begin
-    str := trim(_sourceCode^.readLine);
-    if _sourceCode^.isReadComplete or (str = C_CODE_HEADER) then 
-      _isDone := true
-    else if (length(str)=0) or (str[1]='#') then begin end 
-    else if str = C_DATA_HEADER then 
-      _state := EDataParserHeader
-    else 
-      msg(EMsgFatal, C_STR_EXPECTED_DATA, intToStr(_sourceCode^.lineNumber));;
-  end;
-
-  procedure TDataParser.readHeaderElements;
-  var
-    str: string;
-  begin
-    str := trim(_sourceCode^.readLine);
-    if str = C_CODE_HEADER then _isDone := true
-    else if (length(str)=0) or (str[1]='#') then begin end 
-    else if beginsWith(str, C_DEFINE_KEYWORD + ' ') then addDefinitions(str)
-    else 
-      fatalError(C_STR_ERR_UNRECOGNIZED_DATA_ELEMENT, str);
-  
-  end;
-
-  procedure TDataParser.addDefinitions(str: string);  
-
-    procedure addDefinition(str: string);
-    var
-      i: byte;
-      symbol: PSymbol;
-      stringValue: TString30;
-      success: boolean;
-    begin
-      if getDelegate = nil then exit;
-      i := pos('=', str);
-      if (i > 0) then
-      begin
-        stringValue := trim(copy(str, i+1, length(str)-i));
-        symbol := new(PSymbol, init);
-        symbol^.name := trim(copy(str, 1, i-1));
-        success := any2int(stringValue, symbol^.value);
-        if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
-        sendMessageWithData(C_OPCODE_ADD_SYMBOL, getDelegate, symbol, 0);
-        symbol^.release;
-      end else
-        fatalError(C_STR_ERR_EXPECTED_EQUAL, str);
-    end;
-
-  var
-    a, b: byte;
-    def: string;
-  begin
-    a := length(C_DEFINE_KEYWORD) + 1;
-    b := a;
-    while (a<length(str)) do
-    begin
-      while (b<length(str)) and (str[b]<>',') do inc(b);
-      def := copy(str, a+1, b-a);
-      def := trimChars(def, C_TRIM_CHARS + [',']);
-      addDefinition(def);
-      a := b;
-      b := b + 1;
-    end;
-  end;
 
   procedure TDataParser.fatalError(const str, args: string);
   begin

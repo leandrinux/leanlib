@@ -34,12 +34,15 @@ interface
       _sourceStream: PStream;      { stream used to read the source code }
       _targetStream: PStream;      { stream used to write the binary code }
       _config: TBuilderConfig;     { other configuration settings }
+      _sourceCode: PSourceCode;    { contains the full source code to be compiled }
       _binary: PBinary;            { contains the full binary code and data }
       procedure printSentence(lineCount: word; const sentence: TSentence);
+      procedure buildData;
+      procedure buildCode;
     end;
 
 implementation
- 
+
   { TBuilder public }
 
   constructor TBuilder.init;
@@ -49,6 +52,7 @@ implementation
     _sourceStream := nil;
     _targetStream := nil;
     _binary := new(PBinary, init);
+    _sourceCode := nil;
   end;
 
   destructor TBuilder.done;
@@ -70,52 +74,70 @@ implementation
   end;
 
   procedure TBuilder.build;
+  const
+    C_DATA_SECTION_HEADER = '.data';
+    C_CODE_SECTION_HEADER = '.code';
   var
-    sourceCode: PSourceCode;    { contains the full source code to be compiled }
-    dataParser: PDataParser;    { reads and validates the data section }
-    dataType: EDataType;
-    data: pointer;
-    codeParser: PCodeParser;    { reads and validates the code section }
-    sentence: TSentence;
-    count: word;
+    line: string;
   begin
     { prepare everything to compile }
     if _sourceStream = nil then msg(EMsgFatal, C_STR_SOURCE_NOT_SET, '');
     if _targetStream = nil then msg(EMsgFatal, C_STR_TARGET_NOT_SET, '');
     msg(EMsgNormal, C_STR_BUILDING, '');
-    sourceCode := new(PSourceCode, initWithStream(_sourceStream));
-    if not sourceCode^.isValid then msg(EMsgFatal, C_STR_READ_ERROR, '');
-    count := 0;
+    _sourceCode := new(PSourceCode, initWithStream(_sourceStream));
+    if not _sourceCode^.isValid then msg(EMsgFatal, C_STR_READ_ERROR, '');
 
-    { parse the data section }
-    dataParser := new(PDataParser, initWithSourceCode(sourceCode));
-    dataParser^.setDelegate(@self);
-    while not dataParser^.isDone do
+    { find section headers }
+    line := '';
+    while line = '' do line := trim(_sourceCode^.readLine);
+
+    if line = C_DATA_SECTION_HEADER then
     begin
-      dataParser^.parse(dataType, data);
+      buildData;
+      line := '';
+      while line = '' do line := trim(_sourceCode^.readLine);
     end;
-    dataParser^.release;
+    
+    if line = C_CODE_SECTION_HEADER then
+    begin
+      buildCode;
+      { create the binary }
+      _binary^.make;
+      _binary^.save(_targetStream);
+    end else
+      msg(EMsgFatal, 'invalid section', '');
 
+    { release objects and present success message }
+    _sourceCode^.release;
+    _sourceCode := nil;
+    msg(EMsgGood, C_STR_BUILD_SUCCESSFUL, '');
+    writeln;
+  end;
+
+  procedure TBuilder.buildData;
+  var
+    dataParser: PDataParser;    { reads and validates the data section }
+  begin
+    { parse the data section }
+    dataParser := new(PDataParser, initWithSourceCode(_sourceCode));
+    dataParser^.setDelegate(@self);
+    dataParser^.parse;
+    dataParser^.release;
+  end;
+
+  procedure TBuilder.buildCode;
+  var
+    codeParser: PCodeParser;
+    sentence: TSentence;
+  begin
     { parse the code section } 
-    codeParser := new(PCodeParser, initWithSourceCode(sourceCode));
+    codeParser := new(PCodeParser, initWithSourceCode(_sourceCode));
     while not codeParser^.isDone do
     begin
       codeParser^.parseSentence(sentence);
-      if _config.isVerbose then printSentence(count, sentence);
       _binary^.addSentence(sentence);
-      inc(count);
     end;
-    msg(EMsgNormal, C_STR_SENTENCES_PROC, intToStr(count));
     codeParser^.release;
-
-    { create the binary }
-    _binary^.make;
-    _binary^.save(_targetStream);
-
-    { release objects and present success message }
-    sourceCode^.release;
-    msg(EMsgGood, C_STR_BUILD_SUCCESSFUL, '');
-    writeln;
   end;
 
   procedure TBuilder.setSourceStream(stream: PStream);
@@ -157,7 +179,7 @@ implementation
   var
     symbol: PSymbol;
   begin 
-    if msg^.opcode = C_OPCODE_ADD_SYMBOL then
+    if msg^.opcode = C_DELEGATE_ADD_DEFINITION then
     begin
       symbol := PSymbol(msg^.payload);
       _binary^.addSymbol(symbol^.name, symbol^.value);

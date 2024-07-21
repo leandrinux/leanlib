@@ -14,7 +14,6 @@ The second lsystem release must include multiple improvements for both compiler 
   * Support for char literals such as '*'
 
   * Support for byte, word, long and char variables and arrays
-  * Binary must include metadata such as author, name and description
 
 ## Runtime
 
@@ -26,6 +25,11 @@ The second lsystem release must include multiple improvements for both compiler 
     * when the system error flag is set, EAX contains the error code that describes the cause
   * Include examples for future benchmarking
 
+  * Data section in binaries should be supported.
+  * Echo device renamed to Text device
+    * supports commands by sending a null character followed by an operation code, followed by arguments
+    * allows to reposition the text cursor (caret) around the screen
+    * allows to clear the text screen
   * Support for JSON system configuration files
     * defines how much memory the system has
     * defines the size of the stack
@@ -34,25 +38,34 @@ The second lsystem release must include multiple improvements for both compiler 
     * enables/disables auto restart 
   * Command line improvements
     * each configuration setting must have a corresponding command line equivalent
-  * When silent mode is off, displays metadata before running program if this info is available
   * Performance optimizations by converting strategic functions to assembly or unrolling cycles if possible
-  * Data section in binaries should be supported.
 
 # 1.3 Minuet goals
 
   * Prevent the "jump to 0 on CPU panic" behavior by using another flag and a instruction that disables it only for the next instruction
+  * Metadata support
+    * Compiler must generate binary including metadata such as author, name and description
+    * When the interpreter is not in silent mode, it must display the metadata before running program if this info is available
+    * A command line argument will allow to display the metadata and other binary information without running the program
+  * Text device enhancements
+    * it must be possible to save the output of the text device to a file.
   * Monochrome bitmap video display device
     * A command should turn on and off the device
     * A command should take a value to change the state of bits on the screen. 
     * screen size should be 128x128
     * one pixel per bit. 4 bytes per row. 512 bytes total video memory
   * Keyboard device support
+    * it must be possible to query the keyboard for the existence of data in its buffer
+    * keyboard buffer acts as a queue with a limited capacity
+    * if the keyboard buffer is full and the user keeps pressing keys, the bell sound must be heard
   * System clock device support
+    * it must be possible to query the current date and time
   * Beeper device to generate sounds
     * A command should take a frequency value of 0 to silence the beeper
     * Any other frequency value generates a persistent tone
   * Storage device to save data persistently
-  * Redirect echo device output to file instead of the standard output
+    * It must support a command to query the storage capacity (cluster total count and cluster size)
+    * It must be a plain device divided in clusters. A command must allow to load a cluster, then read its contents using IN
   * All devices should be discoverable by reacting to a command
    * AX becomes 0 if a device is not available
    * AX becomes the device identifier if a device is available
