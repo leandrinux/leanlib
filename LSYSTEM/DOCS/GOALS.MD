@@ -11,10 +11,10 @@ The second lsystem release must include multiple improvements for both compiler 
     * CS can only be modified with MOV
     * OUT must support all types of parameters but bitsize validation should still be performed.
     * All compiler errors should include the line number
-
   * Support for char literals such as '*'
-  * Binary must include metadata such as author, name and description
+
   * Support for byte, word, long and char variables and arrays
+  * Binary must include metadata such as author, name and description
 
 ## Runtime
 

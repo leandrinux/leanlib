@@ -362,12 +362,13 @@ The data section is the first part of a valid lsystem program. It starts with th
 
 ### Definitions
 
-Definitions are labels that are substituted during the compilation process by a numeric value. Definitions are preceded by the keyword `define` and their names cannot be duplicates or reserved words such as register names. They are case sensitive. They do not exist during execution and do not get a memory space assigned to them
+Definitions are labels that are substituted during the compilation process by a numeric value. Definitions are preceded by the keyword `define` and their names cannot be duplicates or reserved words such as register names. They are case sensitive. They do not exist during execution and do not get a memory space assigned to them. Defines are essentially literal values.
 
     .data
     
-      let value = 0xCAFE
-      let zero = 0, one = 1, twenty = 20
+      def value = 0xCAFE
+      def zero = 0
+      def twenty = 20
     
     .code
 
@@ -376,13 +377,17 @@ Definitions are labels that are substituted during the compilation process by a 
         add ax, twenty
         cmp ax, zero        
         
-### Constants
+### Variables
 
-Constants are values that are not intended to change and take up space in memory during execution. A constant can be used to storage  information in memory such as a string that will be presented to screen
+Variables are values that may or may not change during execution. They take up space in memory during execution and are stored in the data segment. A variable can be used to storage information in memory such as a string that will be presented to screen. All variables have a type such as `char`, `byte`, `word` or `long`. Additionally you can define an array of such types. You can also use the type `blob` to add the contents of a file. `blob` arrays are not available.
 
     .data
-      const greeting = 'Hello world!\n'
-    
+      var greeting: char[] = 'Hello World\n'
+      var question: char = '?'
+      var name: char[10]
+      var numbers: byte[] = 10, 0xFF, 30, 40, 50
+      var image: blob = 'avatar.jpg'
+
     .code
     
       main:
@@ -395,5 +400,3 @@ Constants are values that are not intended to change and take up space in memory
         jmp loop
       end:
         jmp end  
-
-### Interacting with devices
