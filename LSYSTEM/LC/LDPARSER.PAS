@@ -13,14 +13,14 @@ unit
 interface
 
   uses
-    consts, utils, uclasses, types, locale, strings,
+    ascii, consts, utils, uclasses, types, locale, strings,
     uobject, uexc, lliteral, lcommon, lcbase, lsrccode, ltexts;
 
   const
     C_CLASS_ID_DATA_PARSER = $F012;
     C_DATA_HEADER = '.data';
     C_CODE_HEADER = '.code';
-    C_DEFINE_KEYWORD = 'define';
+    C_DEFINE_KEYWORD = 'def';
     C_OPCODE_ADD_SYMBOL = 1001;
 
   type
@@ -47,9 +47,10 @@ interface
       _isDone: boolean;
       _state: EDataParserState;
       _sourceCode: PSourceCode;
+      procedure fatalError(const str, args: string);
       procedure waitForDataHeader;
       procedure readHeaderElements;
-      procedure addDefinition(str: string);
+      procedure addDefinitions(str: string);
     end;
 
 implementation
@@ -114,38 +115,56 @@ implementation
   var
     str: string;
   begin
-    str := _sourceCode^.readLine;
-    str := trim(str);
-    if str = C_CODE_HEADER then 
-      _isDone := true
+    str := trim(_sourceCode^.readLine);
+    if str = C_CODE_HEADER then _isDone := true
     else if (length(str)=0) or (str[1]='#') then begin end 
-    else if beginsWith(str, C_DEFINE_KEYWORD) then 
-      addDefinition(str)
+    else if beginsWith(str, C_DEFINE_KEYWORD) then addDefinitions(str)
     else 
-      msg(EMsgFatal, C_STR_UNRECOGNIZED_DATA_ELEMENT, str + #0 + intToStr(_sourceCode^.lineNumber));
+      fatalError(C_STR_ERR_UNRECOGNIZED_DATA_ELEMENT, str);
   
   end;
 
-  procedure TDataParser.addDefinition(str: string);  
-  var
-    i: byte;
-    symbol: PSymbol;
-    stringValue: TString30;
-    success: boolean;
-  begin
-    str := copy(str, length(C_DEFINE_KEYWORD)+1, length(str)-length(C_DEFINE_KEYWORD));
-    str := trim(str);
-    i := pos(' ', str);
-    if (i>0) and (getDelegate<>nil) then
+  procedure TDataParser.addDefinitions(str: string);  
+
+    procedure addDefinition(str: string);
+    var
+      i: byte;
+      symbol: PSymbol;
+      stringValue: TString30;
+      success: boolean;
     begin
-      stringValue := copy(str, i+1, length(str)-i);
-      symbol := new(PSymbol, init);
-      symbol^.name := copy(str, 1, i-1);
-      success := any2int(stringValue, symbol^.value);
-      if not success then msg(EMsgFatal, C_STR_UNRECOGNIZABLE_SYMBOL, stringValue);
-      sendMessageWithData(C_OPCODE_ADD_SYMBOL, getDelegate, symbol, 0);
-      symbol^.release;
+      i := pos('=', str);
+      if (i>0) and (getDelegate<>nil) then
+      begin
+        stringValue := trim(copy(str, i+1, length(str)-i));
+        symbol^.name := trim(copy(str, 1, i-1));
+        success := any2int(stringValue, symbol^.value);
+        if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
+        sendMessageWithData(C_OPCODE_ADD_SYMBOL, getDelegate, symbol, 0);
+        symbol^.release;
+      end;
     end;
+
+  var
+    a, b: byte;
+    def: string;
+  begin
+    a := length(C_DEFINE_KEYWORD) + 1;
+    b := a;
+    while (a<length(str)) do
+    begin
+      while (b<length(str)) and (str[b]<>',') do inc(b);
+      def := copy(str, a+1, b-a);
+      def := trimChars(def, C_TRIM_CHARS + [',']);
+      addDefinition(def);
+      a := b;
+      b := b + 1;
+    end;
+  end;
+
+  procedure TDataParser.fatalError(const str, args: string);
+  begin
+    msg(EMsgFatal, str, intToStr(_sourceCode^.lineNumber) + C_NULL + args);
   end;
 
   { Other }

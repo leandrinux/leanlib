@@ -11,6 +11,9 @@ interface
   uses
     types;
 
+  const
+    C_TRIM_CHARS = [' ', #10, #13, #9];
+
   type
     TTrimmableChars = set of char;
 
@@ -147,8 +150,6 @@ implementation
   end;
 
   function trim(const str: string): string;
-  const
-    C_TRIM_CHARS = [' ', #10, #13, #9];
   begin
     trim := trimChars(str, C_TRIM_CHARS);
   end;
