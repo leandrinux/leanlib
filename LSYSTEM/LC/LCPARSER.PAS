@@ -256,14 +256,14 @@ implementation
   const 
     { these instructions do not support a literal as first parameter }
     C_OPCODES_NO_FIRST_LITERAL: set of byte = [
-      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_MOD, C_SHL, C_SHR, 
       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, C_OR, C_NOT, 
       C_XOR, C_JMP, C_JZ, C_JP, C_JN, C_JNZ, C_CALL
     ];
 
     { these instructions do not support a symbol as first parameter }
     C_OPCODES_NO_FIRST_SYMBOL: set of byte = [
-      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_SHL, C_SHR, 
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_MOD, C_SHL, C_SHR, 
       C_FADD, C_FSUB, C_FMUL, C_FDIV, 
       C_AND, C_OR, C_NOT, C_XOR
     ];
@@ -276,14 +276,14 @@ implementation
     { these instructions cannot have a register in the first parameter and a
       literal on the second, where the register has a smaller bitsize than the literal }
     C_OPCODES_LITERAL_BITSIZE_CHK: set of byte = [ 
-      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_MOD,
       C_FADD, C_FSUB, C_FMUL, C_FDIV, C_AND, 
       C_OR, C_NOT, C_XOR
     ];
 
     { these opcodes change the value of the first parameter }
     C_OPCODES_CHANGE_FIRST_ARG: set of byte = [
-      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, 
+      C_MOV, C_ADD, C_SUB, C_MUL, C_DIV, C_MOD,
       C_FADD, C_FSUB, C_FMUL, C_FDIV, 
       C_AND, C_OR, C_NOT, C_XOR, C_SHL, C_SHR,
       C_POP

@@ -103,7 +103,7 @@ The last 16 bits are a signed constant, therefore defined in the -32768..32767 r
 
 ## Instruction set 
 
-The lsystem instruction set consists of 33 instructions or operations divided in multiple groups
+The lsystem instruction set consists of 34 instructions or operations divided in multiple groups
 
 * math
 * flow control
@@ -123,6 +123,7 @@ The math group of instructions is made of all the basic 4 math operations and al
 |SUB|0x03|2|Yes|$1 becomes $1 - $2|
 |MUL|0x04|2|Yes|$1 becomes $1 * $2|
 |DIV|0x05|2|Yes|$1 becomes $1 / $2 (integer division)|
+|MOD|0x0D|2|Yes|$1 becomes $1 module $2 (the remainder after $1 / $2)|
 |CMP|0x06|2|Yes|Substracts $2 from $1 without changing $1 but affecting the condition codes (CC) register|
 
 Only `MOV` can change the value of the CS (code segment) register. When this value is changed, the instruction pointer (IP) is reset to zero. 

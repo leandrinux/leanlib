@@ -48,6 +48,7 @@ implementation
     handlers[C_SUB] := _sub;
     handlers[C_MUL] := _mul;
     handlers[C_DIV] := _div;
+    handlers[C_MOD] := _mod;
     handlers[C_CMP] := _cmp;
 
     { flow }

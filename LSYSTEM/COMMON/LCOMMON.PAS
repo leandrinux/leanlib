@@ -29,12 +29,13 @@ interface
     C_PARAMETER_POINTER  = 3;    { param type value for pointer parameters }
 
     { opcodes } 
-    C_OPCODE_COUNT   = 33;       { how many operations does the CPU recognize }
+    C_OPCODE_COUNT   = 34;       { how many operations does the CPU recognize }
     C_MOV = $01; 
     C_ADD = $02; 
     C_SUB = $03; 
     C_MUL = $04;
     C_DIV = $05; 
+    C_MOD = $0D;
     C_CMP = $06; 
     C_SHL = $07; 
     C_SHR = $08;

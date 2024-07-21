@@ -106,6 +106,7 @@ interface
       (name: 'sub'; code:C_SUB; count:2),
       (name: 'mul'; code:C_MUL; count:2),
       (name: 'div'; code:C_DIV; count:2),
+      (name: 'mod'; code:C_MOD; count:2),
       (name: 'cmp'; code:C_CMP; count:2),
       (name: 'shl'; code:C_SHL; count:2),
       (name: 'shr'; code:C_SHR; count:2),
