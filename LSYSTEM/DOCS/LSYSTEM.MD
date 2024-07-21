@@ -1,12 +1,12 @@
-# LSystem full specs document 1.0
+# lean system full specs document
 
-This document describes the lsystem virtual architecture, defining the instruction set, the available registers and how memory is managed. It also provides a detailed description of the lsystem assembly language and its syntax.
+This document describes the lean system virtual architecture. It defines the instruction set, the available registers and how memory is managed. It also provides a detailed description of the lsystem assembly language and its syntax.
 
 This architecture was based on an initial work by Leandro Tami and Alejandra Pautasso for the 2003 and 2004 courses of Computer Architectures at FASTA University, Mar del Plata, Argentina.
 
 The lsystem architecture is little-endian 32-bit. CPU registers are all 32-bit. The minimum addressable memory unit is a byte. The CPU can address 4294967296 bytes (4 GB max).
 
-## Virtual CPU Registers
+## CPU registers
 
 |Register|Code|Description|
 |--------|----|-----------|
@@ -160,7 +160,7 @@ The binary algebra group includes the 4 basic logical operations plus others lik
 
 ### Stack operations
 
-The stack operations are 7 instructions allowing for stack access such as adding or removing values to it, and most importantly, enables the ability to call subroutines.
+The stack operations allow for stack access such as adding or removing values to it. They are often used to preserve the state of the CPU registers before and after a subroutine call.
 
 |Instruction|Opcode|Args|Affects CC|Description|
 |-----------|------|----|----------|-----------|
@@ -178,6 +178,19 @@ You can either read and write a single byte to/from a device id.
 |-----------|------|----|----------|-----------|
 |OUT|0x51|2|No|Sends the lower byte of $2 to the device number $1|
 |IN|0x52|1|No|Receives one byte from the device number $1 into AL|
+
+Devices have standard identifiers, but the system may define them differently.
+
+|Id|Name|Description|
+|-|-|-|
+|0|RAM|The system memory. It can be used to query for the total amount of memory|
+|1|Echo|An echo device, often used to print characters in the host computer|
+|2|Video|A video device, used to plot graphics|
+|3|Keyboard|Keyboard device, used to enter human input|
+|4|Clock|The system clock, used to schedule actions or get the current date and time|
+|5|Beeper|A simple sound device used to generate tones|
+|7|Storage|A persistent storage device of variable size|
+|8|Mouse|A pointing device such as a mouse or a touchscreen|
 
 ### Extended features
 
