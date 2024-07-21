@@ -118,7 +118,7 @@ implementation
     str := trim(_sourceCode^.readLine);
     if str = C_CODE_HEADER then _isDone := true
     else if (length(str)=0) or (str[1]='#') then begin end 
-    else if beginsWith(str, C_DEFINE_KEYWORD) then addDefinitions(str)
+    else if beginsWith(str, C_DEFINE_KEYWORD + ' ') then addDefinitions(str)
     else 
       fatalError(C_STR_ERR_UNRECOGNIZED_DATA_ELEMENT, str);
   
@@ -133,8 +133,9 @@ implementation
       stringValue: TString30;
       success: boolean;
     begin
+      if getDelegate = nil then exit;
       i := pos('=', str);
-      if (i>0) and (getDelegate<>nil) then
+      if (i > 0) then
       begin
         stringValue := trim(copy(str, i+1, length(str)-i));
         symbol^.name := trim(copy(str, 1, i-1));
@@ -142,7 +143,8 @@ implementation
         if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
         sendMessageWithData(C_OPCODE_ADD_SYMBOL, getDelegate, symbol, 0);
         symbol^.release;
-      end;
+      end else
+        fatalError(C_STR_ERR_EXPECTED_EQUAL, str);
     end;
 
   var

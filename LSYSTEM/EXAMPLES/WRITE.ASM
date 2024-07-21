@@ -1,6 +1,6 @@
 .data
   
-define value 100
+  def value = 1000
 
 .code
 

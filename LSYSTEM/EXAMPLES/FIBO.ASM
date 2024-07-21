@@ -3,8 +3,7 @@
 
 .data 
   
-  define C_CR 13
-  define C_LF 10
+  def C_CR = $D, C_LF = 0xA
 
 .code
 

@@ -197,7 +197,7 @@ implementation
     end;
 
     if _symbols^.getUnknownCount > 0 then
-      msg(EMsgFatal, C_STR_UNDEFINED_SYMBOL, _symbols^.getFirstUnknownName);
+      msg(EMsgFatal, C_STR_ERR_UNDEFINED_SYMBOL, _symbols^.getFirstUnknownName);
 
   end;
 

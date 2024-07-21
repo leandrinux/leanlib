@@ -20,13 +20,13 @@ interface
     C_STR_UNRECOGNIZABLE_ARGUMENT = 'Unrecognizable argument "%0"';
     C_STR_SOURCE_NOT_SET = 'Source stream not set';
     C_STR_TARGET_NOT_SET = 'Target stream not set';
-    C_STR_UNDEFINED_SYMBOL = 'Undefined symbol "%0"';
     C_STR_BUILD_SUCCESSFUL = 'Build successful :)';
     C_STR_EXPECTED_DATA = 'Expected .data at %0';
 
     { data parser errors }
-    C_STR_ERR_UNRECOGNIZED_DATA_ELEMENT = '(%0) Unrecognized data section element "%0"';
-    C_STR_ERR_UNRECOGNIZABLE_SYMBOL = 'Unrecognizable argument "%0"';
+    C_STR_ERR_UNRECOGNIZED_DATA_ELEMENT = '(%0) Unrecognized data section element "%1"';
+    C_STR_ERR_UNRECOGNIZABLE_SYMBOL = '(%0) Unrecognizable argument "%1"';
+    C_STR_ERR_EXPECTED_EQUAL = '(%0) expected "="';
     
     { code parser errors }
     C_STR_ERR_UNRECOGNIZED_OPERATION = '(%0) unrecognized operation "%1"';
@@ -37,6 +37,9 @@ interface
     C_STR_ERR_OUT_EXPECTS_8BIT = '(%0) OUT parameter "%1" must be 8-bit in size';
     C_STR_ERR_REGISTER_IS_READONLY = '(%0) Register %1 is read-only';
     C_STR_ERR_CS_CAN_ONLY_BE_MODIFIED = '(%0) CS can only be modified with MOV';
+
+    { binary generator errors }
+    C_STR_ERR_UNDEFINED_SYMBOL = 'Symbol "%0" was used but never defined';
 
 implementation
 

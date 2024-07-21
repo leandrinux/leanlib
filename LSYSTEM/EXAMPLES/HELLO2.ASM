@@ -1,6 +1,6 @@
 .data
 
-define count 10
+def count=10
 
 .code
 

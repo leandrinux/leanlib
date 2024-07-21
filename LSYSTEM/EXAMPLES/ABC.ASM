@@ -1,7 +1,6 @@
 .data
 
- define device 1
- define count 26
+ def device = 1, count = 26
 
 .code
 
@@ -12,6 +11,3 @@ loop:
   add ah, 1
   sub al, 1
   jnz loop
-
-end: 
-  jmp end
