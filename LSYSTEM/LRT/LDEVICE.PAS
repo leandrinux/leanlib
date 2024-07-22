@@ -14,6 +14,8 @@ interface
   const
     C_CLASS_ID_DEVICE = 5004;
 
+    C_CMD_GET_DEVICE_TYPE = $00;
+
   type
     PDevice = ^TDevice;
     TDevice = object (TObject)

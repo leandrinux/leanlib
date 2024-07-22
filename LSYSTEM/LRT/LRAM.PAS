@@ -13,6 +13,8 @@ interface
 
   const
     C_CLASS_ID_RAM = 5002;
+    C_DEVICE_TYPE = $0A;
+    C_CMD_GET_MEMORY_SIZE  = $01;
 
   type
     PRAM = ^TRAM;
@@ -22,6 +24,8 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      function readByte(var value: byte): boolean; virtual;
+      function writeByte(value: byte): boolean; virtual;
       procedure loadStream(source: PStream; bytesToLoad: word; memoryPosition: TUInt32);
       function readFromMemory(buffer: pchar; memoryPosition: TUInt32; bytesToRead: word): word;
       procedure setValue(address: TUInt32; value: TUInt32);
@@ -29,6 +33,10 @@ interface
     private
       _data: pchar;
       _dataSize: word;
+
+      _responseBuffer: array[0..3] of byte;
+      _bufferPosition: byte;
+      _bufferSize: byte;
     end;
 
 implementation
@@ -40,6 +48,9 @@ implementation
     inherited init;
     _dataSize := size;
     getMem(_data, _dataSize);
+    fillchar(_responseBuffer, sizeof(_responseBuffer), 0);
+    _bufferPosition := 0;
+    _bufferSize := 0;
   end;
 
   destructor TRAM.done;
@@ -103,6 +114,40 @@ implementation
     p := _data;
     inc(p, address);
     getValue := PUInt32(p)^;    
+  end;
+
+  function TRAM.readByte(var value: byte): boolean;
+  begin
+    if _bufferPosition < _bufferSize then
+    begin
+      value := _responseBuffer[_bufferPosition];
+      inc(_bufferPosition);
+      readByte := true;
+    end else
+      readByte := false;
+  end;
+
+  function TRAM.writeByte(value: byte): boolean;
+  begin
+    writeln('sent command ', value, 'to RAM device ');
+    writeByte := false;
+    case value of
+      C_CMD_GET_DEVICE_TYPE:
+      begin
+        _responseBuffer[0] := C_DEVICE_TYPE;
+        _bufferPosition := 0;
+        _bufferSize := 1;
+        writeByte := true;
+      end;
+
+      C_CMD_GET_MEMORY_SIZE:
+      begin
+        move(_dataSize, _responseBuffer, sizeof(_dataSize));
+        _bufferPosition := 0;
+        _bufferSize := 4;
+        writeByte := true;
+      end;
+    end;
   end;
 
   { TRAM private }

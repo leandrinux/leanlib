@@ -71,6 +71,7 @@ implementation
 
   function TBus.sendByte(deviceId, data: byte): boolean;
   begin
+    writeln('sending byte ', data,' to device ', deviceId);
     sendByte := _devices[_count]^.writeByte(data);
   end;
 
