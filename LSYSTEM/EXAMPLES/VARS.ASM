@@ -2,10 +2,12 @@
 
   def 
     value = 123,
-    another = 234
+    another= 234
 
   var 
     number: byte
+
+  def owl=30
 
   var 
     other: byte = 255
