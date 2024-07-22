@@ -12,6 +12,8 @@ interface
     C_STR_BINARY_NOT_FOUND = 'Binary file not found';
     C_STR_BINARY_INVALID = 'Invalid binary file';
     C_STR_BINARY_TOO_BIG = 'Binary file too big';
+    C_STR_ADDED_DEVICE = 'Added device "%0" with id %1';
+    C_STR_INIT_MEMORY_WITH_SIZE = 'Using %0 bytes system memory';
 
 implementation
 

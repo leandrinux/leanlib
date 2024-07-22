@@ -23,6 +23,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       function writeByte(value: byte): boolean; virtual;
+      function getName: TDeviceName; virtual;
     private
     end;
 
@@ -54,6 +55,11 @@ implementation
   begin
     system.write(chr(value));
     writeByte := true;
+  end;
+
+  function TEchoDevice.getName: TDeviceName;
+  begin
+    getName := 'Text Echo Device';
   end;
 
   { TEchoDevice private }

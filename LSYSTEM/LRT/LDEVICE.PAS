@@ -17,6 +17,8 @@ interface
     C_CMD_GET_DEVICE_TYPE = $00;
 
   type
+    TDeviceName = string[20];
+   
     PDevice = ^TDevice;
     TDevice = object (TObject)
     public
@@ -29,6 +31,7 @@ interface
       function write(buffer: pchar; count: word): word; virtual;
       function readByte(var value: byte): boolean; virtual;
       function writeByte(value: byte): boolean; virtual;
+      function getName: TDeviceName; virtual;
     private
     end;
 
@@ -80,6 +83,11 @@ implementation
   function TDevice.writeByte(value: byte): boolean;
   begin
     writeByte := false;
+  end;
+
+  function TDevice.getName: TDeviceName;
+  begin
+    getName := 'Device';
   end;
 
   { TDevice private }

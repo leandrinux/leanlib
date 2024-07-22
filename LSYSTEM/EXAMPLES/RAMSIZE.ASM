@@ -3,6 +3,7 @@
 .data
   
   def RAM_DEVICE = 0
+  def ECHO_DEVICE = 1 
   def CMD_GET_SIZE = 1 
 
 .code
@@ -10,19 +11,31 @@
   # main program
 
     out RAM_DEVICE, CMD_GET_SIZE
-  #  xor eax, eax
-  #  in RAM_DEVICE
-  #  shl eax, 8
-  #  in RAM_DEVICE
-  #  shl eax, 8
-  #  in RAM_DEVICE
-  #  shl eax, 8
-  #  in RAM_DEVICE
-  #  shl eax, 8
+    in RAM_DEVICE
+    mov ebx, eax
 
-    mov eax, 1024
+    in RAM_DEVICE
+    shl eax, 8
+    or ebx, eax
 
+    xor eax, eax
+    in RAM_DEVICE
+    shl eax, 16
+    or ebx, eax
+
+    xor eax, eax
+    in RAM_DEVICE
+    shl eax, 24
+    or ebx, eax
+
+    mov eax, ebx
+    out ECHO_DEVICE, 'M'
+    out ECHO_DEVICE, 'e'
+    out ECHO_DEVICE, 'm'
+    out ECHO_DEVICE, ':' 
+    out ECHO_DEVICE, ' ' 
     call write_int32
+
     jmp end            # ends the program
 
 
@@ -47,9 +60,10 @@
 
   write_digit:         # now all the characters are in the stack
     pop ecx            # we take the last digit added to the stack
-    out 1, cl          # we print the digit
+    out ECHO_DEVICE, cl      # we print the digit
     sub edx, 1         # we decrement the digit counter
     jnz write_digit    # if the counter is not zero we keep printing digits
+    out ECHO_DEVICE, ' '     # add a space after the number
     pop eax            # finally we restore the counter value we had saved at the beginning
     ret                # our task here is done 
 

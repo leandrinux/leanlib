@@ -59,19 +59,11 @@ implementation
         C_PARAMETER_POINTER: device := getPointerValue(regs, ram, param0);
       end;
       result := bus^.receiveByte(device, value);
-      case paramType1 of
-        C_PARAMETER_LITERAL:
-        begin
-          cpuError(regs, C_ERR_INVALID_OPERATION);
-          exit;
-        end;
-        C_PARAMETER_ADDRESS: ram^.setValue(param1, value);
-        C_PARAMETER_REGISTER: setRegisterValue(regs, param1, value);
-        C_PARAMETER_POINTER: setPointerValue(regs, ram, param1, value);
-      end;
-      if result then 
-        CC := CC or C_CC_IO
-      else
+      if result then
+      begin
+        regs^.EAX := (regs^.EAX and $FFFFFF00) or value;
+        CC := CC or C_CC_IO;
+      end else
         CC := CC and (not C_CC_IO);
       inc(IP, sizeOf(TInstruction));
     end;

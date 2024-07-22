@@ -30,9 +30,10 @@ interface
       function readFromMemory(buffer: pchar; memoryPosition: TUInt32; bytesToRead: word): word;
       procedure setValue(address: TUInt32; value: TUInt32);
       function getValue(address: TUInt32): TUInt32;
+      function getName: TDeviceName; virtual;
     private
       _data: pchar;
-      _dataSize: word;
+      _dataSize: TUInt32;
 
       _responseBuffer: array[0..3] of byte;
       _bufferPosition: byte;
@@ -129,7 +130,6 @@ implementation
 
   function TRAM.writeByte(value: byte): boolean;
   begin
-    writeln('sent command ', value, 'to RAM device ');
     writeByte := false;
     case value of
       C_CMD_GET_DEVICE_TYPE:
@@ -142,12 +142,20 @@ implementation
 
       C_CMD_GET_MEMORY_SIZE:
       begin
-        move(_dataSize, _responseBuffer, sizeof(_dataSize));
+        _responseBuffer[0] := _dataSize and $FF;
+        _responseBuffer[1] := (_dataSize shr 8) and $FF;
+        _responseBuffer[2] := (_dataSize shr 16) and $FF;
+        _responseBuffer[3] := (_dataSize shr 24) and $FF;
         _bufferPosition := 0;
         _bufferSize := 4;
         writeByte := true;
       end;
     end;
+  end;
+
+  function TRAM.getName: TDeviceName;
+  begin
+    getName := 'Virtual RAM Device';
   end;
 
   { TRAM private }

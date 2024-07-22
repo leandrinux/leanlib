@@ -9,7 +9,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc,
-    lcommon, ldevice;
+    lcommon, ldevice, ltexts;
 
   const
     C_CLASS_ID_BUS = 5003;
@@ -65,19 +65,26 @@ implementation
 
   procedure TBus.addDevice(device: PDevice);
   begin
+    msg(EMsgNormal, C_STR_ADDED_DEVICE, device^.getName + #0 + intToStr(_count));
     _devices[_count] := device;
     device^.retain;
+    inc(_count);
   end;
 
   function TBus.sendByte(deviceId, data: byte): boolean;
   begin
-    writeln('sending byte ', data,' to device ', deviceId);
-    sendByte := _devices[_count]^.writeByte(data);
+    if deviceId < _count then
+      sendByte := _devices[deviceId]^.writeByte(data)
+    else 
+      sendByte := false;
   end;
 
   function TBus.receiveByte(deviceId: byte; var data: byte): boolean;
   begin
-    receiveByte := _devices[_count]^.readByte(data);
+    if deviceId < _count then
+      receiveByte := _devices[deviceId]^.readByte(data)
+    else
+      receiveByte := false;
   end;
 
   { TBus private }
