@@ -37,6 +37,7 @@ interface
     C_STR_ERR_OUT_EXPECTS_8BIT = '(%0) OUT parameter "%1" must be 8-bit in size';
     C_STR_ERR_REGISTER_IS_READONLY = '(%0) Register %1 is read-only';
     C_STR_ERR_CS_CAN_ONLY_BE_MODIFIED = '(%0) CS can only be modified with MOV';
+    C_STR_ERR_IN_REQUIRES_REGISTER = '(%0) IN only takes registers as second argument';
 
     { binary generator errors }
     C_STR_ERR_UNDEFINED_SYMBOL = 'Symbol "%0" was used but never defined';

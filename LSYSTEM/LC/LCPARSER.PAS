@@ -353,6 +353,10 @@ implementation
       if (args[0].registerCode = C_CS) and (opcode <> C_MOV) then
         fatalError(C_STR_ERR_CS_CAN_ONLY_BE_MODIFIED, '');
 
+      { IN only accepts registers as second parameter}
+      if (opcode = C_IN) and (args[1].argType <> EParameterTypeRegister) then
+        fatalError(C_STR_ERR_IN_REQUIRES_REGISTER, '');
+
     end;
   end;
 

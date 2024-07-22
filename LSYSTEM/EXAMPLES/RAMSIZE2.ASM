@@ -11,24 +11,8 @@
   # main program
 
     out RAM_DEVICE, CMD_GET_SIZE
-    in RAM_DEVICE, al
-    mov ebx, eax
+    in RAM_DEVICE, eax
 
-    in RAM_DEVICE, al
-    shl eax, 8
-    or ebx, eax
-
-    xor eax, eax
-    in RAM_DEVICE, al
-    shl eax, 16
-    or ebx, eax
-
-    xor eax, eax
-    in RAM_DEVICE, al
-    shl eax, 24
-    or ebx, eax
-
-    mov eax, ebx
     out ECHO_DEVICE, 'M'
     out ECHO_DEVICE, 'e'
     out ECHO_DEVICE, 'm'

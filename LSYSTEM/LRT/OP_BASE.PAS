@@ -22,6 +22,7 @@ interface
   function getPointerValue(regs: PRegisters; ram: PRAM; param: TUInt32): TUInt32;
   procedure setPointerValue(regs: PRegisters; ram: PRAM; param, value: TUInt32);
   procedure cpuError(regs: PRegisters; code: TUInt32);
+  function getRegisterBitSize(const param: TUInt32): byte;
 
 implementation
 
@@ -50,6 +51,19 @@ implementation
       EBX := IP;
       IP := 0;
     end;
+  end;
+
+  function getRegisterBitSize(const param: TUInt32): byte;
+  begin
+    case param of
+      C_AH, C_BH, C_CH, C_DH, C_AL, C_BL, C_CL, C_DL: 
+        getRegisterBitSize := 8;
+
+      C_AX, C_BX, C_CX, C_DX: 
+        getRegisterBitSize := 16;
+    else
+      getRegisterBitSize := 32;
+    end;       
   end;
 
 end.
