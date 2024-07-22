@@ -289,6 +289,11 @@ implementation
       C_POP
     ];
 
+    { these opcodes change the value of the second parameter }
+    C_OPCODES_CHANGE_SECOND_ARG: set of byte = [
+      C_IN
+    ];
+
     { these registers are considered read-only and cannot be modified }
     C_REGISTERS_READ_ONLY: set of byte = [
       C_SS, C_IP, C_CC
@@ -348,6 +353,11 @@ implementation
         (args[0].registerCode in C_REGISTERS_READ_ONLY)
         then
         fatalError(C_STR_ERR_REGISTER_IS_READONLY, args[0].stringValue);
+
+      if (opcode in C_OPCODES_CHANGE_SECOND_ARG) and 
+        (args[1].registerCode in C_REGISTERS_READ_ONLY)
+        then
+        fatalError(C_STR_ERR_REGISTER_IS_READONLY, args[1].stringValue);
 
       { CS can only be modified with MOV}
       if (args[0].registerCode = C_CS) and (opcode <> C_MOV) then
