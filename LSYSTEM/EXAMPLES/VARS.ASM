@@ -10,10 +10,10 @@
   def owl=30
 
   var 
-    other: byte = 255
+    other: word = 255
 
   var 
-    cat: byte = 10,
+    cat: long = 10,
     dog: byte = 15
 
 .code

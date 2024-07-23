@@ -190,6 +190,7 @@ implementation
       begin
         symbol := PSymbol(msg^.payload);
         memoryLocation := _binary^.addData(@(symbol^.value), symbol^.byteSize);
+        writeln('Added at memory location ', memoryLocation);
         _binary^.addSymbol(symbol^.name, ESymbolVariable, memoryLocation);
       end;      
     end;    

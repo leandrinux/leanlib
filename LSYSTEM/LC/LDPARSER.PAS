@@ -283,16 +283,25 @@ implementation
   end;
 
   procedure TDataParser.addSymbol(const name: string; kind: ESymbolKind; bitSize: byte; stringValue: TString30);
+  const
+    C_SYMBOL_KIND_STR: array[ESymbolKind] of TString30 = ('label', 'definition', 'variable');
   var
     symbol: PSymbol;
     success: boolean;
     operation: word;
   begin
+    write('add symbol "', name, '"');
+    write(', kind: ', C_SYMBOL_KIND_STR[kind]);
+    write(', bitSize: ', bitSize);
+    write(', stringValue: ', stringValue);
+    writeln;
+
     if getDelegate = nil then exit;
     symbol := new(PSymbol, init);
     symbol^.name := name;
     symbol^.kind := kind;
-    symbol^.byteSize := bitSize shl 3;
+    symbol^.byteSize := bitSize shr 3;
+    if stringValue = '' then stringValue := '0';
     success := any2int(stringValue, symbol^.value);
     if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
     case kind of
