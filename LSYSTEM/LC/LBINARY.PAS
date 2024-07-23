@@ -17,6 +17,7 @@ interface
     C_CLASS_ID_Binary = $F012;
     C_SENTENCES_PER_BLOCK = 5;
     C_INSTRUCTIONS_PER_BLOCK = 10;
+    C_BYTES_PER_DATA_BLOCK = 256;
 
   type
     EMetadataKey = (
@@ -39,7 +40,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       procedure addSentence(const sentence: TSentence);
-      procedure addData(data: pointer; size: longint);
+      function addData(data: pchar; size: TUInt32): TUInt32;
       procedure addMetadata(const key: EMetadataKey; const value: TMetadataEntry);
       procedure addSymbol(const name: TString30; kind: ESymbolKind; value: TUInt32);
       procedure make;
@@ -48,22 +49,32 @@ interface
       _symbols: PSymbols;          { keeps track of the symbols like labels or defines }
       _sentences: PList;           { the list of non compiled, parsed sentences }
       _instructions: PList;        { the list of compiled instruction blocks }
+      _dataBlocks: PList;          { the data bytes such as variables and constants }
+      _totalDataBytes: TUInt32;    { how many bytes in total have been added to data section }
       function parameterTypeToValue(parameterType: EParameterType): byte;
       procedure setParameterBinaryValue(const arg: TSentenceArgument; param: PUInt32);
     end;
 
     PSentenceBlock = ^TSentenceBlock;
     TSentenceBlock = object (TObject)    
-        items: array [0..C_SENTENCES_PER_BLOCK-1] of TSentence;
-        count: byte;
-        constructor init;
+      items: array [0..C_SENTENCES_PER_BLOCK-1] of TSentence;
+      count: byte;
+      constructor init;
     end;
 
     PInstructionBlock = ^TInstructionBlock;
     TInstructionBlock = object (TObject)    
-        items: array [0..C_INSTRUCTIONS_PER_BLOCK-1] of TInstruction;
-        count: byte;
-        constructor init;
+      items: array [0..C_INSTRUCTIONS_PER_BLOCK-1] of TInstruction;
+      count: byte;
+      constructor init;
+    end;
+
+    PDataBlock = ^TDataBlock;
+    TDataBlock = object (TObject)
+      data: array [0..C_BYTES_PER_DATA_BLOCK-1] of char;
+      first: TUInt32;
+      count: byte;
+      constructor init;
     end;
 
 implementation
@@ -82,6 +93,13 @@ implementation
     count := 0;
   end;
 
+  constructor TDataBlock.init;
+  begin
+    inherited init;
+    first := 0;
+    count := 0;
+  end;
+
   { TBinary public }
 
   constructor TBinary.init;
@@ -90,10 +108,13 @@ implementation
     _symbols := new(PSymbols, init);
     _sentences := new(PList, init);
     _instructions := new(PList, init);
+    _dataBlocks := new(PList, init);
+    _totalDataBytes := 0;
   end;
 
   destructor TBinary.done;
   begin
+    _dataBlocks^.release;
     _instructions^.release;
     _sentences^.release;
     _symbols^.release;
@@ -129,8 +150,39 @@ implementation
     end;
   end;
 
-  procedure TBinary.addData(data: pointer; size: longint);
+  function TBinary.addData(data: pchar; size: TUInt32): TUInt32;
+  var
+    block: PDataBlock;
+    p: pchar;
+    position, count, remaining: TUInt32;
   begin
+    block := PDataBlock(_dataBlocks^.getLast);
+    remaining := size;
+    while remaining>0 do
+    begin
+      if (block = nil) or (block^.count = C_BYTES_PER_DATA_BLOCK) then
+      begin
+        if block = nil then 
+          position := 0 
+        else 
+          position := block^.first + C_BYTES_PER_DATA_BLOCK;
+        block := new (PDataBlock, init);
+        block^.first := position;
+        _dataBlocks^.addObject(block);
+        block^.release;
+      end;
+      p := block^.data;
+      inc(p, block^.count);
+      if remaining > C_BYTES_PER_DATA_BLOCK then 
+        count := C_BYTES_PER_DATA_BLOCK
+      else 
+        count := remaining;
+      Move(data^, p^, count);
+      dec(remaining, count);
+      inc(block^.count, count);
+    end;
+    addData := _totalDataBytes;
+    inc(_totalDataBytes, size);
   end;
 
   procedure TBinary.addMetadata(const key: EMetadataKey; const value: TMetadataEntry);
@@ -223,7 +275,6 @@ implementation
         _instructions^.moveForward;  
         instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
       end;
-    
   end;
 
   { TBinary private }

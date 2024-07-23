@@ -292,12 +292,14 @@ implementation
     symbol := new(PSymbol, init);
     symbol^.name := name;
     symbol^.kind := kind;
+    symbol^.byteSize := bitSize shl 3;
     success := any2int(stringValue, symbol^.value);
     if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
     case kind of
-      ESymbolDefinition: operation := C_DELEGATE_ADD_DEFINITION;
-      ESymbolLabel: operation := C_DELEGATE_ADD_DEFINITION;
-      ESymbolVariable: operation := C_DELEGATE_ADD_VARIABLE;
+      ESymbolDefinition, ESymbolLabel: 
+        operation := C_DELEGATE_ADD_DEFINITION;
+      ESymbolVariable: 
+        operation := C_DELEGATE_ADD_VARIABLE;
     end;
     sendMessageWithData(operation, getDelegate, symbol, 0);
     symbol^.release;

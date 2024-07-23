@@ -178,6 +178,7 @@ implementation
   procedure TBuilder.receiveMessage(msg: PObjectMessage); 
   var
     symbol: PSymbol;
+    memoryLocation: TUInt32;
   begin 
     case msg^.opcode of
       C_DELEGATE_ADD_DEFINITION:
@@ -188,7 +189,8 @@ implementation
       C_DELEGATE_ADD_VARIABLE:
       begin
         symbol := PSymbol(msg^.payload);
-        _binary^.addSymbol(symbol^.name, ESymbolVariable, symbol^.value);
+        memoryLocation := _binary^.addData(@(symbol^.value), symbol^.byteSize);
+        _binary^.addSymbol(symbol^.name, ESymbolVariable, memoryLocation);
       end;      
     end;    
   end;

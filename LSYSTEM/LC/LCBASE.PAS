@@ -79,6 +79,7 @@ interface
       name: TString30;
       value: TUInt32;
       kind: ESymbolKind;
+      byteSize: byte;
     end;
 
   const
