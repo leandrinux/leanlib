@@ -34,6 +34,8 @@ interface
     private
       _sourceCode: PSourceCode;
       procedure fatalError(const str, args: string);
+      procedure addSymbol(const name: string; kind: ESymbolKind; bitSize: byte; stringValue: TString30);
+      function getBitSizeFromVarType(varType: TString30): byte;
     end;
 
 implementation
@@ -179,7 +181,8 @@ implementation
           begin
             value := token;
             token := '';
-            writeln('SET DEFINITION "', symbolName,'" WITH VALUE "', value, '"');
+            { writeln('SET DEFINITION "', symbolName,'" WITH VALUE "', value, '"'); }
+            addSymbol(symbolName, ESymbolDefinition, 32, value);
             state := EStateSkipSpacesAfterDefinition
           end else begin
             if ch in C_IDENTIFIER_CHARS then
@@ -229,7 +232,8 @@ implementation
             if ch = '=' then
               state := EStateSkipSpacesBeforeVarValue
             else begin
-              writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and no value ');
+              { writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and no value '); }
+              addSymbol(symbolName, ESymbolVariable, getBitSizeFromVarType(varType), '');
               state := EStateSkipSpacesBeforeType;
             end;
         end;
@@ -243,7 +247,8 @@ implementation
           begin
             value := token;
             token := '';
-            writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and value ', value);
+            { writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and value ', value); }
+            addSymbol(symbolName, ESymbolVariable, getBitSizeFromVarType(varType), value);
             state := EStateSkipSpacesAfterVarValue
           end else 
           begin
@@ -277,6 +282,38 @@ implementation
     msg(EMsgFatal, str, intToStr(_sourceCode^.lineNumber) + C_NULL + args);
   end;
 
+  procedure TDataParser.addSymbol(const name: string; kind: ESymbolKind; bitSize: byte; stringValue: TString30);
+  var
+    symbol: PSymbol;
+    success: boolean;
+    operation: word;
+  begin
+    if getDelegate = nil then exit;
+    symbol := new(PSymbol, init);
+    symbol^.name := name;
+    symbol^.kind := kind;
+    success := any2int(stringValue, symbol^.value);
+    if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
+    case kind of
+      ESymbolDefinition: operation := C_DELEGATE_ADD_DEFINITION;
+      ESymbolLabel: operation := C_DELEGATE_ADD_DEFINITION;
+      ESymbolVariable: operation := C_DELEGATE_ADD_VARIABLE;
+    end;
+    sendMessageWithData(operation, getDelegate, symbol, 0);
+    symbol^.release;
+  end;
+
+  function TDataParser.getBitSizeFromVarType(varType: TString30): byte;
+  begin
+    if varType = 'byte' then
+      getBitSizeFromVarType := 8
+    else if varType = 'word' then
+      getBitSizeFromVarType := 16
+    else if varType = 'long' then
+      getBitSizeFromVarType := 32
+    else
+      fatalError(C_STR_ERR_UNRECOGNIZABLE_DATA_TYPE, varType);
+  end;
   { Other }
 
 end.

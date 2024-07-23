@@ -27,6 +27,7 @@ interface
     C_STR_ERR_UNRECOGNIZED_DATA_ELEMENT = '(%0) Unrecognized data section element "%1"';
     C_STR_ERR_UNRECOGNIZABLE_SYMBOL = '(%0) Unrecognizable argument "%1"';
     C_STR_ERR_EXPECTED_EQUAL = '(%0) expected "="';
+    C_STR_ERR_UNRECOGNIZABLE_DATA_TYPE = '(%0) Unrecognizable data type "%1"';
     
     { code parser errors }
     C_STR_ERR_UNRECOGNIZED_OPERATION = '(%0) unrecognized operation "%1"';
