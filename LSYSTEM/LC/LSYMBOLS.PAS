@@ -22,9 +22,9 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
-      procedure addValue(const name: TString30; value: TUInt32);
+      procedure addValue(const name: TString30; kind: ESymbolKind; value: TUInt32);
       procedure addUnknownValue(const name: TString30; reference: PUInt32);
-      function getValue(const name: TString30; var value: TUInt32): boolean;
+      function getValue(const name: TString30; var kind: ESymbolKind; var value: TUInt32): boolean;
       function getUnknownCount: word;
       function getFirstUnknownName: TString30;
     private
@@ -67,19 +67,20 @@ implementation
     getClassId := C_CLASS_ID_SYMBOLS;
   end;
 
-  procedure TSymbols.addValue(const name: TString30; value: TUInt32);
+  procedure TSymbols.addValue(const name: TString30; kind: ESymbolKind; value: TUInt32);
   var
     symbol: PSymbol; 
   begin
     symbol := new(PSymbol, init);
     symbol^.name := name;
     symbol^.value := value;
+    symbol^.kind := kind;
     _known^.addObject(symbol);
     symbol^.release;
     replaceUnknown(name, value);
   end;
 
-  function TSymbols.getValue(const name: TString30; var value: TUInt32): boolean;
+  function TSymbols.getValue(const name: TString30; var kind: ESymbolKind; var value: TUInt32): boolean;
   var
     symbol: PSymbol;
   begin
@@ -94,6 +95,7 @@ implementation
     begin
       getValue := true;
       value := symbol^.value;
+      kind := symbol^.kind;
     end else begin
       getValue := false;
       value := 0;

@@ -20,7 +20,7 @@ interface
     C_CLASS_ID_DATA_PARSER = $F012;
     
     C_DELEGATE_ADD_DEFINITION = 1001;
-    C_DELEGATE_ADD_VARIABLE = 1001;
+    C_DELEGATE_ADD_VARIABLE = 1002;
 
   type
     PDataParser = ^TDataParser;
@@ -107,7 +107,6 @@ implementation
       case state of
         EStateStart:
         begin
-          writeln('EStateStart');
           token := '';
           state := EStateSkipSpacesBeforeType;
           ch := _sourceCode^.readChar;
@@ -115,7 +114,6 @@ implementation
 
         EStateSkipSpacesBeforeType: 
         begin
-          writeln('EStateSkipSpacesBeforeType ', ch);
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetSymbolType
           else
@@ -124,12 +122,10 @@ implementation
 
         EStateGetSymbolType:
         begin
-          writeln('EStateGetSymbolType ', ch);
           if ch in ['a'..'z'] then
             token := token + ch
           else if ch in C_SPACING_CHARS then
           begin
-            writeln('token: ', token);
             state := EStateSkipSpacesBeforeName;
             if token = C_KEYWORD_DEFINITION then
               symbolType := ESymbolTypeDefinition
@@ -137,7 +133,6 @@ implementation
               symbolType := ESymbolTypeVariable
             else 
               state := EStateFailed;
-            writeln('symbolType: ', ord(symbolType));
             token := '';
           end;
           ch := _sourceCode^.readChar;
@@ -145,7 +140,6 @@ implementation
 
         EStateSkipSpacesBeforeName: 
         begin
-          writeln('EStateSkipSpacesBeforeName ', ch);
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetSymbolName
           else 
@@ -154,7 +148,6 @@ implementation
 
         EStateGetSymbolName:
         begin
-          writeln('EStateGetSymbolName ', ch);
           if ch in C_IDENTIFIER_CHARS then
             token := token + ch
           else if ch in (C_SPACING_CHARS) then
@@ -162,7 +155,6 @@ implementation
           begin 
             symbolName := token;
             token := '';
-            writeln('symbolName:', symbolName);
             if (ch = ':') and (symbolType = ESymbolTypeVariable) then
               state := EStateSkipSpacesBeforeVarType
             else if (ch = '=') and (symbolType = ESymbolTypeDefinition) then
@@ -175,7 +167,6 @@ implementation
 
         EStateSkipSpacesBeforeDefinitionValue:
         begin
-          writeln('EStateSkipSpacesBeforeDefinition ', ch);
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetDefinitionValue
           else
@@ -184,13 +175,11 @@ implementation
 
         EStateGetDefinitionValue:
         begin
-          writeln('EStateGetDefinition ', ch);
           if ch in (C_SPACING_CHARS + [',']) then
           begin
             value := token;
             token := '';
             writeln('SET DEFINITION "', symbolName,'" WITH VALUE "', value, '"');
-            readln;
             state := EStateSkipSpacesAfterDefinition
           end else begin
             if ch in C_IDENTIFIER_CHARS then
@@ -202,7 +191,6 @@ implementation
 
         EStateSkipSpacesAfterDefinition:
         begin
-          writeln('EStateSkipSpacesAfterDefinition ', ch);
           if (ch in C_SPACING_CHARS) then 
             ch := _sourceCode^.readChar
           else
@@ -214,7 +202,6 @@ implementation
 
         EStateSkipSpacesBeforeVarType: 
         begin
-          writeln('EStateSkipSpacesBeforeVarType ', ch);
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetVarType
           else
@@ -223,14 +210,12 @@ implementation
 
         EStateGetVarType:
         begin
-          writeln('EStateGetVarType ', ch);
           if ch in C_IDENTIFIER_CHARS then
             token := token + ch
           else if ch in (C_SPACING_CHARS + ['=']) then
           begin
             varType := token;
             token := '';
-            writeln('varType: ', varType);
             state := EStateSkipSpacesAfterVarType
           end;
           ch := _sourceCode^.readChar;
@@ -238,7 +223,6 @@ implementation
 
         EStateSkipSpacesAfterVarType:
         begin
-          writeln('EStateSkipSpacesAfterVarType ', ch);
           if (ch in C_SPACING_CHARS) then 
             ch := _sourceCode^.readChar
           else
@@ -246,14 +230,12 @@ implementation
               state := EStateSkipSpacesBeforeVarValue
             else begin
               writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and no value ');
-              readln;
               state := EStateSkipSpacesBeforeType;
             end;
         end;
 
         EStateSkipSpacesBeforeVarValue:
         begin
-          writeln('EStateSkipSpacesBeforeVarValue ', ch);
           if (ch in [C_SPACE, C_TAB, '=']) then
           begin 
             ch := _sourceCode^.readChar;
@@ -261,9 +243,7 @@ implementation
           begin
             value := token;
             token := '';
-            writeln('varValue:', value);
             writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and value ', value);
-            readln;
             state := EStateSkipSpacesAfterVarValue
           end else 
           begin
@@ -275,7 +255,6 @@ implementation
 
         EStateSkipSpacesAfterVarValue:
         begin
-          writeln('EStateSkipSpacesAfterVarValue ', ch);
           if (ch in C_SPACING_CHARS) then 
             ch := _sourceCode^.readChar
           else

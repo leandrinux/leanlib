@@ -42,7 +42,9 @@ interface
       EParameterTypeRegister,
       EParameterTypeAddress,
       EParameterTypePointer,
-      EParameterTypeSymbol
+      EParameterTypeSymbol,
+      EParameterTypeDefinition,
+      EParameterTypeVariable
     );
 
     TParameterInfo = record
@@ -66,10 +68,17 @@ interface
       args: array[0..1] of TSentenceArgument;
     end;
 
+    ESymbolKind = (
+      ESymbolLabel,
+      ESymbolDefinition,
+      ESymbolVariable
+    );
+
     PSymbol = ^TSymbol;
     TSymbol = object (TObject)
       name: TString30;
       value: TUInt32;
+      kind: ESymbolKind;
     end;
 
   const
@@ -206,6 +215,8 @@ implementation
       registers = eax, ax, fx, cc, ah, bl
       address = [$A000], [0xA48A]
       pointer = [AX+2], [EDX-5], [DS]
+      definition symbols are treated as literals
+      variable symbols are treated as memory addresses
     *)
     getParameterType := EParameterTypeUnknown;
     if length(token)<1 then exit;

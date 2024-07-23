@@ -179,11 +179,18 @@ implementation
   var
     symbol: PSymbol;
   begin 
-    if msg^.opcode = C_DELEGATE_ADD_DEFINITION then
-    begin
-      symbol := PSymbol(msg^.payload);
-      _binary^.addSymbol(symbol^.name, symbol^.value);
-    end;
+    case msg^.opcode of
+      C_DELEGATE_ADD_DEFINITION:
+      begin
+        symbol := PSymbol(msg^.payload);
+        _binary^.addSymbol(symbol^.name, ESymbolDefinition, symbol^.value);
+      end;
+      C_DELEGATE_ADD_VARIABLE:
+      begin
+        symbol := PSymbol(msg^.payload);
+        _binary^.addSymbol(symbol^.name, ESymbolVariable, symbol^.value);
+      end;      
+    end;    
   end;
 
   { TBuilder private }
@@ -191,7 +198,8 @@ implementation
   procedure TBuilder.printSentence(lineCount: word; const sentence: TSentence);
   const 
     C_PARAM_TYPES : array[EParameterType] of string[10] = (
-      'unknown', 'literal', 'register', 'address', 'pointer', 'symbol'
+      'unknown', 'literal', 'register', 'address', 
+      'pointer', 'symbol', 'definition', 'variable'
     );
   var 
     str: string;

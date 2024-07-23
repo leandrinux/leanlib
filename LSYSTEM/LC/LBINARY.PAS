@@ -41,7 +41,7 @@ interface
       procedure addSentence(const sentence: TSentence);
       procedure addData(data: pointer; size: longint);
       procedure addMetadata(const key: EMetadataKey; const value: TMetadataEntry);
-      procedure addSymbol(const name: TString30; value: TUInt32);
+      procedure addSymbol(const name: TString30; kind: ESymbolKind; value: TUInt32);
       procedure make;
       procedure save(stream: PStream);
     private
@@ -137,9 +137,9 @@ implementation
   begin
   end;
 
-  procedure TBinary.addSymbol(const name: TString30; value: TUInt32);
+  procedure TBinary.addSymbol(const name: TString30; kind: ESymbolKind; value: TUInt32);
   begin
-    _symbols^.addValue(name, value);
+    _symbols^.addValue(name, kind, value);
   end;
 
   procedure TBinary.make;
@@ -179,7 +179,8 @@ implementation
         with sentenceBlock^.items[i] do
         begin
           instructionAddress := totalCount * sizeof(TInstruction);
-          if labelName<>'' then _symbols^.addValue(labelName, instructionAddress);
+          if labelName<>'' then 
+            _symbols^.addValue(labelName, ESymbolLabel, instructionAddress);
           instruction^.header.opcode := opcode;
           instruction^.header.params := 
              (parameterTypeToValue(args[0].argType) shl 4) 
@@ -230,12 +231,14 @@ implementation
   function TBinary.parameterTypeToValue(parameterType: EParameterType): byte;
   const
     C_VALUES : array[EParameterType] of byte = (
-        C_PARAMETER_LITERAL,
-        C_PARAMETER_LITERAL,
-        C_PARAMETER_REGISTER,
-        C_PARAMETER_ADDRESS,
-        C_PARAMETER_POINTER,
-        C_PARAMETER_LITERAL
+        C_PARAMETER_LITERAL,   { Unknown }
+        C_PARAMETER_LITERAL,   { Literal }
+        C_PARAMETER_REGISTER,  { Register }
+        C_PARAMETER_ADDRESS,   { Address }
+        C_PARAMETER_POINTER,   { Pointer }
+        C_PARAMETER_LITERAL,   { Symbol }
+        C_PARAMETER_LITERAL,   { Definition }
+        C_PARAMETER_ADDRESS    { Variable }
     );
   begin
     parameterTypeToValue := C_VALUES[parameterType];
@@ -244,6 +247,7 @@ implementation
   procedure TBinary.setParameterBinaryValue(const arg: TSentenceArgument; param: PUInt32);
   var
     success: boolean;
+    symbolKind: ESymbolKind;
   begin
     with arg do case argType of
       EParameterTypeLiteral, EParameterTypeAddress: 
@@ -257,8 +261,9 @@ implementation
 
       EParameterTypeSymbol:
       begin
-        success := _symbols^.getValue(arg.stringValue, param^);
-        if not success then _symbols^.addUnknownValue(arg.stringValue, param);
+        success := _symbols^.getValue(arg.stringValue, symbolKind, param^);
+        if not success then 
+          _symbols^.addUnknownValue(arg.stringValue, param);
       end;
     
       EParameterTypeUnknown:
