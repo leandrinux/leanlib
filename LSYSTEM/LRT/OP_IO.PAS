@@ -7,9 +7,7 @@ unit
 interface
 
   uses
-    op_base,
-    lcommon,
-    lregs;
+    op_base, lcommon;
 
   procedure _out(const c: TContext); far;
   procedure _in(const c: TContext); far;

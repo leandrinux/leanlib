@@ -9,7 +9,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ustream,
-    lcommon, lregs, ldevice, ltexts;
+    lcommon, ldevice, ltexts;
 
   const
     C_CLASS_ID_RAM = 5002;

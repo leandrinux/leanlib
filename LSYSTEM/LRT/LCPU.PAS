@@ -9,7 +9,7 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc,
-    lcommon, lregs, lbus, op_base, op_full;
+    lcommon, lbus, op_base, op_full;
 
   const
     C_CLASS_ID_CPU = 5001;

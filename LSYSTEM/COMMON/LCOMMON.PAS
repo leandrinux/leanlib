@@ -130,7 +130,22 @@ interface
       EMsgWarning,
       EMsgGood
     );
-  
+
+    PRegisters = ^TRegisters;
+    TRegisters = record
+      SP: TUInt32;
+      BP: TUInt32;
+      IP: TUInt32;
+      CC: TUInt32;
+      EAX: TUInt32;
+      EBX: TUInt32;
+      ECX: TUInt32;
+      EDX: TUInt32;
+      CS: TUInt32;
+      DS: TUInt32;
+      SS: TUInt32;    
+    end;
+
   procedure msg(kind: EMsgKind; const str, args: string);
 
 implementation
