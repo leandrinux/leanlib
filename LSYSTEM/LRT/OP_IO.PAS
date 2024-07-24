@@ -23,18 +23,8 @@ implementation
   begin  
     with c, instruction, regs^ do 
     begin
-      case paramType0 of
-          C_PARAMETER_LITERAL: device := param0;
-          C_PARAMETER_ADDRESS: device := ram^.getValue(param0);
-          C_PARAMETER_REGISTER: device := getRegisterValue(regs, param0);
-          C_PARAMETER_POINTER: device := getPointerValue(regs, ram, param0);
-      end;
-      case paramType1 of
-          C_PARAMETER_LITERAL: value := param1;
-          C_PARAMETER_ADDRESS: value := ram^.getValue(param1);
-          C_PARAMETER_REGISTER: value := getRegisterValue(regs, param1);
-          C_PARAMETER_POINTER: value := getPointerValue(regs, ram, param1);
-      end;
+      device := getParamValue(c, c.paramType0, c.instruction.param0);
+      value := getParamValue(c, c.paramType1, c.instruction.param1);
       result := bus^.sendByte(device, value);
       if result then 
         CC := CC or C_CC_IO
@@ -59,12 +49,7 @@ implementation
         cpuError(regs, C_ERR_INVALID_OPERATION)
       end;
       bitSize := getRegisterBitSize(param1);
-      case paramType0 of
-        C_PARAMETER_LITERAL: device := param0;
-        C_PARAMETER_ADDRESS: device := ram^.getValue(param0);
-        C_PARAMETER_REGISTER: device := getRegisterValue(regs, param0);
-        C_PARAMETER_POINTER: device := getPointerValue(regs, ram, param0);
-      end;
+      device := getParamValue(c, c.paramType0, c.instruction.param0);
       
       { move forward instruction pointer and set IO flag to error by default }
       inc(IP, sizeOf(TInstruction));

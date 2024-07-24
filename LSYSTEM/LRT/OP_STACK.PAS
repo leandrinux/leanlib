@@ -19,119 +19,76 @@ interface
 implementation
 
   procedure _push(const c: TContext);
+  var
+    value, address: TUInt32; 
   begin
-    with c, instruction, regs^ do
+    if c.regs^.SP = c.stackSize then
     begin
-      if SP = stackSize then
-      begin
-        cpuError(regs, C_ERR_STACK_OVERFLOW);
-        exit;
-      end;
-      case paramType0 of
-          C_PARAMETER_LITERAL: ram^.setValue(SS + SP, param0);
-          C_PARAMETER_ADDRESS: ram^.setValue(SS + SP, ram^.getValue(param0));
-          C_PARAMETER_REGISTER: ram^.setValue(SS + SP, getRegisterValue(regs, param0));
-          C_PARAMETER_POINTER: ram^.setValue(SS + SP, getPointerValue(regs, ram, param0)); 
-      end;
-      inc(SP, sizeOf(TUInt32));        
-      inc(IP, sizeOf(TInstruction));
+      cpuError(c.regs, C_ERR_STACK_OVERFLOW);
+      exit;
     end;
+    value := getParamValue(c, c.paramType0, c.instruction.param0);
+    address := c.regs^.SS + c.regs^.SP;
+    setParamValue(c, C_PARAMETER_ADDRESS, address, value);
+    inc(c.regs^.SP, sizeOf(TUInt32));        
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
   procedure _pop(const c: TContext);
+  var
+    address, value: TUInt32;
   begin
-    with c, instruction, regs^ do
+    if c.regs^.SP = 0 then
     begin
-      if SP = 0 then
-      begin
-        cpuError(regs, C_ERR_STACK_EMPTY);
-        exit;
-      end;
-      dec(SP, sizeOf(TUInt32));        
-      case paramType0 of
-        C_PARAMETER_LITERAL:
-        begin
-          cpuError(regs, C_ERR_INVALID_OPERATION);
-          exit;
-        end;
-        C_PARAMETER_ADDRESS: ram^.setValue(param0, ram^.getValue(SS + SP));
-        C_PARAMETER_REGISTER: setRegisterValue(regs, param0, ram^.getValue(SS + SP));
-        C_PARAMETER_POINTER: setPointerValue(regs, ram, param0, ram^.getValue(SS + SP)) 
-      end;
-      inc(IP, sizeOf(TInstruction));
+      cpuError(c.regs, C_ERR_STACK_EMPTY);
+      exit;
     end;
+    dec(c.regs^.SP, sizeOf(TUInt32));        
+    address := c.regs^.SS + c.regs^.SP;
+    value := getParamValue(c, C_PARAMETER_ADDRESS, address);
+    inc(c.regs^.IP, sizeOf(TInstruction));
   end;
+
+  procedure pushRegister(const c: TContext; value: TUInt32);
+  begin
+    if c.regs^.SP = c.stackSize then
+    begin
+      cpuError(c.regs, C_ERR_STACK_OVERFLOW);
+      exit;
+    end;
+    c.ram^.setValue(c.regs^.SS + c.regs^.SP, value);
+    inc(c.regs^.SP, sizeOf(TUInt32));
+  end;    
 
   procedure _pusha(const c: TContext);
   begin
-    with c, regs^ do
+    pushRegister(c, C.regs^.EAX);
+    pushRegister(c, C.regs^.EBX);
+    pushRegister(c, C.regs^.ECX);
+    pushRegister(c, C.regs^.EDX);
+    inc(c.regs^.IP, sizeOf(TInstruction));
+  end;
+
+  function popRegister(const c: TContext; var value: TUInt32): boolean;
+  begin
+    if c.regs^.SP = 0 then
     begin
-      if SP = stackSize then
-      begin
-        cpuError(regs, C_ERR_STACK_OVERFLOW);
-        exit;
-      end;
-      ram^.setValue(SS + SP, EAX); inc(SP, sizeOf(TUInt32));        
-
-      if SP = stackSize then
-      begin
-        cpuError(regs, C_ERR_STACK_OVERFLOW);
-        exit;
-      end;
-      ram^.setValue(SS + SP, EBX); inc(SP, sizeOf(TUInt32));        
-
-      if SP = stackSize then
-      begin
-        cpuError(regs, C_ERR_STACK_OVERFLOW);
-        exit;
-      end;
-      ram^.setValue(SS + SP, ECX); inc(SP, sizeOf(TUInt32));        
-
-      if SP = stackSize then
-      begin
-        cpuError(regs, C_ERR_STACK_OVERFLOW);
-        exit;
-      end;
-      ram^.setValue(SS + SP, EDX); inc(SP, sizeOf(TUInt32));
-
-      inc(IP, sizeOf(TInstruction));
+      cpuError(c.regs, C_ERR_STACK_EMPTY);
+      popRegister := false
+    end else begin
+      dec(c.regs^.SP, sizeOf(TUInt32)); 
+      value := c.ram^.getValue(c.regs^.SS + c.regs^.SP);
+      popRegister := true;
     end;
   end;
 
   procedure _popa(const c: TContext);
   begin
-    with c, regs^ do
-    begin
-      if SP = 0 then
-      begin
-        cpuError(regs, C_ERR_STACK_EMPTY);
-        exit;
-      end;
-      dec(SP, sizeOf(TUInt32)); EDX := ram^.getValue(SS + SP);
-
-      if SP = 0 then
-      begin
-        cpuError(regs, C_ERR_STACK_EMPTY);
-        exit;
-      end;
-      dec(SP, sizeOf(TUInt32)); ECX := ram^.getValue(SS + SP);
-
-      if SP = 0 then
-      begin
-        cpuError(regs, C_ERR_STACK_EMPTY);
-        exit;
-      end;
-      dec(SP, sizeOf(TUInt32)); EBX := ram^.getValue(SS + SP);
-
-      if SP = 0 then
-      begin
-        cpuError(regs, C_ERR_STACK_EMPTY);
-        exit;
-      end;
-      dec(SP, sizeOf(TUInt32)); EAX := ram^.getValue(SS + SP);
-
-      inc(IP, sizeOf(TInstruction));
-    end;
+    inc(c.regs^.IP, sizeOf(TInstruction));
+    if not popRegister(c, c.regs^.EDX) then exit;
+    if not popRegister(c, c.regs^.ECX) then exit;
+    if not popRegister(c, c.regs^.EBX) then exit;
+    popRegister(c, c.regs^.EAX);
   end;
 
 end.
