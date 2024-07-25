@@ -31,49 +31,46 @@ implementation
 
   procedure _add(const c: TContext);
   var
-    value: TUInt32;
+    value, result: TUInt32;
   begin
     value := getParamValue(c, c.paramType1, c.instruction.param1);
-    if setParamValue(c, c.paramType0, c.instruction.param0, 
-      getParamValue(c, c.paramType0, c.instruction.param0) + value
-    ) then
+    result := getParamValue(c, c.paramType0, c.instruction.param0) + value;
+    if setParamValue(c, c.paramType0, c.instruction.param0, result) then
     begin
-      setConditionCode(c.regs, value);
+      setConditionCode(c.regs, result);
       inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
   procedure _sub(const c: TContext);
   var
-    value: TUInt32;
+    value, result: TUInt32;
   begin
     value := getParamValue(c, c.paramType1, c.instruction.param1);
-    if setParamValue(c, c.paramType0, c.instruction.param0, 
-      getParamValue(c, c.paramType0, c.instruction.param0) - value
-    ) then
+    result := getParamValue(c, c.paramType0, c.instruction.param0) - value;
+    if setParamValue(c, c.paramType0, c.instruction.param0, result) then
     begin
-      setConditionCode(c.regs, value);
+      setConditionCode(c.regs, result);
       inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
   procedure _mul(const c: TContext);
   var
-    value: TUInt32;
+    value, result: TUInt32;
   begin
     value := getParamValue(c, c.paramType1, c.instruction.param1);
-    if setParamValue(c, c.paramType0, c.instruction.param0, 
-      getParamValue(c, c.paramType0, c.instruction.param0) * value
-    ) then
+    result := getParamValue(c, c.paramType0, c.instruction.param0) * value;
+    if setParamValue(c, c.paramType0, c.instruction.param0, result) then
     begin
-      setConditionCode(c.regs, value);
+      setConditionCode(c.regs, result);
       inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
   procedure _div(const c: TContext);
   var
-    value: TUInt32;
+    value, result: TUInt32;
   begin
     value := getParamValue(c, c.paramType1, c.instruction.param1);
     if value = 0 then
@@ -81,18 +78,17 @@ implementation
       cpuError(c.regs, C_ERR_DIVIDE_BY_ZERO);
       exit;
     end;
-    if setParamValue(c, c.paramType0, c.instruction.param0, 
-      getParamValue(c, c.paramType0, c.instruction.param0) div value
-    ) then
+    result := getParamValue(c, c.paramType0, c.instruction.param0) div value;
+    if setParamValue(c, c.paramType0, c.instruction.param0, result) then
     begin
-      setConditionCode(c.regs, value);
+      setConditionCode(c.regs, result);
       inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
   procedure _mod(const c: TContext);
   var
-    value: TUInt32;
+    value, result: TUInt32;
   begin
     value := getParamValue(c, c.paramType1, c.instruction.param1);
     if value = 0 then
@@ -100,11 +96,10 @@ implementation
       cpuError(c.regs, C_ERR_DIVIDE_BY_ZERO);
       exit;
     end;
-    if setParamValue(c, c.paramType0, c.instruction.param0, 
-      getParamValue(c, c.paramType0, c.instruction.param0) mod value
-    ) then
+    result := getParamValue(c, c.paramType0, c.instruction.param0) mod value;
+    if setParamValue(c, c.paramType0, c.instruction.param0, result) then
     begin
-      setConditionCode(c.regs, value);
+      setConditionCode(c.regs, result);
       inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
