@@ -44,6 +44,7 @@ implementation
     dec(c.regs^.SP, sizeOf(TUInt32));        
     address := c.regs^.SS + c.regs^.SP;
     value := c.ram^.getValue(address);
+    setParamValue(c, c.paramType0, c.instruction.param0, value);
     inc(c.regs^.IP, sizeOf(TInstruction));
   end;
 
