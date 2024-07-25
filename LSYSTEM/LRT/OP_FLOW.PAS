@@ -98,7 +98,7 @@ implementation
 
   procedure _jerr(const c: TContext);
   begin
-    if (c.regs^.CC and C_CC_ERR) <> 0 then
+    if (c.regs^.CC and C_CC_ERR) = 1 then
     begin
       c.regs^.IP := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0);
       c.regs^.CC := c.regs^.CC and not C_CC_ERR;
