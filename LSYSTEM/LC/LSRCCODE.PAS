@@ -25,7 +25,8 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       function readLine: string;
-      function readChar: char;
+      procedure readChar;
+      function currentChar: char;
       function isValid: boolean;
       function isReadComplete: boolean;
       function lineNumber: word;
@@ -38,6 +39,7 @@ interface
       _sourceCount: word;          { how many bytes of the source code we've read }
       _lineNumber: word;           { what is the current source code line }
       _linePosition: word;         { what is the current character within the current line }
+      _currentChar: char;
     end;
 
 implementation
@@ -57,6 +59,8 @@ implementation
     _sourceCount := 0;
     _lineNumber := 0;
     _linePosition := 1;
+    _currentChar := #0;
+    readChar;
   end;
 
   destructor TSourceCode.done;
@@ -81,32 +85,35 @@ implementation
     ch: char;
   begin
     str := '';
-    ch := readChar;
+    ch := _currentChar;
     while (ch<>C_LF) and (ch<>#0) do
     begin
       if ch<>C_CR then str := str + ch;
-      ch := readChar;
+      readChar;
+      ch := _currentChar;
     end;
     readLine := str;
   end;
 
-  function TSourceCode.readChar: char;
-  var
-    result: char;
+  procedure TSourceCode.readChar;
   begin
     if _sourceCount = _sourceCodeSize then  
-      result := #0
+      _currentChar := #0
     else begin
-      result := _sourcePos^;
+      _currentChar := _sourcePos^;
       inc(_sourcePos); 
       inc(_sourceCount);
-      if result = C_LF then
+      if _currentChar = C_LF then
       begin
         inc(_lineNumber);
         _linePosition := 1;
       end;
     end;    
-    readChar := result;
+  end;
+
+  function TSourceCode.currentChar: char;
+  begin
+    currentChar := _currentChar;
   end;
 
   function TSourceCode.isValid: boolean;

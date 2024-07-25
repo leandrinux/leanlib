@@ -104,7 +104,7 @@ implementation
       _binary^.make;
       _binary^.save(_targetStream);
     end else
-      msg(EMsgFatal, 'invalid section', '');
+      msg(EMsgFatal, C_STR_ERR_INVALID_SECTION_HEADER, line);
 
     { release objects and present success message }
     _sourceCode^.release;
@@ -182,11 +182,13 @@ implementation
     memoryLocation: TUInt32;
   begin 
     case msg^.opcode of
+
       C_DELEGATE_ADD_DEFINITION:
       begin
         symbol := PSymbol(msg^.payload);
         _binary^.addSymbol(symbol^.name, ESymbolDefinition, symbol^.value);
       end;
+
       C_DELEGATE_ADD_VARIABLE:
       begin
         symbol := PSymbol(msg^.payload);
@@ -194,6 +196,7 @@ implementation
         writeln('Added at memory location ', memoryLocation);
         _binary^.addSymbol(symbol^.name, ESymbolVariable, memoryLocation);
       end;      
+
     end;    
   end;
 

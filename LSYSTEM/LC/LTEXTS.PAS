@@ -18,18 +18,21 @@ interface
     C_STR_INVALID_POINTER_CONSTANT = 'Invalid pointer constant (%0)';
     C_STR_INVALID_POINTER_CONSTANT_RANGE = 'Pointer constant must be between -32768 and 32767';
     C_STR_UNRECOGNIZABLE_ARGUMENT = 'Unrecognizable argument "%0"';
-    C_STR_SOURCE_NOT_SET = 'Source stream not set';
-    C_STR_TARGET_NOT_SET = 'Target stream not set';
     C_STR_BUILD_SUCCESSFUL = 'Build successful :)';
     C_STR_EXPECTED_DATA = 'Expected .data at %0';
 
-    { data parser errors }
+    { builder }
+    C_STR_SOURCE_NOT_SET = 'Source stream not set';
+    C_STR_TARGET_NOT_SET = 'Target stream not set';
+    C_STR_ERR_INVALID_SECTION_HEADER = 'invalid section header "%0"';
+
+    { data parser }
     C_STR_ERR_UNRECOGNIZED_DATA_ELEMENT = '(%0) Unrecognized data section element "%1"';
     C_STR_ERR_UNRECOGNIZABLE_SYMBOL = '(%0) Unrecognizable argument "%1"';
     C_STR_ERR_EXPECTED_EQUAL = '(%0) expected "="';
     C_STR_ERR_UNRECOGNIZABLE_DATA_TYPE = '(%0) Unrecognizable data type "%1"';
     
-    { code parser errors }
+    { code parser }
     C_STR_ERR_UNRECOGNIZED_OPERATION = '(%0) unrecognized operation "%1"';
     C_STR_ERR_OPERATION_EXPECTS_N_PARAM = '(%0) operation "%1" expects %2 parameters';
     C_STR_ERR_1ST_PARAM_UNSUPPORTED = '(%0) operation "%1" does not support "%2" as first parameter';

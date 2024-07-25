@@ -15,6 +15,7 @@ begin
   msg(EMsgStrong, C_STR_BUILD_TS, C_BUILD_DATE + #0 + C_BUILD_TIME);
 
   commandLine.sourceFilename := '..\examples\vars.asm';
+  commandLine.targetFilename := '..\examples\vars.bin';
  
   if commandLine.sourceFilename = '' then 
     msg(EMsgFatal, C_STR_NO_SOURCE_FILE, '')

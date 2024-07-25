@@ -111,15 +111,18 @@ implementation
         begin
           token := '';
           state := EStateSkipSpacesBeforeType;
-          ch := _sourceCode^.readChar;
+{          _sourceCode^.readChar; }
+          ch := _sourceCode^.currentChar;
         end;
 
         EStateSkipSpacesBeforeType: 
         begin
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetSymbolType
-          else
-            ch := _sourceCode^.readChar;
+          else begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end;
         end;
 
         EStateGetSymbolType:
@@ -137,15 +140,22 @@ implementation
               state := EStateFailed;
             token := '';
           end;
-          ch := _sourceCode^.readChar;
+          if ch <> '.' then
+          begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end else 
+            state := EStateSuccess
         end;
 
         EStateSkipSpacesBeforeName: 
         begin
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetSymbolName
-          else 
-            ch := _sourceCode^.readChar;
+          else begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end;
         end;
 
         EStateGetSymbolName:
@@ -164,15 +174,18 @@ implementation
             else if ch in [':', '='] then
               state := EStateFailed;
           end;
-          ch := _sourceCode^.readChar;          
+          _sourceCode^.readChar;
+          ch := _sourceCode^.currentChar;
         end;
 
         EStateSkipSpacesBeforeDefinitionValue:
         begin
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetDefinitionValue
-          else
-            ch := _sourceCode^.readChar;
+          else begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end;
         end;
 
         EStateGetDefinitionValue:
@@ -188,15 +201,18 @@ implementation
             if ch in C_IDENTIFIER_CHARS then
               token := token + ch
             else ;
-            ch := _sourceCode^.readChar;
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
           end;
         end;
 
         EStateSkipSpacesAfterDefinition:
         begin
           if (ch in C_SPACING_CHARS) then 
-            ch := _sourceCode^.readChar
-          else
+          begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end else
             if ch = ',' then
               state := EStateSkipSpacesBeforeName
             else
@@ -207,8 +223,10 @@ implementation
         begin
           if not (ch in C_SPACING_CHARS) then 
             state := EStateGetVarType
-          else
-            ch := _sourceCode^.readChar;
+          else begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end;
         end;
 
         EStateGetVarType:
@@ -221,14 +239,17 @@ implementation
             token := '';
             state := EStateSkipSpacesAfterVarType
           end;
-          ch := _sourceCode^.readChar;
+          _sourceCode^.readChar;
+          ch := _sourceCode^.currentChar;
         end;
 
         EStateSkipSpacesAfterVarType:
         begin
           if (ch in C_SPACING_CHARS) then 
-            ch := _sourceCode^.readChar
-          else
+          begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end else
             if ch = '=' then
               state := EStateSkipSpacesBeforeVarValue
             else begin
@@ -242,7 +263,8 @@ implementation
         begin
           if (ch in [C_SPACE, C_TAB, '=']) then
           begin 
-            ch := _sourceCode^.readChar;
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
           end else if (ch in [C_CR, C_LF, ',']) then
           begin
             value := token;
@@ -253,7 +275,8 @@ implementation
           end else 
           begin
             token := token + ch;
-            ch := _sourceCode^.readChar;
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
           end;
           
         end;
@@ -261,8 +284,10 @@ implementation
         EStateSkipSpacesAfterVarValue:
         begin
           if (ch in C_SPACING_CHARS) then 
-            ch := _sourceCode^.readChar
-          else
+          begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end else
             if ch = ',' then
               state := EStateSkipSpacesBeforeName
             else if ch = '.' then

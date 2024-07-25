@@ -101,7 +101,8 @@ implementation
           fillchar(sentence, sizeof(sentence), 0);
           token := '';
           state := EStateSkipSpacesBeforeFirst;
-          ch := _sourceCode^.readChar;
+          _sourceCode^.readChar;
+          ch := _sourceCode^.currentChar;
         end;
 
         EStateSkipSpacesBeforeFirst:
@@ -109,8 +110,10 @@ implementation
           if ch in C_IDENTIFIER_CHARS then
             state := EStateGetFirstToken
           else if ch in C_SPACING_CHARS then
-            ch := _sourceCode^.readChar
-          else if ch = C_HASH then
+          begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end else if ch = C_HASH then
             state := EStateSkipLineBeforeFirst
           else
             state := EStateError
@@ -120,8 +123,10 @@ implementation
         begin
           if ch in [C_CR, C_LF] then
             state := EStateSkipSpacesBeforeFirst
-          else
-            ch := _sourceCode^.readChar;
+          else begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end;
         end;
 
         EStateGetFirstToken:
@@ -143,14 +148,17 @@ implementation
             token := '';
             state := EStateSkipSpacesBeforeSecond;
           end;
-          ch := _sourceCode^.readChar
+          _sourceCode^.readChar;
+          ch := _sourceCode^.currentChar;
         end;
 
         EStateSkipSpacesBeforeSecond:
         begin
           if ch in [C_SPACE, C_TAB, C_LF] then
-            ch := _sourceCode^.readChar
-          else if ch = C_HASH then
+          begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end else if ch = C_HASH then
             state := EStateSkipLineBeforeSecond
           else if ch in [C_CR, C_NULL] then
             state := EStateSuccess            
@@ -162,17 +170,21 @@ implementation
         begin
           if ch in [C_CR, C_LF] then
             state := EStateSkipSpacesBeforeSecond
-          else
-            ch := _sourceCode^.readChar;
+          else begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end;
         end;
 
         EStateGetSecondToken:
         begin
           if ch = C_QUOTE then
           begin
-            ch := _sourceCode^.readChar;
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
             sentence.args[0].stringValue := '''' + ch + '''';
-            ch := _sourceCode^.readChar;
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
             if ch = C_QUOTE then
             begin
               token := '';
@@ -191,14 +203,17 @@ implementation
             state := EStateSuccess
           end else
             token := token + ch;
-          ch := _sourceCode^.readChar
+          _sourceCode^.readChar;
+          ch := _sourceCode^.currentChar;
         end;
 
         EStateSkipSpacesBeforeThird:
         begin
           if ch in [C_SPACE, C_TAB, C_LF] then
-            ch := _sourceCode^.readChar
-          else if ch = C_HASH then
+          begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end else if ch = C_HASH then
             state := EStateSkipLineBeforeThird
           else if ch in [C_CR, C_NULL] then
             state := EStateSuccess
@@ -210,17 +225,21 @@ implementation
         begin
           if ch in [C_CR, C_LF] then
             state := EStateSkipSpacesBeforeThird
-          else
-            ch := _sourceCode^.readChar;
+          else begin
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
+          end;
         end;
 
         EStateGetThirdToken:
         begin
           if ch = C_QUOTE then
           begin
-            ch := _sourceCode^.readChar;
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
             sentence.args[1].stringValue := '''' + ch + '''';
-            ch := _sourceCode^.readChar;
+            _sourceCode^.readChar;
+            ch := _sourceCode^.currentChar;
             if ch = C_QUOTE then
             begin
               token := '';
@@ -234,7 +253,8 @@ implementation
             state := EStateSuccess;
           end else
             token := token + ch;
-          ch := _sourceCode^.readChar;
+          _sourceCode^.readChar;
+          ch := _sourceCode^.currentChar;
         end;
 
       end;
