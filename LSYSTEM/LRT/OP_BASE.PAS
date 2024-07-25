@@ -110,7 +110,7 @@ implementation
   begin
     reg := param and $FF;
     address := getRegisterValue(regs, reg) + (param shr 16);
-    if reg in C_STACK_REGISTERS then inc(address, SS) else inc(address, DS);
+    if reg in C_STACK_REGISTERS then inc(address, regs^.SS) else inc(address, regs^.DS);
     getPointerValue := ram^.getValue(address);
   end;
 
@@ -121,7 +121,7 @@ implementation
   begin
     reg := param and $FF;
     address := getRegisterValue(regs, reg) + (param shr 16);
-    if reg in C_STACK_REGISTERS then inc(address, SS) else inc(address, DS);
+    if reg in C_STACK_REGISTERS then inc(address, regs^.SS) else inc(address, regs^.DS);
     ram^.setValue(address, value);
   end;
 
