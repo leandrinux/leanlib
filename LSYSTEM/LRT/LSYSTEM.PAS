@@ -109,6 +109,7 @@ implementation
       regs := @(_cpu^.regs);
       ram := _ram;
       bus := _bus;
+      regs^.DS := _codeSize;
       regs^.SS := C_DEFAULT_RAM - C_DEFAULT_STACK;
       stackSize := C_DEFAULT_STACK;
 
