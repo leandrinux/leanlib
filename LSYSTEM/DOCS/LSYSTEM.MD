@@ -403,3 +403,18 @@ Variables are values that may or may not change during execution. They take up s
         jmp loop
       end:
         jmp end  
+
+## Binary file structure
+
+After compiling, a binary file is generated. This file contains the compiled instructions and the data segment which is loaded into the heap. The data segment contains the memory spaces used for the variables and the constants. Definitions are translated into literals before the binary is created so they aren't represented on this file. The structure of the binary file is as follows:
+
+|Offset|Size|Field name|Description
+|-|-|-|-|
+|0|7|Header|An ASCII string used to recognize the file as a valid binary file. Must equal ´LSYSBIN´|
+|7|4|CSIZE|Size in bytes of the code section|
+|11|4|DSIZE|Size in bytes of the data section|
+|15|2|TARGET_VER|Minimum version required to run this program|
+|17|8|RESERVED|Space reserved for future use. Initialized with zeroes|
+|25|CSIZE|All the code made of binary encoded instructions|
+|25+CSIZE|DSIZE|All the data section|
+
