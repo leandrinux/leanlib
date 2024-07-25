@@ -40,7 +40,7 @@
   _get_digit:
     cmp edx, 3
     jnz _next
-    push 46
+    push '.'
     xor edx, edx
   _next:  
     add edx, 1

@@ -12,6 +12,9 @@ The second lsystem release must include multiple improvements for both compiler 
     * OUT must support all types of parameters but bitsize validation should still be performed.
     * All compiler errors should include the line number
   * Support for char literals such as '*'
+  * Update to IN
+    * Currently IN takes one parameter, the device id, and reads one byte into AL. If there's nothing to read, the IO flag gets set.
+    * IN should be changed to take a second parameter. This parameter will be a register (32, 16 or 8 bit in size) and it should be able to read in a single instruction a 16-bit or 32-bit value as well, behaving the same way by setting the IO flag to 1 if there's no enough data (8, 16 or 32 bits) to be read from the device.
 
   * Support for byte, word, long and char variables and arrays
 

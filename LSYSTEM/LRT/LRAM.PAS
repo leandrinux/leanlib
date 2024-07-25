@@ -9,10 +9,12 @@ interface
   uses
     consts, utils, uclasses, types, locale,
     uobject, uexc, ustream,
-    lcommon, lregs, ldevice, ltexts;
+    lcommon, ldevice, ltexts;
 
   const
     C_CLASS_ID_RAM = 5002;
+    C_DEVICE_TYPE = $0A;
+    C_CMD_GET_MEMORY_SIZE  = $01;
 
   type
     PRAM = ^TRAM;
@@ -22,13 +24,20 @@ interface
       destructor done; virtual;
       function getClassName: string; virtual;
       function getClassId: word; virtual;
+      function readByte(var value: byte): boolean; virtual;
+      function writeByte(value: byte): boolean; virtual;
       procedure loadStream(source: PStream; bytesToLoad: word; memoryPosition: TUInt32);
       function readFromMemory(buffer: pchar; memoryPosition: TUInt32; bytesToRead: word): word;
       procedure setValue(address: TUInt32; value: TUInt32);
       function getValue(address: TUInt32): TUInt32;
+      function getName: TDeviceName; virtual;
     private
       _data: pchar;
-      _dataSize: word;
+      _dataSize: TUInt32;
+
+      _responseBuffer: array[0..3] of byte;
+      _bufferPosition: byte;
+      _bufferSize: byte;
     end;
 
 implementation
@@ -40,6 +49,9 @@ implementation
     inherited init;
     _dataSize := size;
     getMem(_data, _dataSize);
+    fillchar(_responseBuffer, sizeof(_responseBuffer), 0);
+    _bufferPosition := 0;
+    _bufferSize := 0;
   end;
 
   destructor TRAM.done;
@@ -103,6 +115,47 @@ implementation
     p := _data;
     inc(p, address);
     getValue := PUInt32(p)^;    
+  end;
+
+  function TRAM.readByte(var value: byte): boolean;
+  begin
+    if _bufferPosition < _bufferSize then
+    begin
+      value := _responseBuffer[_bufferPosition];
+      inc(_bufferPosition);
+      readByte := true;
+    end else
+      readByte := false;
+  end;
+
+  function TRAM.writeByte(value: byte): boolean;
+  begin
+    writeByte := false;
+    case value of
+      C_CMD_GET_DEVICE_TYPE:
+      begin
+        _responseBuffer[0] := C_DEVICE_TYPE;
+        _bufferPosition := 0;
+        _bufferSize := 1;
+        writeByte := true;
+      end;
+
+      C_CMD_GET_MEMORY_SIZE:
+      begin
+        _responseBuffer[0] := _dataSize and $FF;
+        _responseBuffer[1] := (_dataSize shr 8) and $FF;
+        _responseBuffer[2] := (_dataSize shr 16) and $FF;
+        _responseBuffer[3] := (_dataSize shr 24) and $FF;
+        _bufferPosition := 0;
+        _bufferSize := 4;
+        writeByte := true;
+      end;
+    end;
+  end;
+
+  function TRAM.getName: TDeviceName;
+  begin
+    getName := 'Virtual RAM Device';
   end;
 
   { TRAM private }

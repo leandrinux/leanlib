@@ -7,9 +7,7 @@ unit
 interface
 
   uses
-    op_base,
-    lcommon,
-    lregs;
+    op_base, lcommon;
 
   procedure _out(const c: TContext); far;
   procedure _in(const c: TContext); far;
@@ -23,18 +21,8 @@ implementation
   begin  
     with c, instruction, regs^ do 
     begin
-      case paramType0 of
-          C_PARAMETER_LITERAL: device := param0;
-          C_PARAMETER_ADDRESS: device := ram^.getValue(param0);
-          C_PARAMETER_REGISTER: device := getRegisterValue(regs, param0);
-          C_PARAMETER_POINTER: device := getPointerValue(regs, ram, param0);
-      end;
-      case paramType1 of
-          C_PARAMETER_LITERAL: value := param1;
-          C_PARAMETER_ADDRESS: value := ram^.getValue(param1);
-          C_PARAMETER_REGISTER: value := getRegisterValue(regs, param1);
-          C_PARAMETER_POINTER: value := getPointerValue(regs, ram, param1);
-      end;
+      device := getParamValue(c, c.paramType0, c.instruction.param0);
+      value := getParamValue(c, c.paramType1, c.instruction.param1);
       result := bus^.sendByte(device, value);
       if result then 
         CC := CC or C_CC_IO
@@ -46,34 +34,52 @@ implementation
 
   procedure _in(const c: TContext);
   var
-    device, value: byte;
+    device, value, bitsize: byte;
+    finalValue: TUInt32;
     result: boolean;
   begin  
 
     with c, instruction, regs^ do 
     begin
-      case paramType0 of
-        C_PARAMETER_LITERAL: device := param0;
-        C_PARAMETER_ADDRESS: device := ram^.getValue(param0);
-        C_PARAMETER_REGISTER: device := getRegisterValue(regs, param0);
-        C_PARAMETER_POINTER: device := getPointerValue(regs, ram, param0);
+      case paramType1 of
+        C_PARAMETER_REGISTER: device := getRegisterValue(regs, param1);
+      else
+        cpuError(regs, C_ERR_INVALID_OPERATION)
+      end;
+      bitSize := getRegisterBitSize(param1);
+      device := getParamValue(c, c.paramType0, c.instruction.param0);
+      
+      { move forward instruction pointer and set IO flag to error by default }
+      inc(IP, sizeOf(TInstruction));
+      CC := CC or C_CC_IO;       
+
+      result := bus^.receiveByte(device, value);
+      if not result then exit; 
+      if bitSize = 8 then    { return an 8 bit value }
+      begin
+        setRegisterValue(regs, param1, value);
+        CC := CC and (not C_CC_IO);
+        exit;
+      end; 
+      finalValue := value;
+      result := bus^.receiveByte(device, value);
+      if not result then exit;
+      finalValue := finalValue or (longint(value) shl 8);
+      if bitSize = 16 then   { return a 16 bit value }
+      begin
+        setRegisterValue(regs, param1, finalValue);
+        CC := CC and (not C_CC_IO);
+        exit;
       end;
       result := bus^.receiveByte(device, value);
-      case paramType1 of
-        C_PARAMETER_LITERAL:
-        begin
-          cpuError(regs, C_ERR_INVALID_OPERATION);
-          exit;
-        end;
-        C_PARAMETER_ADDRESS: ram^.setValue(param1, value);
-        C_PARAMETER_REGISTER: setRegisterValue(regs, param1, value);
-        C_PARAMETER_POINTER: setPointerValue(regs, ram, param1, value);
-      end;
-      if result then 
-        CC := CC or C_CC_IO
-      else
-        CC := CC and (not C_CC_IO);
-      inc(IP, sizeOf(TInstruction));
+      if not result then exit;
+      finalValue := finalValue or (longint(value) shl 16);
+      result := bus^.receiveByte(device, value);
+      if not result then exit;
+      finalValue := finalValue or (longint(value) shl 24);
+      { return a 32-bit value }
+      setRegisterValue(regs, param1, finalValue); 
+      CC := CC and (not C_CC_IO);
     end;
   end;
 

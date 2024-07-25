@@ -9,13 +9,13 @@ interface
   uses
     xcrt, ascii, consts, utils, uclasses, types, locale,
     uobject, uexc, ufstream,
-    lcommon, lregs, lcpu, lram, lbus, ldecho, ltexts,
+    lcommon, lcpu, lram, lbus, ldecho, ltexts,
     op_base;
 
   const
     C_CLASS_ID_SYSTEM = 5000;
   
-    C_DEFAULT_RAM = 1024;
+    C_DEFAULT_RAM = 4096;
     C_DEFAULT_STACK = 128;  
 
   type
@@ -46,8 +46,10 @@ implementation
     inherited init;
     _cpu := new (PCPU, init);
     _bus := new (PBus, init);
-    _ram := new(PRAM, initWithSize(C_DEFAULT_RAM));
     _cpu^.setBus(_bus);
+
+    _ram := new(PRAM, initWithSize(C_DEFAULT_RAM));
+    msg(EMsgNormal, C_STR_INIT_MEMORY_WITH_SIZE, intToStr(C_DEFAULT_RAM));
     _bus^.addDevice(_ram); { RAM is device #0 }
 
     echoDevice := new(PEchoDevice, init);
@@ -107,6 +109,7 @@ implementation
       regs := @(_cpu^.regs);
       ram := _ram;
       bus := _bus;
+      regs^.DS := _codeSize;
       regs^.SS := C_DEFAULT_RAM - C_DEFAULT_STACK;
       stackSize := C_DEFAULT_STACK;
 

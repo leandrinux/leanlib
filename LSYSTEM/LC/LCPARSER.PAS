@@ -23,7 +23,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       function isDone: boolean;
-      procedure parseSentence(var sentence: TSentence);
+      function parseSentence(var sentence: TSentence): boolean;
     private
       _sourceCode: PSourceCode;
       procedure fatalError(const str, args: string);
@@ -67,7 +67,7 @@ implementation
     isDone := _sourceCode^.isReadComplete;
   end;
 
-  procedure TCodeParser.parseSentence(var sentence: TSentence);
+  function TCodeParser.parseSentence(var sentence: TSentence): boolean;
   type
     EState = (
       EStateStart,
@@ -244,7 +244,9 @@ implementation
     begin
       parseArguments(sentence);
       validateSentence(sentence);
-    end;
+      parseSentence := true;
+    end else
+      parseSentence := false;
   end;
 
   procedure TCodeParser.fatalError(const str, args: string);
@@ -287,6 +289,11 @@ implementation
       C_FADD, C_FSUB, C_FMUL, C_FDIV, 
       C_AND, C_OR, C_NOT, C_XOR, C_SHL, C_SHR,
       C_POP
+    ];
+
+    { these opcodes change the value of the second parameter }
+    C_OPCODES_CHANGE_SECOND_ARG: set of byte = [
+      C_IN
     ];
 
     { these registers are considered read-only and cannot be modified }
@@ -349,9 +356,18 @@ implementation
         then
         fatalError(C_STR_ERR_REGISTER_IS_READONLY, args[0].stringValue);
 
+      if (opcode in C_OPCODES_CHANGE_SECOND_ARG) and 
+        (args[1].registerCode in C_REGISTERS_READ_ONLY)
+        then
+        fatalError(C_STR_ERR_REGISTER_IS_READONLY, args[1].stringValue);
+
       { CS can only be modified with MOV}
       if (args[0].registerCode = C_CS) and (opcode <> C_MOV) then
         fatalError(C_STR_ERR_CS_CAN_ONLY_BE_MODIFIED, '');
+
+      { IN only accepts registers as second parameter}
+      if (opcode = C_IN) and (args[1].argType <> EParameterTypeRegister) then
+        fatalError(C_STR_ERR_IN_REQUIRES_REGISTER, '');
 
     end;
   end;

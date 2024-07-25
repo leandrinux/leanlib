@@ -36,7 +36,6 @@ interface
       _config: TBuilderConfig;     { other configuration settings }
       _sourceCode: PSourceCode;    { contains the full source code to be compiled }
       _binary: PBinary;            { contains the full binary code and data }
-      procedure printSentence(lineCount: word; const sentence: TSentence);
       procedure buildData;
       procedure buildCode;
     end;
@@ -134,8 +133,10 @@ implementation
     codeParser := new(PCodeParser, initWithSourceCode(_sourceCode));
     while not codeParser^.isDone do
     begin
-      codeParser^.parseSentence(sentence);
-      _binary^.addSentence(sentence);
+      if codeParser^.parseSentence(sentence) then
+      begin
+        _binary^.addSentence(sentence);
+      end;
     end;
     codeParser^.release;
   end;
@@ -197,26 +198,5 @@ implementation
   end;
 
   { TBuilder private }
-
-  procedure TBuilder.printSentence(lineCount: word; const sentence: TSentence);
-  const 
-    C_PARAM_TYPES : array[EParameterType] of string[10] = (
-      'unknown', 'literal', 'register', 'address', 
-      'pointer', 'symbol', 'definition', 'variable'
-    );
-  var 
-    str: string;
-  begin
-    with sentence do
-    begin
-      str := intToStr(lineCount) + ': ';
-      str := str + opname + ' (' + intToStr(opcode) + ')';
-      with args[0] do if stringValue <> '' then
-        str := str + ', ' + stringValue + ' (' + C_PARAM_TYPES[argType] + ')';
-      with args[1] do if stringValue <> '' then
-        str := str + ', ' + stringValue + ' (' + C_PARAM_TYPES[argType] + ')';
-    end;
-    msg(EMsgVerbose, str, '');
-  end;
 
 end.

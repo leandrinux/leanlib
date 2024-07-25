@@ -9,9 +9,7 @@ unit
 interface   
 
   uses
-    op_base, 
-    lcommon,
-    lregs;
+    op_base, lcommon;
 
   procedure _fadd(const c: TContext); far;
   procedure _fsub(const c: TContext); far;
@@ -24,38 +22,12 @@ implementation
   var
     second, result: single;
   begin
-    with c, instruction, regs^ do 
+    second := getParamValue(c, c.paramType1, c.instruction.param1);
+    result := getParamValue(c, c.paramType0, c.instruction.param0) + second;
+    if setParamValue(c, c.paramType0, c.instruction.param0, TUInt32(result)) then
     begin
-      case paramType1 of
-        C_PARAMETER_LITERAL: second := param1;
-        C_PARAMETER_ADDRESS: second := ram^.getValue(param1);
-        C_PARAMETER_REGISTER: second := getRegisterValue(regs, param1);
-        C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
-      end;
-      case paramType0 of
-        C_PARAMETER_LITERAL:
-        begin
-          cpuError(regs, C_ERR_INVALID_OPERATION);
-          exit;
-        end;
-        C_PARAMETER_ADDRESS:
-        begin
-          result := ram^.getValue(param0) + second;
-          ram^.setValue(param0, longint(result));
-        end;
-        C_PARAMETER_REGISTER:
-        begin
-          result := getRegisterValue(regs, param0) + second;
-          setRegisterValue(regs, param0, longint(result));
-        end;
-        C_PARAMETER_POINTER:
-        begin
-          result := getPointerValue(regs, ram, param0) + second;
-          setPointerValue(regs, ram, param0, longint(result));
-        end;
-      end;
-      setConditionCode(regs, longint(result));
-      inc(IP, sizeOf(TInstruction));
+      setConditionCode(c.regs, TUInt32(result));
+      inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
@@ -63,38 +35,12 @@ implementation
   var
     second, result: single;
   begin
-    with c, instruction, regs^ do 
+    second := getParamValue(c, c.paramType1, c.instruction.param1);
+    result := getParamValue(c, c.paramType0, c.instruction.param0) - second;
+    if setParamValue(c, c.paramType0, c.instruction.param0, TUInt32(result)) then
     begin
-      case paramType1 of
-        C_PARAMETER_LITERAL: second := param1;
-        C_PARAMETER_ADDRESS: second := ram^.getValue(param1);
-        C_PARAMETER_REGISTER: second := getRegisterValue(regs, param1);
-        C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
-      end;
-      case paramType0 of
-        C_PARAMETER_LITERAL:
-        begin
-          cpuError(regs, C_ERR_INVALID_OPERATION);
-          exit;
-        end;
-        C_PARAMETER_ADDRESS:
-        begin
-          result := ram^.getValue(param0) - second;
-          ram^.setValue(param0, longint(result));
-        end;
-        C_PARAMETER_REGISTER:
-        begin
-          result := getRegisterValue(regs, param0) - second;
-          setRegisterValue(regs, param0, longint(result));
-        end;
-        C_PARAMETER_POINTER:
-        begin
-          result := getPointerValue(regs, ram, param0) - second;
-          setPointerValue(regs, ram, param0, longint(result));
-        end;
-      end;
-      setConditionCode(regs, longint(result));
-      inc(IP, sizeOf(TInstruction));
+      setConditionCode(c.regs, TUInt32(result));
+      inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
@@ -102,38 +48,12 @@ implementation
   var
     second, result: single;
   begin
-    with c, instruction, regs^ do 
+    second := getParamValue(c, c.paramType1, c.instruction.param1);
+    result := getParamValue(c, c.paramType0, c.instruction.param0) * second;
+    if setParamValue(c, c.paramType0, c.instruction.param0, TUInt32(result)) then
     begin
-      case paramType1 of
-        C_PARAMETER_LITERAL: second := param1;
-        C_PARAMETER_ADDRESS: second := ram^.getValue(param1);
-        C_PARAMETER_REGISTER: second := getRegisterValue(regs, param1);
-        C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
-      end;
-      case paramType0 of
-        C_PARAMETER_LITERAL:
-        begin
-          cpuError(regs, C_ERR_INVALID_OPERATION);
-          exit;
-        end;
-        C_PARAMETER_ADDRESS:
-        begin
-          result := ram^.getValue(param0) * second;
-          ram^.setValue(param0, longint(result));
-        end;
-        C_PARAMETER_REGISTER:
-        begin
-          result := getRegisterValue(regs, param0) * second;
-          setRegisterValue(regs, param0, longint(result));
-        end;
-        C_PARAMETER_POINTER:
-        begin
-          result := getPointerValue(regs, ram, param0) * second;
-          setPointerValue(regs, ram, param0, longint(result));
-        end;
-      end;
-      setConditionCode(regs, longint(result));
-      inc(IP, sizeOf(TInstruction));
+      setConditionCode(c.regs, TUInt32(result));
+      inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
@@ -141,43 +61,17 @@ implementation
   var
     second, result: single;
   begin
-    with c, instruction, regs^ do 
+    second := getParamValue(c, c.paramType1, c.instruction.param1);
+    if second = 0 then
     begin
-      case paramType1 of
-        C_PARAMETER_LITERAL: second := param1;
-        C_PARAMETER_ADDRESS: second := ram^.getValue(param1);
-        C_PARAMETER_REGISTER: second := getRegisterValue(regs, param1);
-        C_PARAMETER_POINTER: second := getPointerValue(regs, ram, param1);
-      end;
-      if second = 0 then
-      begin
-        cpuError(regs, C_ERR_DIVIDE_BY_ZERO);
-        exit;
-      end;
-      case paramType0 of
-        C_PARAMETER_LITERAL:
-        begin
-          cpuError(regs, C_ERR_INVALID_OPERATION);
-          exit;
-        end;
-        C_PARAMETER_ADDRESS:
-        begin
-          result := ram^.getValue(param0) / second;
-          ram^.setValue(param0, longint(result));
-        end;
-        C_PARAMETER_REGISTER:
-        begin
-          result := getRegisterValue(regs, param0) / second;
-          setRegisterValue(regs, param0, longint(result));
-        end;
-        C_PARAMETER_POINTER:
-        begin
-          result := getPointerValue(regs, ram, param0) / second;
-          setPointerValue(regs, ram, param0, longint(result));
-        end;
-      end;
-      setConditionCode(regs, longint(result));
-      inc(IP, sizeOf(TInstruction));
+      cpuError(c.regs, C_ERR_DIVIDE_BY_ZERO);
+      exit;
+    end;
+    result := getParamValue(c, c.paramType0, c.instruction.param0) / second;
+    if setParamValue(c, c.paramType0, c.instruction.param0, TUInt32(result)) then
+    begin
+      setConditionCode(c.regs, TUInt32(result));
+      inc(c.regs^.IP, sizeOf(TInstruction));
     end;
   end;
 
