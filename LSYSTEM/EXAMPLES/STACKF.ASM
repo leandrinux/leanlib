@@ -11,3 +11,5 @@ error:
   add ax, '0'
   out 1, al
   out 1, 7
+
+  

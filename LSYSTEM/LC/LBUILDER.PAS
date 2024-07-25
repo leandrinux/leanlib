@@ -100,10 +100,12 @@ implementation
     codeParser := new(PCodeParser, initWithSourceCode(sourceCode));
     while not codeParser^.isDone do
     begin
-      codeParser^.parseSentence(sentence);
-      if _config.isVerbose then printSentence(count, sentence);
-      _binary^.addSentence(sentence);
-      inc(count);
+      if codeParser^.parseSentence(sentence) then
+      begin
+        if _config.isVerbose then printSentence(count, sentence);
+        _binary^.addSentence(sentence);
+        inc(count);
+      end;
     end;
     msg(EMsgNormal, C_STR_SENTENCES_PROC, intToStr(count));
     codeParser^.release;

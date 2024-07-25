@@ -23,7 +23,7 @@ interface
       function getClassName: string; virtual;
       function getClassId: word; virtual;
       function isDone: boolean;
-      procedure parseSentence(var sentence: TSentence);
+      function parseSentence(var sentence: TSentence): boolean;
     private
       _sourceCode: PSourceCode;
       procedure fatalError(const str, args: string);
@@ -67,7 +67,7 @@ implementation
     isDone := _sourceCode^.isReadComplete;
   end;
 
-  procedure TCodeParser.parseSentence(var sentence: TSentence);
+  function TCodeParser.parseSentence(var sentence: TSentence): boolean;
   type
     EState = (
       EStateStart,
@@ -244,7 +244,9 @@ implementation
     begin
       parseArguments(sentence);
       validateSentence(sentence);
-    end;
+      parseSentence := true;
+    end else
+      parseSentence := false;
   end;
 
   procedure TCodeParser.fatalError(const str, args: string);
