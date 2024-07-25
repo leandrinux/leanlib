@@ -165,6 +165,7 @@ implementation
       CC := CC OR C_CC_ERR;
       EAX := code;
       EBX := IP;
+      SP := 0;
       IP := 0;
     end;
   end;
