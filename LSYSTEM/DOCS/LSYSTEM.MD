@@ -415,6 +415,6 @@ After compiling, a binary file is generated. This file contains the compiled ins
 |11|4|DSIZE|Size in bytes of the data section|
 |15|2|TARGET_VER|Minimum version required to run this program|
 |17|8|RESERVED|Space reserved for future use. Initialized with zeroes|
-|25|CSIZE|All the code made of binary encoded instructions|
-|25+CSIZE|DSIZE|All the data section|
+|25|CSIZE|CODE|All the code made of binary encoded instructions|
+|25+CSIZE|DSIZE|DATA|All the data section|
 
