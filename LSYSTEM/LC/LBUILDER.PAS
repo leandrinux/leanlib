@@ -102,9 +102,12 @@ implementation
       buildCode;
       { create the binary }
       _binary^.make;
-      _binary^.save(_targetStream);
     end else
       msg(EMsgFatal, C_STR_ERR_INVALID_SECTION_HEADER, line);
+
+    msg(EMsgNormal, C_STR_TOTAL_CODE_BYTES, intToStr(_binary^.getTotalCodeBytes));
+    msg(EMsgNormal, C_STR_TOTAL_DATA_BYTES, intToStr(_binary^.getTotalDataBytes));
+    _binary^.save(_targetStream);
 
     { release objects and present success message }
     _sourceCode^.release;
@@ -193,7 +196,6 @@ implementation
       begin
         symbol := PSymbol(msg^.payload);
         memoryLocation := _binary^.addData(@(symbol^.value), symbol^.byteSize);
-        writeln('Added at memory location ', memoryLocation);
         _binary^.addSymbol(symbol^.name, ESymbolVariable, memoryLocation);
       end;      
 

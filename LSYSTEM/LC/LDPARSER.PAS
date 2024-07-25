@@ -315,12 +315,13 @@ implementation
     success: boolean;
     operation: word;
   begin
+{
     write('add symbol "', name, '"');
     write(', kind: ', C_SYMBOL_KIND_STR[kind]);
     write(', bitSize: ', bitSize);
     write(', stringValue: ', stringValue);
     writeln;
-
+}
     if getDelegate = nil then exit;
     symbol := new(PSymbol, init);
     symbol^.name := name;

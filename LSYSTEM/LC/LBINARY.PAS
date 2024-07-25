@@ -45,11 +45,14 @@ interface
       procedure addSymbol(const name: TString30; kind: ESymbolKind; value: TUInt32);
       procedure make;
       procedure save(stream: PStream);
+      function getTotalCodeBytes: TUInt32;
+      function getTotalDataBytes: TUInt32;
     private
       _symbols: PSymbols;          { keeps track of the symbols like labels or defines }
       _sentences: PList;           { the list of non compiled, parsed sentences }
       _instructions: PList;        { the list of compiled instruction blocks }
       _dataBlocks: PList;          { the data bytes such as variables and constants }
+      _totalCodeBytes: TUInt32;    { how many bytes in total have been added to code section }
       _totalDataBytes: TUInt32;    { how many bytes in total have been added to data section }
       function parameterTypeToValue(parameterType: EParameterType): byte;
       procedure setParameterBinaryValue(const arg: TSentenceArgument; param: PUInt32);
@@ -109,6 +112,7 @@ implementation
     _sentences := new(PList, init);
     _instructions := new(PList, init);
     _dataBlocks := new(PList, init);
+    _totalCodeBytes := 0;
     _totalDataBytes := 0;
   end;
 
@@ -201,14 +205,14 @@ implementation
     sentence: TSentence;
     instruction: PInstruction;
     i: byte;
-    totalCount, instructionAddress: TUInt32;
+    instructionCount, instructionAddress: TUInt32;
   begin
     msg(EMsgNormal, C_STR_MAKING, '');
     _sentences^.moveToStart;
     sentenceBlock := PSentenceBlock(_sentences^.getObjectAtCursor);
 
     instructionBlock := PInstructionBlock(_instructions^.getLast);
-    totalCount := 0;
+    instructionCount := 0;
     while sentenceBlock<>nil do
     begin
       i:=0;
@@ -230,19 +234,20 @@ implementation
 
         with sentenceBlock^.items[i] do
         begin
-          instructionAddress := totalCount * sizeof(TInstruction);
+          instructionAddress := instructionCount * sizeof(TInstruction);
           if labelName<>'' then 
             _symbols^.addValue(labelName, ESymbolLabel, instructionAddress);
+
+          { now we convert the sentence data into instructions }
           instruction^.header.opcode := opcode;
           instruction^.header.params := 
              (parameterTypeToValue(args[0].argType) shl 4) 
              or parameterTypeToValue(args[1].argType);
-
           setParameterBinaryValue(args[0], @instruction^.param0);
           setParameterBinaryValue(args[1], @instruction^.param1);
         end;
 
-        inc(totalCount);
+        inc(instructionCount);
         inc(i);
       end;
       _sentences^.moveForward;
@@ -251,7 +256,8 @@ implementation
 
     if _symbols^.getUnknownCount > 0 then
       msg(EMsgFatal, C_STR_ERR_UNDEFINED_SYMBOL, _symbols^.getFirstUnknownName);
-
+      
+    _totalCodeBytes := instructionCount * sizeof(TInstruction);
   end;
 
   procedure TBinary.save(stream: PStream);
@@ -275,6 +281,16 @@ implementation
         _instructions^.moveForward;  
         instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
       end;
+  end;
+
+  function TBinary.getTotalCodeBytes: TUInt32;
+  begin
+    getTotalCodeBytes := _totalCodeBytes;
+  end;
+
+  function TBinary.getTotalDataBytes: TUInt32;
+  begin
+    getTotalDataBytes := _totalDataBytes;
   end;
 
   { TBinary private }

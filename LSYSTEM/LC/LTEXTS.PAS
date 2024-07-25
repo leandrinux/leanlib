@@ -13,7 +13,7 @@ interface
     C_STR_BUILDING = 'Reading source...';
     C_STR_READ_ERROR = 'Could not read source code!';
     C_STR_SENTENCES_PROC = '%0 sentences processed';
-    C_STR_MAKING = 'Making object file...';
+    C_STR_MAKING = 'Building...';
     C_STR_SAVING = 'Saving...';
     C_STR_INVALID_POINTER_CONSTANT = 'Invalid pointer constant (%0)';
     C_STR_INVALID_POINTER_CONSTANT_RANGE = 'Pointer constant must be between -32768 and 32767';
@@ -24,6 +24,8 @@ interface
     { builder }
     C_STR_SOURCE_NOT_SET = 'Source stream not set';
     C_STR_TARGET_NOT_SET = 'Target stream not set';
+    C_STR_TOTAL_CODE_BYTES = 'Total code: %0 byte(s)';
+    C_STR_TOTAL_DATA_BYTES = 'Total data: %0 byte(s)';
     C_STR_ERR_INVALID_SECTION_HEADER = 'invalid section header "%0"';
 
     { data parser }
