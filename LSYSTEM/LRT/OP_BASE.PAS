@@ -9,6 +9,9 @@ interface
   uses
     lcommon, lram, lbus;
 
+  const
+    C_STACK_REGISTERS = [C_SS, C_SP, C_BP];
+
   type
     TContext = record
       instruction: TInstruction;
@@ -103,16 +106,22 @@ implementation
   function getPointerValue(regs: PRegisters; ram: PRAM; param: TUInt32): TUInt32;
   var
     address: TUInt32;
+    reg: byte;
   begin
-    address := getRegisterValue(regs, param and $000000FF) + (param shr 16);
+    reg := param and $FF;
+    address := getRegisterValue(regs, reg) + (param shr 16);
+    if reg in C_STACK_REGISTERS then inc(address, SS) else inc(address, DS);
     getPointerValue := ram^.getValue(address);
   end;
 
   procedure setPointerValue(regs: PRegisters; ram: PRAM; param, value: TUInt32);
   var
     address: TUInt32;
+    reg: byte;
   begin
-    address := getRegisterValue(regs, param and $000000FF) + (param shr 16);
+    reg := param and $FF;
+    address := getRegisterValue(regs, reg) + (param shr 16);
+    if reg in C_STACK_REGISTERS then inc(address, SS) else inc(address, DS);
     ram^.setValue(address, value);
   end;
 
@@ -121,7 +130,7 @@ implementation
     with c do 
       case paramType of
         C_PARAMETER_LITERAL: getParamValue := param;
-        C_PARAMETER_ADDRESS: getParamValue := ram^.getValue(param);
+        C_PARAMETER_ADDRESS: getParamValue := ram^.getValue(regs^.DS + param);
         C_PARAMETER_REGISTER: getParamValue := getRegisterValue(regs, param);
         C_PARAMETER_POINTER: getParamValue := getPointerValue(regs, ram, param);
       end;

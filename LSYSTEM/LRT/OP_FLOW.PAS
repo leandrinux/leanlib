@@ -25,7 +25,7 @@ implementation
 
   procedure _jmp(const c: TContext);
   begin
-    c.regs^.IP := getParamValue(c, c.paramType0, c.instruction.param0);
+    c.regs^.IP := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0);
   end;
 
   procedure _je(const c: TContext);
@@ -33,7 +33,7 @@ implementation
     address, value: TUInt32;
   begin
     value := getParamValue(c, c.paramType0, c.instruction.param0);
-    address := getParamValue(c, c.paramType1, c.instruction.param1);
+    address := c.regs^.CS + getParamValue(c, c.paramType1, c.instruction.param1);
     if value = c.regs^.EAX then
       c.regs^.IP := address
     else
@@ -45,7 +45,7 @@ implementation
     address, value: TUInt32;
   begin
     value := getParamValue(c, c.paramType0, c.instruction.param0);
-    address := getParamValue(c, c.paramType1, c.instruction.param1);
+    address := c.regs^.CS + getParamValue(c, c.paramType1, c.instruction.param1);
     if value > c.regs^.EAX then
       c.regs^.IP := address
     else
@@ -57,7 +57,7 @@ implementation
     address, value: TUInt32;
   begin
     value := getParamValue(c, c.paramType0, c.instruction.param0);
-    address := getParamValue(c, c.paramType1, c.instruction.param1);
+    address := c.regs^.CS + getParamValue(c, c.paramType1, c.instruction.param1);
     if value < c.regs^.EAX then
       c.regs^.IP := address
     else
@@ -67,7 +67,7 @@ implementation
   procedure _jz(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_ZERO) = 1 then
-      c.regs^.IP := getParamValue(c, c.paramType0, c.instruction.param0)
+      c.regs^.IP := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0)
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
@@ -75,7 +75,7 @@ implementation
   procedure _jp(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_SIGN) = 0 then
-      c.regs^.IP := getParamValue(c, c.paramType0, c.instruction.param0)
+      c.regs^.IP := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0)
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
@@ -83,7 +83,7 @@ implementation
   procedure _jn(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_SIGN) = 1 then
-      c.regs^.IP := getParamValue(c, c.paramType0, c.instruction.param0)
+      c.regs^.IP := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0)
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
@@ -91,7 +91,7 @@ implementation
   procedure _jnz(const c: TContext);
   begin
     if (c.regs^.CC and C_CC_ZERO) = 0 then
-      c.regs^.IP := getParamValue(c, c.paramType0, c.instruction.param0)
+      c.regs^.IP := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0)
     else
       inc(c.regs^.IP, sizeOf(TInstruction));
   end;
@@ -100,7 +100,7 @@ implementation
   begin
     if (c.regs^.CC and C_CC_ERR) <> 0 then
     begin
-      c.regs^.IP := getParamValue(c, c.paramType0, c.instruction.param0);
+      c.regs^.IP := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0);
       c.regs^.CC := c.regs^.CC and not C_CC_ERR;
     end else
       inc(c.regs^.IP, sizeOf(TInstruction));
@@ -111,7 +111,7 @@ implementation
     returnAddress, funcAddress: TUInt32;
   begin
     returnAddress := c.regs^.IP + sizeOf(TInstruction);
-    funcAddress := getParamValue(c, c.paramType0, c.instruction.param0);
+    funcAddress := c.regs^.CS + getParamValue(c, c.paramType0, c.instruction.param0);
     c.ram^.setValue(c.regs^.SS + c.regs^.SP, returnAddress);
     inc(c.regs^.SP, sizeOf(TUInt32));
     c.regs^.IP := funcAddress;
