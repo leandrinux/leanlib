@@ -148,7 +148,7 @@ implementation
         end;
 
         C_PARAMETER_ADDRESS: 
-          ram^.setValue(param, value);
+          ram^.setValue(regs^.DS + param, value);
 
         C_PARAMETER_REGISTER: 
           setRegisterValue(regs, param, value);
