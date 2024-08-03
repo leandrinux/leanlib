@@ -54,6 +54,7 @@ set opnames [dict create \
 	10 FSUB \
 	11 FMUL \
 	12 FDIV \
+	13 MOD \
 	33 JMP \
 	34 JE \
 	35 JG \
@@ -62,6 +63,7 @@ set opnames [dict create \
 	38 JP \
 	39 JN \
 	40 JNZ \
+	41 JERR \
 	49 AND \
 	50 OR \
 	51 NOT \
@@ -79,11 +81,18 @@ set opnames [dict create \
 little_endian
 requires 0 "4C 53 59 53 42 49 4E"; # requires LSYSBIN
 ascii 7 signature
+set code_size [uint32]
+entry "code_size" $code_size
+uint32 data_size
+uint16 target_version
+uint32 reserved
+uint32 reserved
 
-for {set i 0} {![end]} {incr i} {
+for {set i 0} {$i < $code_size} {incr i 10} {
 	section "Instruction" {
 		set opcode [uint8]
 		set opname [dict get $opnames $opcode]
+		entry "opcode" $opcode
 		entry "opname" $opname
 
 		set param0Type_n [uint8_bits 7,6,5,4]
@@ -96,21 +105,41 @@ for {set i 0} {![end]} {incr i} {
 		entry "param 1 type" $param1Type
 
 		set param0 [uint32]
-		set param1 [uint32]
-
 		if {$param0Type == "Register"} {
 			set register0 [dict get $registers $param0]
 		    entry "param0" $register0
 		} else {
-			entry "param0" $param0
+			if {$param0Type == "Pointer"} {
+				move -4
+				set register_n [uint32_bits 7,6,5,4,3,2,1,0]
+				set register_name [dict get $registers $register_n]
+				entry "param0" $register_name
+				move -4
+				set offset [int16]
+				entry "offset0" $offset
+				move 2
+			} else {
+				entry "param0" $param0
+			}
 		}
 
+		set param1 [uint32]
 		if {$param1Type == "Register"} {
 			set register1 [dict get $registers $param1]
 		    entry "param1" $register1
 		} else {
-			entry "param1" $param1
+			if {$param1Type == "Pointer"} {
+				move -4
+				set register_n [uint32_bits 7,6,5,4,3,2,1,0]
+				set register_name [dict get $registers $register_n]
+				entry "param1" $register_name
+				move -4
+				set offset [int16]
+				entry "offset1" $offset
+				move 2
+			} else {
+				entry "param1" $param1
+			}
 		}
-
 	}
 }
