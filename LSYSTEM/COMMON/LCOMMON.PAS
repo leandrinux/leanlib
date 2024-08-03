@@ -10,6 +10,7 @@ interface
     crt, strings;
 
   const    
+    C_LSYSTEM_VERSION: word = 120;
     C_STR_LSYSTEM_VERSION = '1.2';
     C_STR_LSYSTEM_CODENAME = 'Snowshoe';
 
