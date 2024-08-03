@@ -56,6 +56,8 @@ interface
       _totalDataBytes: TUInt32;    { how many bytes in total have been added to data section }
       function parameterTypeToValue(parameterType: EParameterType): byte;
       procedure setParameterBinaryValue(const arg: TSentenceArgument; param: PUInt32);
+      procedure saveCode(stream: PStream);
+      procedure saveData(stream: PStream);
     end;
 
     PSentenceBlock = ^TSentenceBlock;
@@ -262,11 +264,35 @@ implementation
 
   procedure TBinary.save(stream: PStream);
   var
+    reserved: TUInt32;
+  begin
+    msg(EMsgNormal, C_STR_SAVING, '');
+    
+    { add the file signature}
+    stream^.write(@C_BINARY_SIGNATURE, sizeof(C_BINARY_SIGNATURE));
+
+    { add the sizes of code and data }
+    stream^.write(@_totalCodeBytes, sizeof(_totalCodeBytes));
+    stream^.write(@_totalDataBytes, sizeof(_totalDataBytes));
+
+    { add the minimum version required to run}
+    stream^.write(@C_LSYSTEM_VERSION, sizeof(C_LSYSTEM_VERSION));
+
+    { add the reserved 8 bytes in zero }
+    reserved := 0;
+    stream^.write(@reserved, sizeof(reserved));
+    stream^.write(@reserved, sizeof(reserved));
+
+    { add the code and data }
+    saveCode(stream);
+    saveData(stream);
+  end;
+
+  procedure TBinary.saveCode(stream: PStream);
+  var
     instructionBlock: PInstructionBlock;
     i: byte;
   begin
-    msg(EMsgNormal, C_STR_SAVING, '');
-    stream^.write(@C_BINARY_SIGNATURE, sizeof(C_BINARY_SIGNATURE));
     _instructions^.moveToStart;
     instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
     while instructionBlock<>nil do
@@ -281,6 +307,20 @@ implementation
         _instructions^.moveForward;  
         instructionBlock := PInstructionBlock(_instructions^.getObjectAtCursor);
       end;
+  end;
+
+  procedure TBinary.saveData(stream: PStream);
+  var
+    dataBlock: PDataBlock;
+  begin
+    _dataBlocks^.moveToStart;
+    dataBlock := PDataBlock(_dataBlocks^.getObjectAtCursor);
+    while dataBlock <> nil do
+    begin
+      stream^.write(@datablock^.data, datablock^.count);
+      _dataBlocks^.moveForward;
+      dataBlock := PDataBlock(_dataBlocks^.getObjectAtCursor);
+    end;
   end;
 
   function TBinary.getTotalCodeBytes: TUInt32;

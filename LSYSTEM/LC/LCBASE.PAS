@@ -75,11 +75,12 @@ interface
     );
 
     PSymbol = ^TSymbol;
-    TSymbol = object (TObject)
-      name: TString30;
-      value: TUInt32;
-      kind: ESymbolKind;
-      byteSize: byte;
+    TSymbol = object (TObject) { the element contained in the symbol list }
+      name: TString30;           { name of the symbol }
+      value: TUInt32;            { value that is used in the instruction parameters }
+      kind: ESymbolKind;         { what type of symbol it is: label, definition or variable? }
+      datasize: TUInt32;         { for a variable it represents how big in bytes the data is. 0 in other case }
+      itemsize: TUInt32;         { for an array, it represents the size of an element }
     end;
 
   const

@@ -34,8 +34,8 @@ interface
     private
       _sourceCode: PSourceCode;
       procedure fatalError(const str, args: string);
-      procedure addSymbol(const name: string; kind: ESymbolKind; bitSize: byte; stringValue: TString30);
-      function getBitSizeFromVarType(varType: TString30): byte;
+      procedure addSymbol(const name: string; kind: ESymbolKind; dataSize, itemSize: TUInt32; stringValue: string);
+      procedure getSizes(var datasize, itemsize: TUInt32; const varType: TString30; const stringValue: string);
     end;
 
 implementation
@@ -84,24 +84,31 @@ implementation
       EStateSuccess,
       EStateFailed
     );
+
     ESymbolType = (
       ESymbolTypeDefinition,
       ESymbolTypeVariable
     );
+
   const
     C_END_STATES = [EStateSuccess, EStateFailed];
     C_SPACING_CHARS = [C_SPACE, C_TAB, C_CR, C_LF];
     C_IDENTIFIER_CHARS = ['A'..'Z', 'a'..'z', '_', '0'..'9'];
     C_KEYWORD_DEFINITION = 'def';
     C_KEYWORD_VARIABLE = 'var';
+
   var
     state: EParserState;
     token: string;
     ch: char;
+
     symbolType: ESymbolType;
     symbolName: TString30;
-    value: TString30;
+    value: string;
     varType: TString30;
+    dataSize: TUInt32;
+    itemSize: TUInt32;
+
   begin
     state := EStateStart;
     while not (state in C_END_STATES) do
@@ -111,7 +118,6 @@ implementation
         begin
           token := '';
           state := EStateSkipSpacesBeforeType;
-{          _sourceCode^.readChar; }
           ch := _sourceCode^.currentChar;
         end;
 
@@ -194,8 +200,8 @@ implementation
           begin
             value := token;
             token := '';
-            { writeln('SET DEFINITION "', symbolName,'" WITH VALUE "', value, '"'); }
-            addSymbol(symbolName, ESymbolDefinition, 32, value);
+            writeln('SET DEFINITION "', symbolName,'" WITH VALUE "', value, '"');
+            addSymbol(symbolName, ESymbolDefinition, 0, 0, value);
             state := EStateSkipSpacesAfterDefinition
           end else begin
             if ch in C_IDENTIFIER_CHARS then
@@ -253,9 +259,11 @@ implementation
             if ch = '=' then
               state := EStateSkipSpacesBeforeVarValue
             else begin
-              { writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and no value '); }
-              addSymbol(symbolName, ESymbolVariable, getBitSizeFromVarType(varType), '');
-              state := EStateSkipSpacesBeforeType;
+              writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and no value ');
+              getSizes(datasize, itemsize, varType, value);
+              writeln('Got sizes with no value');
+              addSymbol(symbolName, ESymbolVariable, dataSize, itemSize, '');
+              state := EStateSkipSpacesBeforeName; {EStateSkipSpacesBeforeType;}
             end;
         end;
 
@@ -269,8 +277,10 @@ implementation
           begin
             value := token;
             token := '';
-            { writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and value ', value); }
-            addSymbol(symbolName, ESymbolVariable, getBitSizeFromVarType(varType), value);
+            writeln('SET VARIABLE ', symbolName, ' of type ', varType, ' and value ', value);
+            getSizes(datasize, itemsize, varType, value);
+            writeln('Got sizes with value');
+            addSymbol(symbolName, ESymbolVariable, dataSize, itemSize, value);
             state := EStateSkipSpacesAfterVarValue
           end else 
           begin
@@ -298,6 +308,7 @@ implementation
 
       end;    
     end;
+    writeln('Data parsing ended.');
   end;
 
   { TDataParser private }
@@ -307,7 +318,12 @@ implementation
     msg(EMsgFatal, str, intToStr(_sourceCode^.lineNumber) + C_NULL + args);
   end;
 
-  procedure TDataParser.addSymbol(const name: string; kind: ESymbolKind; bitSize: byte; stringValue: TString30);
+  procedure TDataParser.addSymbol(
+    const name: string; 
+    kind: ESymbolKind; 
+    dataSize, itemSize: TUInt32;
+    stringValue: string
+  );
   const
     C_SYMBOL_KIND_STR: array[ESymbolKind] of TString30 = ('label', 'definition', 'variable');
   var
@@ -315,21 +331,20 @@ implementation
     success: boolean;
     operation: word;
   begin
-{
-    write('add symbol "', name, '"');
-    write(', kind: ', C_SYMBOL_KIND_STR[kind]);
-    write(', bitSize: ', bitSize);
-    write(', stringValue: ', stringValue);
-    writeln;
-}
     if getDelegate = nil then exit;
     symbol := new(PSymbol, init);
     symbol^.name := name;
     symbol^.kind := kind;
-    symbol^.byteSize := bitSize shr 3;
-    if stringValue = '' then stringValue := '0';
-    success := any2int(stringValue, symbol^.value);
-    if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
+    symbol^.dataSize := datasize;
+    symbol^.itemSize := itemSize;
+    
+    if kind in [ESymbolLabel, ESymbolDefinition] then
+    begin
+      if stringValue = '' then stringValue := '0';
+      success := any2int(stringValue, symbol^.value);
+      if not success then fatalError(C_STR_ERR_UNRECOGNIZABLE_SYMBOL, stringValue);
+    end;
+
     case kind of
       ESymbolDefinition, ESymbolLabel: 
         operation := C_DELEGATE_ADD_DEFINITION;
@@ -340,17 +355,56 @@ implementation
     symbol^.release;
   end;
 
-  function TDataParser.getBitSizeFromVarType(varType: TString30): byte;
+  procedure TDataParser.getSizes(
+    var datasize, itemsize: TUInt32; 
+    const varType: TString30; 
+    const stringValue: string
+  );
+  var 
+    a, b: byte;
+    arraySizeStr: TString30;
+    arraySize: TUInt32;
+    success: boolean;
   begin
-    if varType = 'byte' then
-      getBitSizeFromVarType := 8
+    write('Getting sizes for "', varType,'" ');
+
+    if (varType = 'string') then
+    begin
+      if (stringValue[1] <> '"') or (stringValue[length(stringValue)] <> '"') then
+        fatalError(C_STR_ERR_UNRECOGNIZABLE_DATA_TYPE, varType + ' ' + stringValue);
+      itemSize := 1;
+      if stringValue = '""' then
+        dataSize := 255
+      else
+        dataSize := length(stringValue) - 2;
+      exit;
+    end;
+
+    if (varType = 'byte') or (varType = 'char') then
+      itemsize := 1
     else if varType = 'word' then
-      getBitSizeFromVarType := 16
+      itemsize := 2
     else if varType = 'long' then
-      getBitSizeFromVarType := 32
-    else
+      itemsize := 4;
+
+    a := pos('[', varType);
+    b := pos(']', varType);
+    if (a=0) or (b=0) then
+      datasize := itemsize
+    else begin
+      arraySizeStr := copy(varType, a + 1, b-a-2);
+      write(' sizeStr: ',arraySizeStr);
+      success := any2int(arraySizeStr, arraySize);
+      datasize := itemSize * arraySize;
+    end;
+
+    write(' itemsize: ', itemsize);
+    writeln(' datasize: ', datasize);
+
+    if itemSize = 0 then 
       fatalError(C_STR_ERR_UNRECOGNIZABLE_DATA_TYPE, varType);
   end;
+
   { Other }
 
 end.

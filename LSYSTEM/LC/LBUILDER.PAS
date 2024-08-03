@@ -195,7 +195,7 @@ implementation
       C_DELEGATE_ADD_VARIABLE:
       begin
         symbol := PSymbol(msg^.payload);
-        memoryLocation := _binary^.addData(@(symbol^.value), symbol^.byteSize);
+        memoryLocation := _binary^.addData(@(symbol^.value), symbol^.dataSize);
         _binary^.addSymbol(symbol^.name, ESymbolVariable, memoryLocation);
       end;      
 
