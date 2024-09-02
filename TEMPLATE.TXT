@@ -1,0 +1,54 @@
+{
+  unitname Unit
+
+  2022 LRT
+}
+unit
+  unitname;
+
+interface
+
+  uses
+    consts, utils, uclasses, types, locale,
+    uobject, uexc;
+
+  type
+    PSomething = ^TSomething;
+    TSomething = object (TObject)
+    public
+      constructor init;
+      destructor done; virtual;
+      function getClassName: string; virtual;
+      function getClassId: word; virtual;
+    private
+    end;
+
+implementation
+
+  { TSomething public }
+
+  constructor TSomething.init;
+  begin
+    inherited init;
+  end;
+
+  destructor TSomething.done;
+  begin
+    inherited done;
+  end;
+
+  function TSomething.getClassName: string;
+  begin
+    getClassName := 'TSomething';
+  end;
+
+  function TSomething.getClassId: word;
+  begin
+    getClassId := C_CLASS_ID_Something;
+  end;
+
+  { TSomething private }
+
+  { Other }
+
+end.
