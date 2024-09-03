@@ -20,6 +20,7 @@
             "type": "shell",
             "command": "./.vscode/run.sh",
             "args": [
+                "${workspaceFolder}",
                 "${fileBasenameNoExtension}",
                 "${relativeFileDirname}"
             ],

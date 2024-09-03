@@ -1,23 +1,23 @@
 #!/bin/bash
 
 run_macos () {
-  /Applications/dosbox-x.app/Contents/MacOS/DosBox -fastlaunch -c "cd leanlib" -c "$1" -exit
+  /Applications/dosbox-x.app/Contents/MacOS/DosBox -fastlaunch -conf "$1/.vscode/build.conf" -c "\run $2 $3" -exit
 }
 
 run_flatpak () {
-  flatpak run com.dosbox_x.DOSBox-X -nomenu -fastlaunch -c "cd leanlib" -c "$1" -exit
+  flatpak run com.dosbox_x.DOSBox-X -nomenu -fastlaunch -conf "$1/.vscode/build.conf" -c "\run $2 $3" -exit
 }
 
 rundos () {
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    run_flatpak "$@" 
+    run_flatpak $@ 
   elif [[ "$OSTYPE" == "darwin"* ]]; then
-    run_macos "$@"
+    run_macos $@
   fi
 }
 
-echo arg $2
-dospath=$(echo $2 | tr / \\)
-filename=$1
+projectroot=$1
+filename=$2
+dospath=$(echo $3 | tr / \\)
 echo Running $filename at $dospath
-rundos "run $dospath $filename"
+rundos $projectroot $dospath $filename
