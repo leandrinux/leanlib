@@ -35,6 +35,7 @@ interface
       procedure moveToIndex(index: longint);
       procedure moveForward;
       function getObjectAtCursor: PObject;
+      function getObjectAfterCursor: PObject;
       function getStringAtCursor: string;
       function getLongAtCursor: longint;
       function getFirst: PObject;
@@ -295,6 +296,14 @@ implementation
       getObjectAtCursor := _cursor^.obj
     else
       getObjectAtCursor := nil;
+  end;
+
+  function TList.getObjectAfterCursor: PObject;
+  begin
+    if (_cursor <> nil) and (_cursor^.next <> nil) then
+      getObjectAfterCursor := _cursor^.next^.obj
+    else
+      getObjectAfterCursor := nil;
   end;
 
   function TList.getStringAt(index: longint): string;
