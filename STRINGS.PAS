@@ -15,7 +15,7 @@ interface
     C_TRIM_CHARS = [' ', #10, #13, #9];
 
   type
-    TTrimmableChars = set of char;
+    TCharSet = set of char;
 
   { returns the word value as a string, left padded with the specified char }
   function padw(w: word; ch: char; count: byte): string5;
@@ -34,7 +34,7 @@ interface
 
   { trims a string by removing characters from its beginning and end} 
   function trim(const str: string): string;
-  function trimChars(const str: string; chars: TTrimmableChars): string;
+  function trimChars(const str: string; chars: TCharSet): string;
 
   { converts a null-terminated string to a Pascal-style string }
   function pCharToStr(p: PChar): string;
@@ -60,6 +60,17 @@ interface
     think in pointers.
   }
   function strformatn(const str, args: string): string;
+
+  {
+    returns true if the string contains at least one character that is 
+    included in the provided set
+  }
+  function contains(const str: string; chars: TCharSet): boolean;
+
+  {
+    returns true if the string A starts exactly like the full string B
+  }
+  function startsWith(const str, prefix: string): boolean;
 
 implementation
 
@@ -154,7 +165,7 @@ implementation
     trim := trimChars(str, C_TRIM_CHARS);
   end;
 
-  function trimChars(const str: string; chars: TTrimmableChars): string;
+  function trimChars(const str: string; chars: TCharSet): string;
   var
     i, j: byte;
   begin
@@ -286,6 +297,27 @@ implementation
       inc(i);
     end;
     strformatn := result;
+  end;
+
+  function contains(const str: string; chars: TCharSet): boolean;
+  var
+    i: byte;
+  begin
+    i := 1;
+    while (i<=length(str)) and not (str[i] in chars) do inc(i);
+    contains := i <= length(str) 
+  end;
+
+  function startsWith(const str, prefix: string): boolean;
+  var i: byte;
+  begin
+    startsWith := false;
+    if length(str) >= length(prefix) then
+    begin
+      i := 1;
+      while (i <= length(prefix)) and (str[i] = prefix[i]) do inc(i);
+      startsWith := i > length(prefix);
+    end; 
   end;
 
 end.
